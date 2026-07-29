@@ -17,17 +17,17 @@ export interface Props {
 
 export default function Manifesto({
   eyebrow = "02 — A Maison",
-  title = "Rara por\nnatureza.\nEscolhida para\npermanecer.",
+  title = "Rara por natureza.\nEscolhida para permanecer.",
   text =
-    "A Esméra reúne objetos preciosos, arte e design em uma curadoria destinada a colecionadores e interiores singulares. Peças escolhidas por sua origem, presença e capacidade de atravessar o tempo.",
-  ctaLabel = "Sobre a Esméra",
+    "A Esméra escolhe objetos pela matéria, pela presença e pela capacidade de permanecer. Curadoria, procedência e serviço acompanham cada peça antes e depois da aquisição.",
+  ctaLabel = "Conhecer a Maison",
   ctaHref = "#experience",
   mainImage =
-    "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1500&q=90",
-  mainImageAlt = "Interior contemporâneo com arte e objetos minerais",
+    "https://images.unsplash.com/photo-1771862956454-ad43adc3c19e?auto=format&fit=crop&w=1500&q=90",
+  mainImageAlt = "Objetos escultóricos apresentados em interior contemporâneo",
   secondaryImage =
-    "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=800&q=90",
-  secondaryImageAlt = "Diamantes sobre fundo escuro",
+    "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=800&q=90",
+  secondaryImageAlt = "Detalhe de escultura mineral com superfície irregular",
 }: Props) {
   return (
     <section

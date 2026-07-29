@@ -5,41 +5,31 @@ import {
 import ProductActions from "../../islands/ProductActions.tsx";
 
 export interface Props {
-  eyebrow?: string;
   title?: string;
   /** @format textarea */
   text?: string;
   products?: EsmeraObject[];
-  ctaLabel?: string;
-  ctaHref?: string;
 }
 
 export default function SelectedObjects({
-  eyebrow = "03 — A seleção Esméra",
-  title = "Objetos de presença singular.",
+  title = "Objetos de\npresença singular.",
   text =
     "Peças disponíveis, edições limitadas e objetos sob consulta, reunidos por matéria, raridade e permanência.",
   products = selectedObjects,
-  ctaLabel = "Ver todos os objetos",
-  ctaHref = "#objects",
 }: Props) {
   return (
     <section
       id="selection"
-      class="esv-selected esv-section"
+      class="esv-selected"
       aria-labelledby="esv-selected-title"
     >
-      <div class="esv-shell esv-rule-top esv-shelf-head">
-        <p class="esv-kicker">{eyebrow}</p>
+      <div class="esv-shell esv-selected-head">
         <h2 id="esv-selected-title">{title}</h2>
-        <div>
-          <p>{text}</p>
-          <a href={ctaHref} class="esv-text-link">{ctaLabel}</a>
-        </div>
+        <p>{text}</p>
       </div>
 
       <div class="esv-shell esv-product-shelf" role="list">
-        {products.map((item) => (
+        {products.slice(0, 4).map((item) => (
           <article class="esv-product-card" role="listitem">
             <figure>
               <img

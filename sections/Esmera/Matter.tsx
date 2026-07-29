@@ -12,23 +12,23 @@ export interface Props {
 const defaultPanels: MatterPanel[] = [
   {
     image:
-      "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=1800&q=90",
-    alt: "Diamantes lapidados sobre fundo escuro",
+      "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=1800&q=90",
+    alt: "Escultura mineral com superfície irregular e volumes orgânicos",
   },
   {
     image:
-      "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1800&q=90",
-    alt: "Interior contemporâneo com arte e objetos minerais",
+      "https://images.unsplash.com/photo-1771862956454-ad43adc3c19e?auto=format&fit=crop&w=1800&q=90",
+    alt: "Objetos escultóricos apresentados em contexto de interior contemporâneo",
   },
   {
     image:
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1800&q=90",
-    alt: "Arquitetura em tons minerais e luz natural",
+      "https://images.unsplash.com/photo-1526198049595-f32cde2a219d?auto=format&fit=crop&w=1800&q=90",
+    alt: "Vaso azul fotografado isoladamente para leitura de forma e escala",
   },
 ];
 
 export default function Matter({
-  sectionLabel = "Matéria",
+  sectionLabel = "Matéria, objeto e contexto",
   panels = defaultPanels,
 }: Props) {
   return (
@@ -39,7 +39,7 @@ export default function Matter({
     >
       <h2 id="esv-matter-title" class="esv-sr-only">{sectionLabel}</h2>
       <div class="esv-matter-spacer" aria-hidden="true" />
-      <div class="esv-matter-gallery-track" aria-label="Galeria de matéria">
+      <div class="esv-matter-gallery-track" aria-label="Matéria, objeto e contexto">
         {panels.slice(0, 3).map((panel) => (
           <figure class="esv-matter-gallery-item" key={panel.image}>
             <img

@@ -9,10 +9,10 @@
       "__resolveType": "site/sections/Esmera/Hero.tsx"
     },
     {
-      "__resolveType": "site/sections/Esmera/SelectedObjects.tsx"
+      "__resolveType": "site/sections/Esmera/Manifesto.tsx"
     },
     {
-      "__resolveType": "site/sections/Esmera/Manifesto.tsx"
+      "__resolveType": "site/sections/Esmera/SelectedObjects.tsx"
     },
     {
       "__resolveType": "site/sections/Esmera/Matter.tsx"

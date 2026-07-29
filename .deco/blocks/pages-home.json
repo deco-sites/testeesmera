@@ -18,7 +18,19 @@
       "__resolveType": "site/sections/Esmera/Matter.tsx"
     },
     {
+      "__resolveType": "site/sections/Esmera/SignatureObject.tsx"
+    },
+    {
+      "__resolveType": "site/sections/Esmera/Provenance.tsx"
+    },
+    {
+      "__resolveType": "site/sections/Esmera/Context.tsx"
+    },
+    {
       "__resolveType": "site/sections/Esmera/Process.tsx"
+    },
+    {
+      "__resolveType": "site/sections/Esmera/PrivateInvitation.tsx"
     },
     {
       "__resolveType": "site/sections/Esmera/Footer.tsx"

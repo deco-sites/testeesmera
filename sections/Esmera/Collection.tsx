@@ -17,11 +17,12 @@ export interface Props {
 
 export default function Collection({
   eyebrow = "05 — Objetos",
-  title = "Objetos para colecionar. Peças para permanecer.",
-  text = "Descubra a coleção completa ou solicite uma curadoria privada.",
+  title = "Objetos raros. Informação precisa.",
+  text =
+    "Explore peças por matéria e disponibilidade ou fale com a curadoria para uma seleção orientada ao seu contexto.",
   products = collectionObjects,
-  ctaLabel = "Descobrir a coleção completa",
-  ctaHref = "#contact",
+  ctaLabel = "Falar com a curadoria",
+  ctaHref = "mailto:contact@esmera.com?subject=Curadoria%20Esm%C3%A9ra",
 }: Props) {
   return (
     <section
@@ -50,8 +51,8 @@ export default function Collection({
             </figure>
             <div class="esv-product-card-copy">
               <div class="esv-product-meta">
-                <small>{item.code} / {item.category}</small>
-                <small>{item.availability}</small>
+                <small>{item.availability} / {item.material}</small>
+                <small>{item.code}</small>
               </div>
               <h3>{item.title}</h3>
               <p>{item.subtitle}</p>
@@ -68,7 +69,7 @@ export default function Collection({
       </div>
 
       <div class="esv-shell esv-collection-end">
-        <a class="esv-outline-cta" href={ctaHref}>
+        <a class="esv-text-link" href={ctaHref}>
           {ctaLabel} <Arrow size={14} />
         </a>
       </div>

@@ -7,12 +7,28 @@ import * as $$$$$$$$$$$1 from "./apps/site.ts";
 import * as $$$$$$0 from "./sections/Footer.tsx";
 import * as $$$$$$1 from "./sections/ItWorks.tsx";
 import * as $$$$$$2 from "./sections/Theme/Theme.tsx";
+import * as $$$$$$3 from "./sections/Esmera/Header.tsx";
+import * as $$$$$$4 from "./sections/Esmera/Hero.tsx";
+import * as $$$$$$5 from "./sections/Esmera/SelectedObjects.tsx";
+import * as $$$$$$6 from "./sections/Esmera/Manifesto.tsx";
+import * as $$$$$$7 from "./sections/Esmera/Matter.tsx";
+import * as $$$$$$8 from "./sections/Esmera/Collection.tsx";
+import * as $$$$$$9 from "./sections/Esmera/Process.tsx";
+import * as $$$$$$10 from "./sections/Esmera/Footer.tsx";
 
 const manifest = {
   "sections": {
     "site/sections/Footer.tsx": $$$$$$0,
     "site/sections/ItWorks.tsx": $$$$$$1,
     "site/sections/Theme/Theme.tsx": $$$$$$2,
+    "site/sections/Esmera/Header.tsx": $$$$$$3,
+    "site/sections/Esmera/Hero.tsx": $$$$$$4,
+    "site/sections/Esmera/SelectedObjects.tsx": $$$$$$5,
+    "site/sections/Esmera/Manifesto.tsx": $$$$$$6,
+    "site/sections/Esmera/Matter.tsx": $$$$$$7,
+    "site/sections/Esmera/Collection.tsx": $$$$$$8,
+    "site/sections/Esmera/Process.tsx": $$$$$$9,
+    "site/sections/Esmera/Footer.tsx": $$$$$$10,
   },
   "apps": {
     "site/apps/deco/htmx.ts": $$$$$$$$$$$0,

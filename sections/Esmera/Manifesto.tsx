@@ -17,17 +17,17 @@ export interface Props {
 
 export default function Manifesto({
   eyebrow = "02 — A Maison",
-  title = "Rara por natureza.\nEscolhida para permanecer.",
+  title = "Rara por\nnatureza.\nEscolhida para\npermanecer.",
   text =
-    "A Esméra escolhe objetos pela matéria, pela presença e pela capacidade de permanecer. Curadoria, procedência e serviço acompanham cada peça antes e depois da aquisição.",
-  ctaLabel = "Conhecer a Maison",
+    "A Esméra reúne objetos de presença singular, criados ou selecionados a partir de matérias preciosas e concebidos para atravessar o tempo.",
+  ctaLabel = "Sobre a Maison",
   ctaHref = "#experience",
   mainImage =
-    "https://images.unsplash.com/photo-1771862956454-ad43adc3c19e?auto=format&fit=crop&w=1500&q=90",
-  mainImageAlt = "Objetos escultóricos apresentados em interior contemporâneo",
+    "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=1500&q=90",
+  mainImageAlt = "Objeto escultórico final apresentado em composição controlada",
   secondaryImage =
     "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=800&q=90",
-  secondaryImageAlt = "Detalhe de escultura mineral com superfície irregular",
+  secondaryImageAlt = "Detalhe de matéria mineral com superfície irregular",
 }: Props) {
   return (
     <section
@@ -45,26 +45,12 @@ export default function Manifesto({
           </a>
         </div>
 
-        <div class="esv-maison-media" aria-label="Universo Esméra">
+        <div class="esv-maison-media" aria-label="Objeto e matéria Esméra">
           <figure class="esv-maison-main">
-            <img
-              src={mainImage}
-              alt={mainImageAlt}
-              loading="lazy"
-              decoding="async"
-              width="936"
-              height="730"
-            />
+            <img src={mainImage} alt={mainImageAlt} loading="lazy" decoding="async" width="936" height="730" />
           </figure>
           <figure class="esv-maison-secondary">
-            <img
-              src={secondaryImage}
-              alt={secondaryImageAlt}
-              loading="lazy"
-              decoding="async"
-              width="360"
-              height="480"
-            />
+            <img src={secondaryImage} alt={secondaryImageAlt} loading="lazy" decoding="async" width="360" height="480" />
           </figure>
         </div>
       </div>

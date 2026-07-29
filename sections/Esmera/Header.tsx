@@ -25,6 +25,7 @@ export default function Header({
         />
         <link rel="stylesheet" href={asset("/esmera.css")} />
         <link rel="stylesheet" href={asset("/esmera-scroll-fix.css")} />
+        <link rel="stylesheet" href={asset("/esmera-matter.css")} />
         <meta name="theme-color" content="#141412" />
       </Head>
 

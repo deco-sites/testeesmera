@@ -3,14 +3,20 @@
 // This file is automatically updated during development when running `dev.ts`.
 
 import * as $_app from "./routes/_app.tsx";
-
+import * as $EsmeraHeader from "./islands/EsmeraHeader.tsx";
+import * as $ProductActions from "./islands/ProductActions.tsx";
+import * as $SpatialMatter from "./islands/SpatialMatter.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
     "./routes/_app.tsx": $_app,
   },
-  islands: {},
+  islands: {
+    "./islands/EsmeraHeader.tsx": $EsmeraHeader,
+    "./islands/ProductActions.tsx": $ProductActions,
+    "./islands/SpatialMatter.tsx": $SpatialMatter,
+  },
   baseUrl: import.meta.url,
 } satisfies Manifest;
 

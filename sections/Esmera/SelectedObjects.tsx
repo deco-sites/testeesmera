@@ -12,9 +12,9 @@ export interface Props {
 }
 
 export default function SelectedObjects({
-  title = "Objetos de\npresença singular.",
+  title = "Objetos escolhidos\npela presença.",
   text =
-    "Peças disponíveis, edições limitadas e objetos sob consulta, reunidos por matéria, raridade e permanência.",
+    "Peças reunidas por matéria, singularidade e permanência. Status, material e valor permanecem visíveis como parte da leitura curatorial.",
   products = selectedObjects,
 }: Props) {
   return (
@@ -43,8 +43,8 @@ export default function SelectedObjects({
             </figure>
             <div class="esv-product-card-copy">
               <div class="esv-product-meta">
-                <small>{item.code} / {item.category}</small>
-                <small>{item.availability}</small>
+                <small>{item.availability} / {item.material}</small>
+                <small>{item.code}</small>
               </div>
               <h3>{item.title}</h3>
               <p>{item.subtitle}</p>

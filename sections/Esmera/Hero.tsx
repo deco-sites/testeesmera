@@ -5,10 +5,8 @@ export interface Props {
   desktopImage?: string;
   /** @format image-uri @description Imagem vertical opcional para mobile */
   mobileImage?: string;
-  /** @description Marca exibida na primeira dobra */
+  /** @description Nome da marca para leitores de tela */
   title?: string;
-  /** @description Categoria principal da marca */
-  contextLabel?: string;
   /** @format textarea @description Promessa curta, com no máximo duas linhas */
   statement?: string;
   ctaLabel?: string;
@@ -26,7 +24,6 @@ export default function Hero({
     "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=2400&q=90",
   mobileImage,
   title = "ESMÉRA",
-  contextLabel = "Objetos raros para colecionadores",
   statement =
     "Natureza, matéria e design reunidos em peças escolhidas para permanecer.",
   ctaLabel = "Explorar a coleção",
@@ -52,7 +49,7 @@ export default function Hero({
         <img
           {...{ fetchPriority: "high" }}
           src={desktopImage}
-          alt="Objetos minerais raros sobre pedestais de pedra"
+          alt="Diamantes lapidados sobre fundo escuro"
           loading="eager"
           decoding="async"
           width="2400"
@@ -62,8 +59,7 @@ export default function Hero({
       <div class="esv-hero-overlay" />
 
       <div class="esv-shell esv-hero-content">
-        <h1 id="esv-hero-title">{title}</h1>
-        <p class="esv-hero-context">{contextLabel}</p>
+        <h1 id="esv-hero-title" class="esv-sr-only">{title}</h1>
         <p class="esv-hero-statement">{statement}</p>
         <a class="esv-hero-cta" href={ctaHref}>
           {ctaLabel} <Arrow size={14} />

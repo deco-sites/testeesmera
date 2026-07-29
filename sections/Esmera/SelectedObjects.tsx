@@ -1,8 +1,8 @@
+import ObjectCard from "../../components/esmera/ObjectCard.tsx";
 import {
   type EsmeraObject,
   selectedObjects,
 } from "../../components/esmera/data.ts";
-import ProductActions from "../../islands/ProductActions.tsx";
 
 export interface Props {
   title?: string;
@@ -12,9 +12,9 @@ export interface Props {
 }
 
 export default function SelectedObjects({
-  title = "Objetos escolhidos\npela presença.",
+  title = "Objetos de\npresença singular.",
   text =
-    "Peças reunidas por matéria, singularidade e permanência. Status, material e valor permanecem visíveis como parte da leitura curatorial.",
+    "Uma seleção curta de peças concretas, reunidas por matéria, presença e permanência. Cada objeto apresenta status, material e condição de aquisição sem perder o ritmo editorial da maison.",
   products = selectedObjects,
 }: Props) {
   return (
@@ -28,35 +28,9 @@ export default function SelectedObjects({
         <p>{text}</p>
       </div>
 
-      <div class="esv-shell esv-product-shelf" role="list">
+      <div id="objects" class="esv-shell esv-product-shelf" role="list">
         {products.slice(0, 4).map((item) => (
-          <article class="esv-product-card" role="listitem">
-            <figure>
-              <img
-                src={item.image}
-                alt={item.alt}
-                loading="lazy"
-                decoding="async"
-                width="960"
-                height="1200"
-              />
-            </figure>
-            <div class="esv-product-card-copy">
-              <div class="esv-product-meta">
-                <small>{item.availability} / {item.material}</small>
-                <small>{item.code}</small>
-              </div>
-              <h3>{item.title}</h3>
-              <p>{item.subtitle}</p>
-              <strong class="esv-product-price">{item.price}</strong>
-              <ProductActions
-                productId={item.id}
-                productTitle={item.title}
-                product={item}
-                compact
-              />
-            </div>
-          </article>
+          <ObjectCard item={item} />
         ))}
       </div>
     </section>

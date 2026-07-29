@@ -1,13 +1,13 @@
 import Arrow from "../../components/esmera/Arrow.tsx";
 
 export interface Props {
-  /** @format image-uri @description Imagem horizontal para desktop */
+  /** @format image-uri @description Objeto Esméra acabado, protagonista do hero */
   desktopImage?: string;
-  /** @format image-uri @description Imagem vertical opcional para mobile */
+  /** @format image-uri @description Recorte vertical do mesmo objeto para mobile */
   mobileImage?: string;
   /** @description Nome da marca para leitores de tela */
   title?: string;
-  /** @format textarea @description Promessa curta, com no máximo duas linhas */
+  /** @format textarea @description Frase proprietária de 1 a 3 linhas */
   statement?: string;
   ctaLabel?: string;
   ctaHref?: string;
@@ -21,12 +21,11 @@ export interface Props {
 
 export default function Hero({
   desktopImage =
-    "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=2400&q=90",
+    "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=2400&q=90",
   mobileImage,
   title = "ESMÉRA",
-  statement =
-    "Natureza, matéria e design reunidos em peças escolhidas para permanecer.",
-  ctaLabel = "Explorar a coleção",
+  statement = "Natureza, matéria e design. Escolhidos para permanecer.",
+  ctaLabel = "Explorar a seleção",
   ctaHref = "#selection",
   overlay = 20,
   focalPoint = "center",
@@ -49,7 +48,7 @@ export default function Hero({
         <img
           {...{ fetchPriority: "high" }}
           src={desktopImage}
-          alt="Diamantes lapidados sobre fundo escuro"
+          alt="Objeto escultórico apresentado sobre fundo escuro"
           loading="eager"
           decoding="async"
           width="2400"

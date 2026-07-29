@@ -1,9 +1,9 @@
+import ObjectCard from "../../components/esmera/ObjectCard.tsx";
 import {
   collectionObjects,
   type EsmeraObject,
 } from "../../components/esmera/data.ts";
 import Arrow from "../../components/esmera/Arrow.tsx";
-import ProductActions from "../../islands/ProductActions.tsx";
 
 export interface Props {
   eyebrow?: string;
@@ -16,7 +16,7 @@ export interface Props {
 }
 
 export default function Collection({
-  eyebrow = "05 — Objetos",
+  eyebrow = "Objetos",
   title = "Objetos raros. Informação precisa.",
   text =
     "Explore peças por matéria e disponibilidade ou fale com a curadoria para uma seleção orientada ao seu contexto.",
@@ -26,7 +26,7 @@ export default function Collection({
 }: Props) {
   return (
     <section
-      id="objects"
+      id="catalog"
       class="esv-collection esv-section"
       aria-labelledby="esv-collection-title"
     >
@@ -37,35 +37,7 @@ export default function Collection({
       </div>
 
       <div class="esv-shell esv-product-shelf" role="list">
-        {products.map((item) => (
-          <article class="esv-product-card" role="listitem">
-            <figure>
-              <img
-                src={item.image}
-                alt={item.alt}
-                loading="lazy"
-                decoding="async"
-                width="1000"
-                height="1250"
-              />
-            </figure>
-            <div class="esv-product-card-copy">
-              <div class="esv-product-meta">
-                <small>{item.availability} / {item.material}</small>
-                <small>{item.code}</small>
-              </div>
-              <h3>{item.title}</h3>
-              <p>{item.subtitle}</p>
-              <strong class="esv-product-price">{item.price}</strong>
-              <ProductActions
-                productId={item.id}
-                productTitle={item.title}
-                product={item}
-                compact
-              />
-            </div>
-          </article>
-        ))}
+        {products.map((item) => <ObjectCard item={item} />)}
       </div>
 
       <div class="esv-shell esv-collection-end">

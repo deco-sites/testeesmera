@@ -16,7 +16,6 @@ export interface Props {
 const navigation = [
   { label: "Seleção", href: "#selection" },
   { label: "Objetos", href: "#objects" },
-  { label: "Coleções", href: "#matter" },
   { label: "Maison", href: "#about" },
 ];
 
@@ -56,6 +55,7 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
   const [selected, setSelected] = useState<EsmeraObject | null>(null);
   const [selection, setSelection] = useState<string[]>([]);
   const [query, setQuery] = useState("");
+  const [scrolled, setScrolled] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const searchResults = useMemo(() => {
@@ -75,6 +75,13 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
   }, [query]);
 
   const selectedItems = catalog.filter((item) => selection.includes(item.id));
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(globalThis.scrollY > 96);
+    onScroll();
+    globalThis.addEventListener("scroll", onScroll, { passive: true });
+    return () => globalThis.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     const active = Boolean(overlay || selected);
@@ -130,7 +137,7 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
 
   return (
     <>
-      <header class="esv-header">
+      <header class={`esv-header${scrolled ? " is-scrolled" : ""}`}>
         <button class="esv-header-menu esv-header-icon" type="button" aria-label="Abrir menu" onClick={() => setOverlay("menu")}>
           <Icon name="menu" />
         </button>
@@ -217,7 +224,7 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
                         </div>
                       ))}
                     </div>
-                    <a class="esv-enquiry-send" href={`mailto:contact@esmera.com?subject=${encodeURIComponent("Consulta privada — Esméra")}&body=${encodeURIComponent(`Olá, gostaria de consultar: ${selectedItems.map((item) => item.title).join(", ")}.`)}`}>
+                    <a class="esv-enquiry-send" href={`mailto:contact@esmera.com?subject=${encodeURIComponent("Consulta privada — Esméra")}&body=${encodeURIComponent(`Olá, gostaria de consultar: ${selectedItems.map((item) => item.title).join(", ")}.`)} `}>
                       Falar com a curadoria <Icon name="arrow" size={15} />
                     </a>
                   </>

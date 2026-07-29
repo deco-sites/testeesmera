@@ -19,12 +19,12 @@ export default function Footer({
 }: Props) {
   const year = new Date().getFullYear();
   return (
-    <footer id="contact" class="esv-footer">
+    <footer id="footer" class="esv-footer">
       <div class="esv-shell">
         <div class="esv-footer-main">
           <a class="esv-footer-wordmark" href="#main-content">ESMÉRA</a>
           <p>{statement}</p>
-          <div class="esv-footer-contact">
+          <div id="contact" class="esv-footer-contact">
             <small>Contato</small>
             <a href={contactHref}>{contactLabel}</a>
           </div>

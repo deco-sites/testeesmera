@@ -1,88 +1,261 @@
-/* Esméra — quiet luxury refactor
- * Figma-led proportions for Hero, Maison, Selected Objects and Matter.
- * The goal is less interface, more image, material, whitespace and editorial rhythm.
+/* ESMÉRA / DIGITAL MAISON — MASTER v1.0
+ * Normative layer derived from ESMERA_Direcao_Visual_Master_v1.0.pdf.
+ * Object first. Precision before ornament. Quiet, editorial, commercial.
  */
 
-/* 01 — Hero: image first, short statement, one action */
+:root {
+  --color-ink: #17181b;
+  --color-deep: #0f1115;
+  --color-paper: #f4f0e8;
+  --color-paper-2: #faf8f3;
+  --color-stone: #c8c2b7;
+  --color-muted: #73716b;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  --line-master: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+  --ease-luxury: cubic-bezier(.22, 1, .36, 1);
+  --duration-fast: 180ms;
+  --duration-base: 260ms;
+  --duration-slow: 480ms;
+
+  /* Compatibility aliases while legacy components are consolidated. */
+  --esv-paper: var(--color-paper);
+  --esv-paper-soft: var(--color-paper-2);
+  --esv-ink: var(--color-ink);
+  --esv-muted: var(--color-muted);
+  --esv-line: color-mix(in srgb, var(--color-ink) 14%, transparent);
+  --esv-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --esv-display: var(--esv-sans);
+  --esv-ease: var(--ease-luxury);
+  --esv-ease-out: var(--ease-luxury);
+  --esv-page-x: clamp(32px, 4vw, 64px);
+  --esv-grid-gap: clamp(24px, 2vw, 32px);
+  --esv-max: 1600px;
+}
+
+html,
+body {
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+  font-family: var(--esv-sans);
+}
+
+body {
+  font-size: clamp(14px, 1vw, 16px);
+  font-weight: 300;
+  line-height: 1.55;
+}
+
+button,
+input,
+a {
+  font-family: inherit;
+}
+
+:where(a, button, input):focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 4px;
+}
+
+.esv-kicker,
+.esv-product-meta small,
+.esv-search-results small,
+.esv-enquiry-list small {
+  font-size: clamp(10px, .72vw, 11px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.esv-text-link,
+.esv-hero-cta,
+.esv-product-actions button,
+.esv-enquiry-send {
+  min-height: 44px;
+  font-size: clamp(13px, .85vw, 14px);
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: .01em;
+  text-transform: none;
+}
+
+/* Header / information architecture */
+.esv-header {
+  height: 64px;
+}
+
+.esv-header-nav {
+  gap: clamp(20px, 2vw, 32px);
+}
+
+.esv-header-nav button {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: .01em;
+  text-transform: none;
+}
+
+.esv-header-nav button::after {
+  bottom: 8px;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-luxury);
+}
+
+.esv-wordmark {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .18em;
+}
+
+.esv-header-panel {
+  background: var(--color-paper-2);
+  box-shadow: none;
+  animation-duration: 320ms;
+  animation-timing-function: var(--ease-luxury);
+}
+
+.esv-header-menu-panel > button span {
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 300;
+  letter-spacing: -.03em;
+}
+
+.esv-object-taxonomy {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--space-6);
+  margin-top: var(--space-12);
+  padding-top: var(--space-6);
+  border-top: var(--line-master);
+}
+
+.esv-object-taxonomy > small {
+  grid-column: 1 / -1;
+  margin-bottom: var(--space-3);
+  color: var(--color-muted);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.esv-object-taxonomy > button {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-bottom: var(--line-master);
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* 01 — Hero */
 .esv-hero {
-  min-height: clamp(640px, 47.4vw, 780px);
+  min-height: 82svh;
+  height: 88svh;
+  max-height: 920px;
+  background: var(--color-deep);
 }
 
 .esv-hero-content {
   display: block;
-  padding-bottom: clamp(52px, 5.25vw, 80px);
+  align-self: end;
+  padding-bottom: clamp(32px, 5vw, 64px);
 }
 
 .esv-hero-statement {
-  max-width: 580px;
+  max-width: 620px;
   margin: 0;
-  font-size: clamp(1.45rem, 2.02vw, 1.92rem);
-  font-weight: 400;
-  line-height: 1.28;
-  letter-spacing: -0.025em;
+  font-family: var(--esv-display);
+  font-size: clamp(32px, 3.4vw, 52px);
+  font-weight: 300;
+  line-height: .98;
+  letter-spacing: -.03em;
 }
 
 .esv-hero-cta {
-  margin-top: clamp(30px, 3vw, 40px);
-  font-size: 0.64rem;
-  letter-spacing: 0.1em;
+  margin-top: var(--space-6);
+  border-bottom: 1px solid currentColor;
 }
 
-/* 02 — Maison: compact, asymmetrical and deliberately under-filled */
+.esv-hero-subtle .esv-hero-picture img {
+  animation-duration: var(--duration-slow);
+  animation-timing-function: var(--ease-luxury);
+}
+
+/* 02 — Maison / manifesto */
 .esv-maison {
   min-height: auto;
-  background: var(--esv-paper-soft);
+  padding-block: clamp(96px, 10vw, 160px);
+  background: var(--color-paper-2);
 }
 
 .esv-maison-grid {
-  min-height: clamp(560px, 39vw, 640px);
-  padding-block: clamp(68px, 5.4vw, 86px);
+  min-height: auto;
+  padding-block: 0;
 }
 
 .esv-maison-copy {
   grid-column: 1 / span 5;
-  align-self: center;
+  align-self: start;
 }
 
 .esv-maison-copy h2 {
-  max-width: 430px;
-  margin: clamp(34px, 3.9vw, 59px) 0 0;
-  white-space: pre-line;
-  font-size: clamp(2.55rem, 3.16vw, 3rem);
-  font-weight: 400;
-  line-height: 0.855;
-  letter-spacing: -0.056em;
+  max-width: 520px;
+  margin: var(--space-12) 0 0;
+  font-family: var(--esv-display);
+  font-size: clamp(48px, 6vw, 88px);
+  font-weight: 300;
+  line-height: .95;
+  letter-spacing: -.035em;
 }
 
 .esv-maison-text {
-  max-width: 480px;
-  margin: 20px 0 18px;
-  font-size: clamp(0.86rem, 1.02vw, 0.965rem);
-  line-height: 1.645;
+  max-width: 62ch;
+  margin: var(--space-8) 0 var(--space-4);
+  color: var(--color-muted);
+  font-size: clamp(14px, 1vw, 16px);
+  font-weight: 300;
+  line-height: 1.55;
 }
 
 .esv-maison-media {
   grid-column: 7 / -1;
-  min-height: clamp(400px, 30.3vw, 460px);
+  min-height: clamp(460px, 38vw, 620px);
 }
 
 .esv-maison-main {
-  inset: auto 0 0 auto;
-  width: 70%;
-  aspect-ratio: 468 / 365;
+  inset: 0 0 0 18%;
 }
 
 .esv-maison-secondary {
   left: 0;
-  bottom: 0;
-  width: 27%;
-  aspect-ratio: 3 / 4;
+  bottom: 7%;
+  width: 28%;
 }
 
-/* 03 — Selected objects: commercial, but treated as a curated editorial shelf */
+/* 03 / 05 — ObjectCard + ObjectGrid */
+.esv-selected,
+.esv-collection {
+  background: var(--color-paper);
+}
+
 .esv-selected {
-  padding-block: clamp(40px, 3vw, 48px) clamp(104px, 9vw, 138px);
-  background: var(--esv-paper);
+  padding-block: clamp(64px, 7vw, 96px);
 }
 
 .esv-selected-head {
@@ -90,99 +263,166 @@
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: var(--esv-grid-gap);
   align-items: start;
+  margin-bottom: clamp(48px, 6vw, 80px);
 }
 
 .esv-selected-head h2 {
-  grid-column: 9 / -1;
+  grid-column: 8 / -1;
   justify-self: end;
-  max-width: 390px;
+  max-width: 520px;
   margin: 0;
   white-space: pre-line;
-  color: var(--esv-ink);
-  font-size: clamp(2.55rem, 3.16vw, 3rem);
-  font-weight: 400;
-  line-height: 0.855;
-  letter-spacing: -0.056em;
+  font-family: var(--esv-display);
+  font-size: clamp(36px, 4.5vw, 64px);
+  font-weight: 300;
+  line-height: .98;
+  letter-spacing: -.03em;
   text-align: right;
 }
 
 .esv-selected-head > p {
   grid-column: 6 / -1;
   justify-self: end;
-  width: min(100%, 670px);
+  width: min(100%, 68ch);
   margin: 0;
-  padding-top: 28px;
-  border-top: 1px solid var(--esv-line);
-  color: var(--esv-muted);
-  font-size: 0.78rem;
-  line-height: 1.65;
+  padding-top: var(--space-6);
+  border-top: var(--line-master);
+  color: var(--color-muted);
+  font-size: clamp(14px, 1vw, 16px);
   text-align: right;
 }
 
+.esv-product-shelf,
 .esv-selected .esv-product-shelf {
+  display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(18px, 1.7vw, 26px);
+  gap: clamp(24px, 2vw, 32px);
+  margin-top: clamp(48px, 6vw, 80px);
+  overflow: visible;
+}
+
+.esv-selected .esv-product-shelf {
   margin-top: 0;
 }
 
+.esv-product-card {
+  min-width: 0;
+  color: var(--color-ink);
+}
+
+.esv-product-card figure,
 .esv-selected .esv-product-card figure {
   aspect-ratio: 4 / 5;
+  margin: 0;
+  overflow: hidden;
+  background: var(--color-stone);
 }
 
+.esv-product-card figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1);
+  transition: transform var(--duration-base) var(--ease-luxury), opacity var(--duration-fast) var(--ease-luxury);
+}
+
+.esv-product-card:hover figure img {
+  opacity: 1;
+  transform: scale(1.015);
+}
+
+.esv-product-card-copy,
 .esv-selected .esv-product-card-copy {
-  padding-top: 16px;
+  padding-top: var(--space-4);
 }
 
-.esv-selected .esv-product-meta small {
-  font-size: 0.56rem;
-  letter-spacing: 0.08em;
+.esv-product-meta {
+  align-items: flex-start;
+  gap: var(--space-3);
 }
 
+.esv-product-meta small {
+  color: var(--color-muted);
+}
+
+.esv-product-meta small:first-child {
+  max-width: 78%;
+}
+
+.esv-product-meta small:last-child {
+  color: var(--color-muted);
+  text-align: right;
+}
+
+.esv-product-card h3,
 .esv-selected .esv-product-card h3 {
-  margin: 16px 0 5px;
-  font-size: clamp(1rem, 1.26vw, 1.2rem);
-  line-height: 1.25;
+  margin: var(--space-4) 0 var(--space-1);
+  font-family: var(--esv-display);
+  font-size: clamp(16px, 1.25vw, 20px);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -.01em;
 }
 
-.esv-selected .esv-product-card-copy > p,
+.esv-product-card-copy > p,
+.esv-selected .esv-product-card-copy > p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: clamp(13px, .9vw, 14px);
+  line-height: 1.45;
+}
+
+.esv-product-price,
 .esv-selected .esv-product-price {
-  font-size: 0.72rem;
+  display: block;
+  margin-top: var(--space-4);
+  font-size: clamp(14px, .95vw, 15px);
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
+.esv-product-actions.is-compact,
 .esv-selected .esv-product-actions.is-compact {
-  margin-top: 14px;
+  margin-top: var(--space-6);
+  border-top: var(--line-master);
 }
 
+.esv-product-actions.is-compact button,
 .esv-selected .esv-product-actions.is-compact button {
-  min-height: 44px;
-  font-size: 0.58rem;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
 }
 
-/* 04 — Matter: pure visual reset; no sticky behavior, no copy competing with imagery */
+.esv-collection-end {
+  margin-top: var(--space-12);
+}
+
+/* 04 — Matter: visual context, never interface spectacle */
 .esv-matter.esv-matter-gallery {
-  background: var(--esv-paper-soft);
-  color: var(--esv-ink);
+  background: var(--color-paper-2);
+  color: var(--color-ink);
 }
 
 .esv-matter-spacer {
-  height: clamp(72px, 6.45vw, 104px);
+  height: clamp(96px, 8vw, 128px);
 }
 
 .esv-matter-gallery-track {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
+  gap: 1px;
   width: 100%;
   overflow: hidden;
-  background: var(--esv-paper-soft);
+  background: var(--color-stone);
 }
 
 .esv-matter-gallery-item {
   position: relative;
-  height: clamp(500px, 42.45vw, 680px);
+  height: clamp(520px, 43vw, 700px);
   margin: 0;
   overflow: hidden;
-  background: #e8e3da;
+  background: var(--color-paper);
 }
 
 .esv-matter-gallery-item img {
@@ -190,140 +430,198 @@
   height: 100%;
   object-fit: cover;
   transform: scale(1);
-  transition: transform 900ms var(--esv-ease-out);
+  transition: transform var(--duration-base) var(--ease-luxury);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .esv-matter-gallery-item:hover img {
-    transform: scale(1.012);
-  }
+.esv-matter-gallery-item:hover img {
+  transform: scale(1.015);
 }
 
-@media (min-width: 768px) and (max-width: 1279px) {
-  .esv-maison-grid {
-    min-height: 560px;
+/* Trust / service: remove generic landscape dominance */
+.esv-experience {
+  background: var(--color-paper-2);
+}
+
+.esv-experience-main {
+  background: var(--color-paper);
+}
+
+.esv-experience-copy > h2 {
+  font-family: var(--esv-display);
+  font-weight: 300;
+  letter-spacing: -.03em;
+}
+
+/* Modal as a compact work sheet */
+.esv-object-modal {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.esv-object-modal-copy h2 {
+  font-family: var(--esv-display);
+  font-size: clamp(30px, 3.2vw, 48px);
+  font-weight: 300;
+  line-height: 1.04;
+  letter-spacing: -.025em;
+}
+
+@media (min-width: 900px) and (max-width: 1279px) {
+  :root {
+    --esv-page-x: clamp(24px, 3vw, 32px);
+    --esv-grid-gap: clamp(20px, 2vw, 24px);
   }
 
-  .esv-maison-media {
-    min-height: 400px;
-  }
-
+  .esv-product-shelf,
   .esv-selected .esv-product-shelf {
-    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 899px) {
+  :root {
+    --esv-page-x: 28px;
+    --esv-grid-gap: 20px;
+  }
+
+  .esv-product-shelf,
+  .esv-selected .esv-product-shelf {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-flow: row;
-    grid-auto-columns: auto;
-    overflow: visible;
   }
 }
 
 @media (max-width: 767px) {
+  :root {
+    --esv-page-x: clamp(16px, 4.6vw, 20px);
+    --esv-grid-gap: clamp(12px, 3vw, 16px);
+  }
+
+  .esv-header {
+    height: 58px;
+  }
+
   .esv-hero {
-    min-height: 82svh;
+    min-height: 70svh;
+    height: 78svh;
+    max-height: none;
   }
 
   .esv-hero-content {
-    padding-bottom: 34px;
+    padding-bottom: var(--space-8);
   }
 
   .esv-hero-statement {
-    max-width: 19rem;
-    font-size: clamp(1.25rem, 6vw, 1.55rem);
-    line-height: 1.3;
+    max-width: 20ch;
+    font-size: clamp(30px, 9vw, 44px);
+    line-height: .98;
   }
 
   .esv-maison {
-    padding-block: 0;
+    padding-block: var(--space-24);
   }
 
-  .esv-maison-grid {
-    display: block;
-    min-height: auto;
-    padding-block: 68px 74px;
-  }
-
-  .esv-maison-copy h2 {
-    max-width: 9ch;
-    margin-top: 34px;
-    font-size: clamp(2.4rem, 12vw, 3.25rem);
-    line-height: 0.9;
-  }
-
-  .esv-maison-text {
-    max-width: 33rem;
-    margin-top: 24px;
-  }
-
-  .esv-maison-media {
-    min-height: min(122vw, 540px);
-    margin-top: 48px;
-  }
-
-  .esv-maison-main {
-    width: 78%;
-  }
-
-  .esv-maison-secondary {
-    left: 0;
-    width: 32%;
-  }
-
-  .esv-selected {
-    padding-block: 48px 82px;
-  }
-
+  .esv-maison-grid,
   .esv-selected-head {
     display: block;
   }
 
+  .esv-maison-copy h2,
   .esv-selected-head h2 {
-    max-width: 9ch;
-    margin-left: auto;
-    font-size: clamp(2.35rem, 11vw, 3.15rem);
-    line-height: 0.9;
+    max-width: 10ch;
+    font-size: clamp(38px, 12vw, 56px);
+    line-height: .98;
   }
 
-  .esv-selected-head > p {
-    width: min(100%, 34rem);
-    margin: 28px 0 0 auto;
-    padding-top: 20px;
+  .esv-maison-text {
+    margin-top: var(--space-8);
+  }
+
+  .esv-maison-media {
+    min-height: min(112vw, 540px);
+    margin-top: var(--space-12);
+  }
+
+  .esv-selected {
+    padding-block: var(--space-16) var(--space-24);
+  }
+
+  .esv-selected-head h2 {
+    margin-left: auto;
     text-align: right;
   }
 
+  .esv-selected-head > p {
+    width: min(100%, 68ch);
+    margin: var(--space-6) 0 0 auto;
+    padding-top: var(--space-4);
+    font-size: 14px;
+  }
+
+  .esv-product-shelf,
   .esv-selected .esv-product-shelf {
-    display: flex;
-    gap: 14px;
-    margin-top: 34px;
-    padding-right: 12vw;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6) var(--space-3);
+    padding-right: var(--esv-page-x);
+    overflow: visible;
   }
 
-  .esv-selected .esv-product-shelf::-webkit-scrollbar {
-    display: none;
+  .esv-product-meta {
+    display: block;
   }
 
-  .esv-selected .esv-product-card {
-    flex: 0 0 78vw;
-    scroll-snap-align: start;
+  .esv-product-meta small {
+    display: block;
+    font-size: 10px;
+    text-align: left;
+  }
+
+  .esv-product-meta small:last-child {
+    margin-top: var(--space-1);
+    text-align: left;
+  }
+
+  .esv-product-card h3,
+  .esv-selected .esv-product-card h3 {
+    font-size: clamp(15px, 4.4vw, 18px);
   }
 
   .esv-matter-spacer {
-    height: 64px;
+    height: var(--space-16);
   }
 
   .esv-matter-gallery-track {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .esv-matter-gallery-item {
-    height: min(58svh, 520px);
+    height: min(72svh, 620px);
+  }
+
+  .esv-object-taxonomy {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 429px) {
+  .esv-product-shelf,
+  .esv-selected .esv-product-shelf {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .esv-matter-gallery-item img {
-    transition: none;
+  html {
+    scroll-behavior: auto;
+  }
+
+  .esv-hero-subtle .esv-hero-picture img,
+  .esv-product-card figure img,
+  .esv-matter-gallery-item img,
+  .esv-header-panel {
+    animation: none;
+    transform: none;
+    transition-duration: var(--duration-fast);
+    transition-property: opacity, color;
   }
 }

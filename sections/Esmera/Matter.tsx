@@ -5,7 +5,9 @@ export interface MatterPanel {
 }
 
 export interface Props {
-  sectionLabel?: string;
+  title?: string;
+  /** @format textarea */
+  text?: string;
   panels?: MatterPanel[];
 }
 
@@ -13,22 +15,23 @@ const defaultPanels: MatterPanel[] = [
   {
     image:
       "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=1800&q=90",
-    alt: "Escultura mineral com superfície irregular e volumes orgânicos",
+    alt: "Superfície mineral em detalhe, com textura e irregularidade visíveis",
   },
   {
     image:
-      "https://images.unsplash.com/photo-1771862956454-ad43adc3c19e?auto=format&fit=crop&w=1800&q=90",
-    alt: "Objetos escultóricos apresentados em contexto de interior contemporâneo",
+      "https://images.unsplash.com/photo-1613424777445-f93a2a48e285?auto=format&fit=crop&w=1800&q=90",
+    alt: "Superfície terrosa de objeto sob luz lateral",
   },
   {
     image:
-      "https://images.unsplash.com/photo-1526198049595-f32cde2a219d?auto=format&fit=crop&w=1800&q=90",
-    alt: "Vaso azul fotografado isoladamente para leitura de forma e escala",
+      "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=1800&q=90",
+    alt: "Detalhe de objeto escultórico escuro revelando contorno e acabamento",
   },
 ];
 
 export default function Matter({
-  sectionLabel = "Matéria, objeto e contexto",
+  title = "Antes da forma, a matéria.",
+  text = "Textura, transparência, corte, peso e luz tornam cada objeto irrepetível.",
   panels = defaultPanels,
 }: Props) {
   return (
@@ -37,21 +40,16 @@ export default function Matter({
       class="esv-matter esv-matter-gallery"
       aria-labelledby="esv-matter-title"
     >
-      <h2 id="esv-matter-title" class="esv-sr-only">{sectionLabel}</h2>
-      <div class="esv-matter-spacer" aria-hidden="true" />
-      <div class="esv-matter-gallery-track" aria-label="Matéria, objeto e contexto">
+      <div class="esv-matter-gallery-track" aria-label="Estudos de matéria">
         {panels.slice(0, 3).map((panel) => (
           <figure class="esv-matter-gallery-item" key={panel.image}>
-            <img
-              src={panel.image}
-              alt={panel.alt}
-              loading="lazy"
-              decoding="async"
-              width="1200"
-              height="1500"
-            />
+            <img src={panel.image} alt={panel.alt} loading="lazy" decoding="async" width="1200" height="1500" />
           </figure>
         ))}
+      </div>
+      <div class="esv-shell esv-matter-copy">
+        <h2 id="esv-matter-title">{title}</h2>
+        <p>{text}</p>
       </div>
     </section>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "preact/hooks";
+import Arrow from "../components/esmera/Arrow.tsx";
 
 export interface MatterPanel {
   /** @format image-uri */
@@ -12,6 +12,8 @@ export interface Props {
   title: string;
   text: string;
   panels: MatterPanel[];
+  ctaLabel: string;
+  ctaHref: string;
 }
 
 export default function SpatialMatter({
@@ -19,81 +21,46 @@ export default function SpatialMatter({
   title,
   text,
   panels,
+  ctaLabel,
+  ctaHref,
 }: Props) {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-
-    const media = globalThis.matchMedia("(min-width: 1024px)");
-    const reduced = globalThis.matchMedia("(prefers-reduced-motion: reduce)");
-    if (!media.matches || reduced.matches) return;
-
-    const items = Array.from(
-      section.querySelectorAll<HTMLElement>(".esv-matter-panel"),
-    );
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      items.forEach((item) => {
-        const rect = item.getBoundingClientRect();
-        const progress = Math.min(
-          1,
-          Math.max(
-            0,
-            (globalThis.innerHeight - rect.top) / globalThis.innerHeight,
-          ),
-        );
-        item.style.setProperty("--panel-scale", `${0.985 + progress * 0.015}`);
-      });
-    };
-    const requestUpdate = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-
-    update();
-    globalThis.addEventListener("scroll", requestUpdate, { passive: true });
-    globalThis.addEventListener("resize", requestUpdate, { passive: true });
-    return () => {
-      if (raf) cancelAnimationFrame(raf);
-      globalThis.removeEventListener("scroll", requestUpdate);
-      globalThis.removeEventListener("resize", requestUpdate);
-    };
-  }, []);
-
   return (
     <section
-      ref={sectionRef}
-      class="esv-matter"
+      class="esv-matter esv-matter-gallery"
       aria-labelledby="esv-matter-title"
     >
       <div class="esv-shell esv-matter-intro">
-        <p class="esv-kicker esv-kicker-light">{eyebrow}</p>
-        <h2 id="esv-matter-title">{title}</h2>
-        <p>{text}</p>
+        <div class="esv-matter-eyebrow-row">
+          <p class="esv-kicker">{eyebrow}</p>
+        </div>
+
+        <div class="esv-matter-intro-grid">
+          <h2 id="esv-matter-title">{title}</h2>
+          <p class="esv-matter-copy">{text}</p>
+        </div>
       </div>
-      <div class="esv-matter-stack">
-        {panels.map((panel, index) => (
-          <figure
-            class="esv-matter-panel"
-            style={{ "--panel-index": index }}
-          >
+
+      <div class="esv-matter-gallery-track" aria-label="Galeria de matéria">
+        {panels.slice(0, 3).map((panel) => (
+          <figure class="esv-matter-gallery-item" key={panel.image}>
             <img
               src={panel.image}
               alt={panel.alt}
               loading="lazy"
               decoding="async"
-              width="2200"
-              height="1500"
+              width="1200"
+              height="1400"
             />
-            <div class="esv-matter-panel-shade" />
-            <figcaption>
-              <span>0{index + 1}</span>
-              <span>{panel.caption}</span>
-            </figcaption>
+            {panel.caption && <figcaption class="esv-sr-only">{panel.caption}</figcaption>}
           </figure>
         ))}
+      </div>
+
+      <div class="esv-shell esv-matter-cta-wrap">
+        <a class="esv-matter-cta" href={ctaHref}>
+          <span>{ctaLabel}</span>
+          <Arrow size={14} />
+        </a>
       </div>
     </section>
   );

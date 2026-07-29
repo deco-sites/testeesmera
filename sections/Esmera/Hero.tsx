@@ -7,12 +7,12 @@ export interface Props {
   mobileImage?: string;
   /** @description Nome da marca para leitores de tela */
   title?: string;
-  /** @format textarea @description Frase proprietária de 1 a 3 linhas */
+  /** @format textarea @description Uma única frase de 5 a 12 palavras */
   statement?: string;
   ctaLabel?: string;
   ctaHref?: string;
   /** @description Intensidade do overlay para legibilidade */
-  overlay?: 10 | 20 | 30 | 40;
+  overlay?: 10 | 20 | 30;
   /** @description Ponto focal da fotografia */
   focalPoint?: "left" | "center" | "right";
   /** @description Movimento de entrada da imagem */
@@ -24,8 +24,8 @@ export default function Hero({
     "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=2400&q=90",
   mobileImage,
   title = "ESMÉRA",
-  statement = "Natureza, matéria e design. Escolhidos para permanecer.",
-  ctaLabel = "Explorar a seleção",
+  statement = "Matéria rara. Forma destinada a permanecer.",
+  ctaLabel = "Explorar objetos",
   ctaHref = "#selection",
   overlay = 20,
   focalPoint = "center",
@@ -48,7 +48,7 @@ export default function Hero({
         <img
           {...{ fetchPriority: "high" }}
           src={desktopImage}
-          alt="Objeto escultórico apresentado sobre fundo escuro"
+          alt="Objeto escultórico Esméra apresentado sobre fundo mineral escuro"
           loading="eager"
           decoding="async"
           width="2400"

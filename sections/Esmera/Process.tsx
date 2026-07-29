@@ -22,41 +22,42 @@ export interface Props {
 
 const defaultPillars: ExperiencePillar[] = [
   {
-    title: "Curadoria privada",
+    title: "Curadoria",
     text:
-      "Seleção individual para residências, coleções e projetos de interiores.",
+      "A seleção parte da matéria, da singularidade e da relação que cada objeto estabelece com o espaço.",
     image:
-      "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=800&q=88",
-    imageAlt: "Interior sofisticado preparado para curadoria privada",
+      "https://images.unsplash.com/photo-1771862956454-ad43adc3c19e?auto=format&fit=crop&w=800&q=88",
+    imageAlt: "Objetos escultóricos reunidos em composição curatorial",
     href: "mailto:contact@esmera.com?subject=Curadoria%20privada",
   },
   {
     title: "Proveniência",
-    text: "Informações de matéria, edição e origem acompanham cada peça.",
+    text:
+      "Material, características naturais, edição e origem verificável passam a fazer parte da ficha da peça.",
     image:
-      "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=800&q=88",
-    imageAlt: "Detalhe de cristal verde autêntico",
+      "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=800&q=88",
+    imageAlt: "Superfície de escultura mineral em detalhe",
     href: "#matter",
   },
   {
-    title: "Entrega assegurada",
+    title: "Serviço",
     text:
-      "Acompanhamento próximo e transporte adequado à singularidade do objeto.",
+      "Consulta privada, embalagem, transporte, instalação quando aplicável e acompanhamento pós-venda.",
     image:
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=88",
-    imageAlt: "Objeto em interior de arquitetura contemporânea",
-    href: "mailto:contact@esmera.com?subject=Entrega%20assegurada",
+      "https://images.unsplash.com/photo-1526198049595-f32cde2a219d?auto=format&fit=crop&w=800&q=88",
+    imageAlt: "Vaso apresentado isoladamente para leitura precisa de forma",
+    href: "mailto:contact@esmera.com?subject=Atendimento%20Esm%C3%A9ra",
   },
 ];
 
 export default function Process({
   image =
-    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1500&q=90",
-  imageAlt = "Paisagem mineral em grande escala",
-  eyebrow = "06 — A experiência Esméra",
-  title = "O que esperar.",
+    "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=1500&q=90",
+  imageAlt = "Escultura mineral com textura e volume claramente visíveis",
+  eyebrow = "06 — Curadoria, proveniência e serviço",
+  title = "O valor também está no que se prova.",
   text =
-    "Da primeira conversa à entrega, a Esméra conduz cada aquisição com atenção à origem, à matéria e ao contexto do espaço.",
+    "Da escolha à entrega, a Esméra reduz incerteza com informação de matéria, singularidade e serviço. A confiança faz parte da apresentação do objeto.",
   pillars = defaultPillars,
 }: Props) {
   return (

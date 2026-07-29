@@ -2,6 +2,7 @@ export interface EsmeraObject {
   id: string;
   code: string;
   category: string;
+  material: string;
   title: string;
   subtitle: string;
   image: string;
@@ -10,6 +11,7 @@ export interface EsmeraObject {
   alt: string;
   price: string;
   availability: string;
+  searchTerms?: string[];
 }
 
 export interface JournalEntry {
@@ -23,163 +25,179 @@ export interface JournalEntry {
 export const selectedObjects: EsmeraObject[] = [
   {
     id: "selected-01",
-    code: "01",
-    category: "Objeto",
-    title: "Esméra Signet I",
-    subtitle: "Diamante / ouro rosé / cravação única",
+    code: "OBJ—01",
+    category: "Escultura",
+    material: "Pedra / superfície mineral",
+    title: "Nódulo I",
+    subtitle: "Escultura de presença mineral",
     image:
-      "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1200&q=88",
+      "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=1400&q=88",
     detailImage:
-      "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=1200&q=90",
+      "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=1000&q=92",
     description:
-      "Anel de presença escultórica em que matéria preciosa, proporção e luz são tratados como uma única composição.",
-    alt: "Anel com diamante em composição de luxo sobre fundo escuro",
-    price: "R$ 18.900",
-    availability: "Disponível",
+      "Forma escultórica definida pelo peso visual, pela textura e pela irregularidade da superfície mineral.",
+    alt: "Escultura abstrata de pedra com volumes orgânicos empilhados",
+    price: "Sob consulta",
+    availability: "Peça única",
+    searchTerms: ["pedra", "mineral", "escultura", "peça única"],
   },
   {
     id: "selected-02",
-    code: "02",
-    category: "Arte",
-    title: "Interior Composition I",
-    subtitle: "Arte / objeto / composição espacial",
+    code: "OBJ—02",
+    category: "Vaso",
+    material: "Cerâmica / esmalte azul",
+    title: "Íris I",
+    subtitle: "Vaso de proporção alongada",
     image:
-      "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=88",
+      "https://images.unsplash.com/photo-1526198049595-f32cde2a219d?auto=format&fit=crop&w=1400&q=88",
     detailImage:
-      "https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&w=1200&q=88",
+      "https://images.unsplash.com/photo-1526198049595-f32cde2a219d?auto=format&fit=crop&w=1000&q=92",
     description:
-      "Peça de parede apresentada como estudo de proporção, superfície e materialidade mineral.",
-    alt: "Interior contemporâneo com arte e objetos selecionados",
-    price: "Sob consulta",
-    availability: "Peça única",
+      "Vaso de silhueta contínua, apresentado com leitura frontal clara de escala, forma e acabamento.",
+    alt: "Vaso azul de silhueta alongada sobre fundo claro",
+    price: "R$ 12.600",
+    availability: "Pronta entrega",
+    searchTerms: ["vaso", "cerâmica", "azul", "pronta entrega"],
   },
   {
     id: "selected-03",
-    code: "03",
+    code: "OBJ—03",
     category: "Objeto",
-    title: "Brilliant Study I",
-    subtitle: "Diamante / transparência / luz",
+    material: "Cerâmica / acabamento escuro",
+    title: "Umbra I",
+    subtitle: "Objeto escultórico de pequena escala",
     image:
-      "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=1200&q=90",
+      "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=1400&q=88",
     detailImage:
-      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1200&q=90",
+      "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=1000&q=92",
     description:
-      "Um estudo de objeto em que volume, transparência e luz constroem a percepção da matéria.",
-    alt: "Diamantes lapidados sobre fundo escuro",
-    price: "R$ 12.600",
+      "Objeto de perfil escultórico em que contorno, sombra e matéria definem a presença no espaço.",
+    alt: "Vaso escultórico de acabamento escuro em fundo preto",
+    price: "Sob consulta",
     availability: "Sob encomenda",
+    searchTerms: ["objeto", "cerâmica", "escuro", "sob encomenda"],
   },
   {
     id: "selected-04",
-    code: "04",
-    category: "Acessório",
-    title: "Sapphire Drop I",
-    subtitle: "Safira / diamante / ouro branco",
+    code: "OBJ—04",
+    category: "Vaso",
+    material: "Cerâmica / superfície terrosa",
+    title: "Terra I",
+    subtitle: "Vaso de presença tátil",
     image:
-      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1200&q=90",
+      "https://images.unsplash.com/photo-1613424777445-f93a2a48e285?auto=format&fit=crop&w=1400&q=88",
     detailImage:
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=88",
+      "https://images.unsplash.com/photo-1613424777445-f93a2a48e285?auto=format&fit=crop&w=1000&q=92",
     description:
-      "Objeto de pequena escala pensado como gesto preciso entre função, equilíbrio e presença material.",
-    alt: "Brincos de safira e diamantes sobre folha verde",
+      "Vaso de superfície quente e tátil, apresentado em luz lateral para revelar volume e textura.",
+    alt: "Vaso de superfície terrosa iluminado por luz lateral quente",
     price: "R$ 7.800",
-    availability: "Disponível",
+    availability: "Pronta entrega",
+    searchTerms: ["vaso", "cerâmica", "terra", "pronta entrega"],
   },
 ];
 
 export const collectionObjects: EsmeraObject[] = [
   {
     id: "collection-01",
-    code: "OBJ—01",
-    category: "Objetos",
-    title: "Brilliant Composition",
-    subtitle: "Seleção de diamantes / curadoria privada",
+    code: "COL—01",
+    category: "Escultura",
+    material: "Pedra / superfície mineral",
+    title: "Nódulo II",
+    subtitle: "Estudo de forma e densidade",
     image:
-      "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=1400&q=90",
+      "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=1600&q=88",
     detailImage:
-      "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=1200&q=90",
+      "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=1100&q=92",
     description:
-      "Objeto escultórico apresentado como estudo de forma, densidade e matéria preciosa.",
-    alt: "Seleção de diamantes lapidados sobre fundo escuro",
-    price: "R$ 16.400",
-    availability: "Disponível",
+      "Estudo escultórico que evidencia irregularidade, massa e superfície como atributos centrais da peça.",
+    alt: "Escultura mineral abstrata de volumes orgânicos",
+    price: "Sob consulta",
+    availability: "Peça única",
+    searchTerms: ["escultura", "pedra", "mineral", "peça única"],
   },
   {
     id: "collection-02",
-    code: "ART—02",
-    category: "Arte",
-    title: "Esméra Signet II",
-    subtitle: "Diamante / ouro rosé / peça de assinatura",
+    code: "COL—02",
+    category: "Vaso",
+    material: "Cerâmica / esmalte azul",
+    title: "Íris II",
+    subtitle: "Vaso de perfil contínuo",
     image:
-      "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=1400&q=88",
+      "https://images.unsplash.com/photo-1526198049595-f32cde2a219d?auto=format&fit=crop&w=1600&q=88",
     detailImage:
-      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1200&q=90",
+      "https://images.unsplash.com/photo-1526198049595-f32cde2a219d?auto=format&fit=crop&w=1100&q=92",
     description:
-      "Composição de parede que investiga cor, superfície e presença mineral no espaço.",
-    alt: "Anel de diamante em fundo escuro",
-    price: "Sob consulta",
-    availability: "Peça única",
+      "Peça de proporção vertical construída para leitura imediata de silhueta e acabamento.",
+    alt: "Vaso azul sobre fundo neutro em fotografia de objeto",
+    price: "R$ 14.800",
+    availability: "Sob encomenda",
+    searchTerms: ["vaso", "cerâmica", "azul", "sob encomenda"],
   },
   {
     id: "collection-03",
-    code: "ACC—03",
-    category: "Acessórios",
-    title: "Collected Interior",
-    subtitle: "Arte / objetos / composição espacial",
+    code: "COL—03",
+    category: "Objeto",
+    material: "Cerâmica / acabamento escuro",
+    title: "Umbra II",
+    subtitle: "Objeto de luz e sombra",
     image:
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1400&q=88",
+      "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=1600&q=88",
     detailImage:
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=88",
+      "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=1100&q=92",
     description:
-      "Acessório de caráter escultórico em que utilidade e materialidade são tratadas com a mesma precisão.",
-    alt: "Interior arquitetônico em tons minerais",
-    price: "R$ 6.900",
-    availability: "Disponível",
+      "Objeto de pequena escala concebido para ser percebido primeiro pela forma e depois pela textura.",
+    alt: "Objeto cerâmico escultórico fotografado em fundo escuro",
+    price: "Sob consulta",
+    availability: "Edição limitada",
+    searchTerms: ["objeto", "cerâmica", "escuro", "edição limitada"],
   },
   {
     id: "collection-04",
-    code: "LIM—04",
-    category: "Edições limitadas",
-    title: "Sapphire Drop II",
-    subtitle: "Safira / diamante / estudo limitado",
+    code: "COL—04",
+    category: "Vaso",
+    material: "Cerâmica / superfície terrosa",
+    title: "Terra II",
+    subtitle: "Vaso de textura natural",
     image:
-      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1400&q=88",
+      "https://images.unsplash.com/photo-1613424777445-f93a2a48e285?auto=format&fit=crop&w=1600&q=88",
     detailImage:
-      "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=1200&q=90",
+      "https://images.unsplash.com/photo-1613424777445-f93a2a48e285?auto=format&fit=crop&w=1100&q=92",
     description:
-      "Estudo para uma peça especial concebida a partir de textura, luz e singularidade da matéria.",
-    alt: "Brincos de safira e diamantes em composição editorial",
-    price: "R$ 22.800",
-    availability: "Edição de 8",
+      "Vaso de superfície marcada, com luz rasante para tornar a matéria legível antes do contexto.",
+    alt: "Vaso terroso em composição de luz natural",
+    price: "R$ 9.600",
+    availability: "Pronta entrega",
+    searchTerms: ["vaso", "cerâmica", "terra", "pronta entrega"],
   },
 ];
 
 export const journalEntries: JournalEntry[] = [
   {
-    category: "Matter",
-    title: "The language of emerald",
+    category: "Matéria",
+    title: "A superfície como origem",
     excerpt:
-      "Cor, transparência e irregularidade como elementos de presença no espaço contemporâneo.",
+      "Textura, densidade e variação natural como critérios de escolha e permanência.",
     image:
-      "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=1200&q=90",
-    alt: "Pedra verde preciosa em detalhe",
+      "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=1200&q=88",
+    alt: "Detalhe de escultura em pedra com superfície irregular",
   },
   {
-    category: "Spaces",
-    title: "Objects in space",
+    category: "Espaço",
+    title: "Como o objeto ocupa o ambiente",
     excerpt:
-      "Escala, distância e luz como parte da forma de perceber um objeto precioso.",
+      "Escala, distância e luz como parte da forma de perceber uma peça rara.",
     image:
-      "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=88",
-    alt: "Interior contemporâneo com mobiliário e objetos",
+      "https://images.unsplash.com/photo-1771862956454-ad43adc3c19e?auto=format&fit=crop&w=1200&q=88",
+    alt: "Objetos escultóricos apresentados em prateleira de interior contemporâneo",
   },
   {
-    category: "Stories",
-    title: "Nature, edited",
+    category: "Permanência",
+    title: "Escolher para atravessar o tempo",
     excerpt:
-      "Uma reflexão sobre contenção, composição e a permanência da matéria natural.",
+      "Uma leitura sobre contenção, materialidade e o valor de objetos que permanecem.",
     image:
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1200&q=88",
-    alt: "Interior arquitetônico em tons minerais",
+      "https://images.unsplash.com/photo-1613424777445-f93a2a48e285?auto=format&fit=crop&w=1200&q=88",
+    alt: "Vaso de superfície terrosa sob luz natural",
   },
 ];

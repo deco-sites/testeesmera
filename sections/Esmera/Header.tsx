@@ -5,12 +5,13 @@ import EsmeraScrollScenes from "../../islands/EsmeraScrollScenes.tsx";
 
 export interface Props {
   logo?: string;
+  /** @description Backwards-compatible field; rendered as the cart label. */
   enquiryLabel?: string;
 }
 
 export default function Header({
   logo = "ESMÉRA",
-  enquiryLabel = "Consulta",
+  enquiryLabel = "Carrinho",
 }: Props) {
   return (
     <>
@@ -29,6 +30,7 @@ export default function Header({
         <link rel="stylesheet" href={asset("/esmera-finish.css")} />
         <link rel="stylesheet" href={asset("/esmera-motion-v2.css")} />
         <link rel="stylesheet" href={asset("/esmera-structure-guard.css")} />
+        <link rel="stylesheet" href={asset("/esmera-commerce-refine.css")} />
         <meta name="theme-color" content="#111210" />
       </Head>
 

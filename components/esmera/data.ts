@@ -1,16 +1,25 @@
+export type AvailabilityStatus =
+  | "unique"
+  | "available"
+  | "made_to_order"
+  | "limited"
+  | "archive";
+
 export interface EsmeraObject {
   id: string;
+  slug: string;
   code: string;
-  category: string;
-  material: string;
   title: string;
-  subtitle: string;
   image: string;
-  detailImage: string;
-  description: string;
   alt: string;
-  price: string;
-  availability: string;
+  availability: AvailabilityStatus;
+  category?: string;
+  material?: string;
+  subtitle?: string;
+  detailImage?: string;
+  description?: string;
+  price?: string;
+  edition?: string;
   searchTerms?: string[];
 }
 
@@ -25,11 +34,12 @@ export interface JournalEntry {
 export const selectedObjects: EsmeraObject[] = [
   {
     id: "selected-01",
+    slug: "nodulo-i",
     code: "OBJ—01",
     category: "Escultura",
     material: "Pedra / superfície mineral",
     title: "Nódulo I",
-    subtitle: "Escultura de presença mineral",
+    subtitle: "Escultura em matéria mineral e metal.",
     image:
       "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=1400&q=88",
     detailImage:
@@ -38,16 +48,17 @@ export const selectedObjects: EsmeraObject[] = [
       "Forma escultórica definida pelo peso visual, pela textura e pela irregularidade da superfície mineral.",
     alt: "Escultura abstrata de pedra com volumes orgânicos empilhados",
     price: "Sob consulta",
-    availability: "Peça única",
+    availability: "unique",
     searchTerms: ["pedra", "mineral", "escultura", "peça única"],
   },
   {
     id: "selected-02",
+    slug: "iris-i",
     code: "OBJ—02",
     category: "Vaso",
     material: "Cerâmica / esmalte azul",
     title: "Íris I",
-    subtitle: "Vaso de proporção alongada",
+    subtitle: "Vaso de proporção alongada.",
     image:
       "https://images.unsplash.com/photo-1526198049595-f32cde2a219d?auto=format&fit=crop&w=1400&q=88",
     detailImage:
@@ -56,16 +67,17 @@ export const selectedObjects: EsmeraObject[] = [
       "Vaso de silhueta contínua, apresentado com leitura frontal clara de escala, forma e acabamento.",
     alt: "Vaso azul de silhueta alongada sobre fundo claro",
     price: "R$ 12.600",
-    availability: "Pronta entrega",
-    searchTerms: ["vaso", "cerâmica", "azul", "pronta entrega"],
+    availability: "available",
+    searchTerms: ["vaso", "cerâmica", "azul", "disponível", "pronta entrega"],
   },
   {
     id: "selected-03",
+    slug: "umbra-i",
     code: "OBJ—03",
     category: "Objeto",
     material: "Cerâmica / acabamento escuro",
     title: "Umbra I",
-    subtitle: "Objeto escultórico de pequena escala",
+    subtitle: "Objeto escultórico de pequena escala.",
     image:
       "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=1400&q=88",
     detailImage:
@@ -74,16 +86,17 @@ export const selectedObjects: EsmeraObject[] = [
       "Objeto de perfil escultórico em que contorno, sombra e matéria definem a presença no espaço.",
     alt: "Vaso escultórico de acabamento escuro em fundo preto",
     price: "Sob consulta",
-    availability: "Sob encomenda",
+    availability: "made_to_order",
     searchTerms: ["objeto", "cerâmica", "escuro", "sob encomenda"],
   },
   {
     id: "selected-04",
+    slug: "terra-i",
     code: "OBJ—04",
     category: "Vaso",
     material: "Cerâmica / superfície terrosa",
     title: "Terra I",
-    subtitle: "Vaso de presença tátil",
+    subtitle: "Vaso de presença tátil.",
     image:
       "https://images.unsplash.com/photo-1613424777445-f93a2a48e285?auto=format&fit=crop&w=1400&q=88",
     detailImage:
@@ -92,19 +105,20 @@ export const selectedObjects: EsmeraObject[] = [
       "Vaso de superfície quente e tátil, apresentado em luz lateral para revelar volume e textura.",
     alt: "Vaso de superfície terrosa iluminado por luz lateral quente",
     price: "R$ 7.800",
-    availability: "Pronta entrega",
-    searchTerms: ["vaso", "cerâmica", "terra", "pronta entrega"],
+    availability: "available",
+    searchTerms: ["vaso", "cerâmica", "terra", "disponível", "pronta entrega"],
   },
 ];
 
 export const collectionObjects: EsmeraObject[] = [
   {
     id: "collection-01",
+    slug: "nodulo-ii",
     code: "COL—01",
     category: "Escultura",
     material: "Pedra / superfície mineral",
     title: "Nódulo II",
-    subtitle: "Estudo de forma e densidade",
+    subtitle: "Estudo de forma e densidade.",
     image:
       "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=1600&q=88",
     detailImage:
@@ -113,16 +127,17 @@ export const collectionObjects: EsmeraObject[] = [
       "Estudo escultórico que evidencia irregularidade, massa e superfície como atributos centrais da peça.",
     alt: "Escultura mineral abstrata de volumes orgânicos",
     price: "Sob consulta",
-    availability: "Peça única",
+    availability: "unique",
     searchTerms: ["escultura", "pedra", "mineral", "peça única"],
   },
   {
     id: "collection-02",
+    slug: "iris-ii",
     code: "COL—02",
     category: "Vaso",
     material: "Cerâmica / esmalte azul",
     title: "Íris II",
-    subtitle: "Vaso de perfil contínuo",
+    subtitle: "Vaso de perfil contínuo.",
     image:
       "https://images.unsplash.com/photo-1526198049595-f32cde2a219d?auto=format&fit=crop&w=1600&q=88",
     detailImage:
@@ -131,16 +146,17 @@ export const collectionObjects: EsmeraObject[] = [
       "Peça de proporção vertical construída para leitura imediata de silhueta e acabamento.",
     alt: "Vaso azul sobre fundo neutro em fotografia de objeto",
     price: "R$ 14.800",
-    availability: "Sob encomenda",
+    availability: "made_to_order",
     searchTerms: ["vaso", "cerâmica", "azul", "sob encomenda"],
   },
   {
     id: "collection-03",
+    slug: "umbra-ii",
     code: "COL—03",
     category: "Objeto",
     material: "Cerâmica / acabamento escuro",
     title: "Umbra II",
-    subtitle: "Objeto de luz e sombra",
+    subtitle: "Objeto de luz e sombra.",
     image:
       "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=1600&q=88",
     detailImage:
@@ -149,16 +165,18 @@ export const collectionObjects: EsmeraObject[] = [
       "Objeto de pequena escala concebido para ser percebido primeiro pela forma e depois pela textura.",
     alt: "Objeto cerâmico escultórico fotografado em fundo escuro",
     price: "Sob consulta",
-    availability: "Edição limitada",
+    availability: "limited",
+    edition: "Edição limitada",
     searchTerms: ["objeto", "cerâmica", "escuro", "edição limitada"],
   },
   {
     id: "collection-04",
+    slug: "terra-ii",
     code: "COL—04",
     category: "Vaso",
     material: "Cerâmica / superfície terrosa",
     title: "Terra II",
-    subtitle: "Vaso de textura natural",
+    subtitle: "Vaso de textura natural.",
     image:
       "https://images.unsplash.com/photo-1613424777445-f93a2a48e285?auto=format&fit=crop&w=1600&q=88",
     detailImage:
@@ -167,8 +185,8 @@ export const collectionObjects: EsmeraObject[] = [
       "Vaso de superfície marcada, com luz rasante para tornar a matéria legível antes do contexto.",
     alt: "Vaso terroso em composição de luz natural",
     price: "R$ 9.600",
-    availability: "Pronta entrega",
-    searchTerms: ["vaso", "cerâmica", "terra", "pronta entrega"],
+    availability: "available",
+    searchTerms: ["vaso", "cerâmica", "terra", "disponível", "pronta entrega"],
   },
 ];
 

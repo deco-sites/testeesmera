@@ -9,7 +9,7 @@ export interface Props {
 
 export default function ObjectCard({ item }: Props) {
   const availability = getAvailabilityMeta(item.availability);
-  const meta = [availability.compactLabel, item.material]
+  const meta = [item.category, item.material]
     .filter(Boolean)
     .join(" · ");
 

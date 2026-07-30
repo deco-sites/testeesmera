@@ -28,18 +28,18 @@ export default function Footer({
           <a class="esv-footer-wordmark" href="#main-content">ESMÉRA</a>
           <p>{statement}</p>
           <div id="contact" class="esv-footer-contact">
-            <small>Contato</small>
+            <span class="esv-kicker">Contato</span>
             <a href={contactHref}>{contactLabel}</a>
           </div>
         </div>
 
         <div class="esv-footer-bottom">
-          <span>© {year} Esméra</span>
+          <span class="esv-kicker">© {year} Esméra</span>
           <nav aria-label="Informações legais">
-            <a href={privacyHref}>{privacyLabel}</a>
-            <a href={termsHref}>{termsLabel}</a>
+            <a class="esv-kicker" href={privacyHref}>{privacyLabel}</a>
+            <a class="esv-kicker" href={termsHref}>{termsLabel}</a>
           </nav>
-          {location && <span>{location}</span>}
+          {location && <span class="esv-kicker">{location}</span>}
         </div>
       </div>
     </footer>

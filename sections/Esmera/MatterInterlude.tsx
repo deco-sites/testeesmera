@@ -1,4 +1,4 @@
-import { responsiveSrcSet } from "../../components/esmera/image.ts";
+import { Picture, Source } from "apps/website/components/Picture.tsx";
 
 export interface Props {
   /** @format image-uri */
@@ -24,6 +24,7 @@ export default function MatterInterlude({
   focalPoint = "center",
 }: Props) {
   const meta = ["06 — Matéria", material, location].filter(Boolean).join(" · ");
+  const mobileAsset = mobileImage ?? image;
 
   return (
     <section
@@ -31,25 +32,28 @@ export default function MatterInterlude({
       class={`esv-matter-interlude is-focal-${focalPoint}`}
       aria-labelledby="esv-matter-interlude-title"
     >
-      <picture class="esv-matter-interlude-media">
-        {mobileImage && (
-          <source
-            media="(max-width: 767px)"
-            srcset={responsiveSrcSet(mobileImage, [480, 768, 1080, 1440]) ?? mobileImage}
-            sizes="100vw"
-          />
-        )}
+      <Picture class="esv-matter-interlude-media">
+        <Source
+          media="(max-width: 767px)"
+          src={mobileAsset}
+          width={900}
+          height={1200}
+        />
+        <Source
+          media="(min-width: 768px)"
+          src={image}
+          width={1920}
+          height={1280}
+        />
         <img
           src={image}
-          srcset={responsiveSrcSet(image, [960, 1440, 1920, 2400])}
           alt={imageAlt}
           loading="lazy"
           decoding="async"
-          width="2400"
-          height="1600"
-          sizes="100vw"
+          width="1920"
+          height="1280"
         />
-      </picture>
+      </Picture>
       <div class="esv-matter-interlude-shade" aria-hidden="true" />
 
       <div class="esv-shell esv-matter-interlude-content">

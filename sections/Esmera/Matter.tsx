@@ -1,3 +1,5 @@
+import { responsiveSrcSet } from "../../components/esmera/image.ts";
+
 export interface TerritoryPanel {
   /** @format image-uri */
   image: string;
@@ -52,6 +54,7 @@ export default function Matter({ panels = defaultPanels }: Props) {
             <figure class="esv-territory-media">
               <img
                 src={panel.image}
+                srcset={responsiveSrcSet(panel.image, [640, 960, 1280, 1800])}
                 alt={panel.alt}
                 loading="lazy"
                 decoding="async"

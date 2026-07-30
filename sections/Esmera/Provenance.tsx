@@ -53,7 +53,7 @@ export default function Provenance({
     "Proveniência não é um benefício adicionado depois da escolha. É parte da forma como a obra é apresentada, compreendida e adquirida.",
   stages = defaultStages,
 }: Props) {
-  const visibleStages = stages.slice(0, 3);
+  const visibleStages = stages.length === 3 ? stages : defaultStages;
 
   return (
     <section

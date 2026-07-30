@@ -10,7 +10,7 @@ export interface Props {
 }
 
 export default function PrivateInvitation({
-  eyebrow = "09 — Private Client",
+  eyebrow = "08 — Private Client",
   title = "Encontrar a peça certa é parte da curadoria.",
   text =
     "Converse com a Esméra para uma seleção orientada, disponibilidade, encomendas ou apresentação privada de peças.",

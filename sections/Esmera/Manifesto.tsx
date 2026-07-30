@@ -1,4 +1,5 @@
 import Arrow from "../../components/esmera/Arrow.tsx";
+import { responsiveSrcSet } from "../../components/esmera/image.ts";
 
 export interface Props {
   eyebrow?: string;
@@ -51,6 +52,7 @@ export default function Manifesto({
           <figure class="esv-maison-main">
             <img
               src={mainImage}
+              srcset={responsiveSrcSet(mainImage, [720, 960, 1200, 1500])}
               alt={mainImageAlt}
               loading="lazy"
               decoding="async"
@@ -62,6 +64,7 @@ export default function Manifesto({
           <figure class="esv-maison-secondary">
             <img
               src={secondaryImage}
+              srcset={responsiveSrcSet(secondaryImage, [320, 480, 640, 800])}
               alt={secondaryImageAlt}
               loading="lazy"
               decoding="async"

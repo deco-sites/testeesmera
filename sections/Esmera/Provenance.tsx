@@ -1,3 +1,5 @@
+import { responsiveSrcSet } from "../../components/esmera/image.ts";
+
 export interface ProvenanceStage {
   title: string;
   /** @format textarea */
@@ -80,6 +82,7 @@ export default function Provenance({
               <figure class="esv-provenance-stage-media">
                 <img
                   src={stage.image}
+                  srcset={responsiveSrcSet(stage.image, [720, 960, 1280, 1800])}
                   alt={stage.alt}
                   loading="lazy"
                   decoding="async"

@@ -22,8 +22,14 @@ type ViewTransitionDocument = Document & {
   ) => { finished: Promise<void> };
 };
 
+type CartItem = {
+  product: EsmeraObject;
+  quantity: number;
+};
+
 export interface Props {
   logo: string;
+  /** @description Label kept for backwards compatibility with existing Deco data. */
   enquiryLabel: string;
 }
 
@@ -33,18 +39,36 @@ const navigation = [
   { label: "Maison", href: "#about" },
 ];
 
-const objectTaxonomy = [
-  "Esculturas",
+const collectionNavigation = [
+  "Kit Lavabo",
+  "Bandejas",
   "Vasos",
-  "Objetos",
-  "Peças únicas",
-  "Disponíveis para aquisição",
-  "Todos os objetos",
+  "Esculturas",
+  "Coleções",
+  "Presentes",
 ];
 
 const catalog = [...selectedObjects, ...collectionObjects];
+const CART_STORAGE_KEY = "esmera-cart-v1";
 const prefersReducedMotion = () =>
   globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+
+const parseBRL = (price?: string) => {
+  if (!price || !price.toLocaleLowerCase("pt-BR").includes("r$")) return null;
+  const normalized = price
+    .replace(/[^\d.,]/g, "")
+    .replace(/\./g, "")
+    .replace(",", ".");
+  const value = Number.parseFloat(normalized);
+  return Number.isFinite(value) ? value : null;
+};
+
+const formatBRL = (value: number) =>
+  new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  }).format(value);
 
 function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
   const paths = name === "menu"
@@ -75,7 +99,8 @@ function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
 export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [selected, setSelected] = useState<EsmeraObject | null>(null);
-  const [selection, setSelection] = useState<string[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartReady, setCartReady] = useState(false);
   const [query, setQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [overlayClosing, setOverlayClosing] = useState(false);
@@ -108,14 +133,25 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
     }).slice(0, 8);
   }, [query]);
 
-  const selectedItems = catalog.filter((item) => selection.includes(item.id));
-  const enquiryMailHref = `mailto:contact@esmera.com?subject=${
-    encodeURIComponent("Consulta privada — Esméra")
-  }&body=${
-    encodeURIComponent(
-      `Olá, gostaria de consultar: ${selectedItems.map((item) => item.title).join(", ")}.`,
-    )
-  }`;
+  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+  const cartSubtotal = cart.reduce((total, item) => {
+    const value = parseBRL(item.product.price);
+    return value === null ? total : total + value * item.quantity;
+  }, 0);
+  const hasUnpricedItems = cart.some((item) => parseBRL(item.product.price) === null);
+  const cartMessage = [
+    "Olá, gostaria de finalizar este carrinho Esméra:",
+    "",
+    ...cart.map(({ product, quantity }) =>
+      `${quantity}x ${product.title}${product.price ? ` — ${product.price}` : ""}`
+    ),
+    cartSubtotal > 0 ? `\nSubtotal estimado: ${formatBRL(cartSubtotal)}` : "",
+    hasUnpricedItems
+      ? "Peças sob consulta podem ser confirmadas separadamente."
+      : "",
+    "\nPodem confirmar disponibilidade e próximos passos?",
+  ].filter(Boolean).join("\n");
+  const cartWhatsAppHref = `https://wa.me/?text=${encodeURIComponent(cartMessage)}`;
 
   const clearOverlayTimer = () => {
     if (overlayTimerRef.current === null) return;
@@ -188,6 +224,60 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
     setModalClosing(true);
     modalTimerRef.current = globalThis.setTimeout(finish, 260);
   };
+
+  const addToCart = (product: EsmeraObject) => {
+    setCart((current) => {
+      const existing = current.find((item) => item.product.id === product.id);
+      if (!existing) return [...current, { product, quantity: 1 }];
+      return current.map((item) =>
+        item.product.id === product.id
+          ? { product, quantity: item.quantity + 1 }
+          : item
+      );
+    });
+  };
+
+  const changeQuantity = (productId: string, delta: number) => {
+    setCart((current) => current.flatMap((item) => {
+      if (item.product.id !== productId) return [item];
+      const quantity = item.quantity + delta;
+      return quantity > 0 ? [{ ...item, quantity }] : [];
+    }));
+  };
+
+  const removeFromCart = (productId: string) => {
+    setCart((current) => current.filter((item) => item.product.id !== productId));
+  };
+
+  useEffect(() => {
+    try {
+      const stored = globalThis.localStorage?.getItem(CART_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as Array<Partial<CartItem>>;
+        if (Array.isArray(parsed)) {
+          const restored = parsed.filter((item): item is CartItem =>
+            Boolean(item?.product?.id) &&
+            typeof item.quantity === "number" &&
+            item.quantity > 0
+          );
+          setCart(restored);
+        }
+      }
+    } catch {
+      // Storage is a progressive enhancement; cart remains functional in memory.
+    } finally {
+      setCartReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!cartReady) return;
+    try {
+      globalThis.localStorage?.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    } catch {
+      // Ignore storage quota/privacy errors.
+    }
+  }, [cart, cartReady]);
 
   useEffect(() => {
     const hero = document.getElementById("main-content");
@@ -276,9 +366,7 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
       if (!item) return;
       const detail = getDetail(event);
       if (detail.trigger) lastTriggerRef.current = detail.trigger;
-      setSelection((current) =>
-        current.includes(item.id) ? current : [...current, item.id]
-      );
+      addToCart(item);
       setOverlayClosing(false);
       setOverlay("enquiry");
     };
@@ -310,10 +398,8 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
     else performScroll();
   };
 
-  const addToSelection = (item: EsmeraObject) => {
-    setSelection((current) =>
-      current.includes(item.id) ? current : [...current, item.id]
-    );
+  const addToCartFromModal = (item: EsmeraObject) => {
+    addToCart(item);
     closeModal(() => openOverlay("enquiry"), false);
   };
 
@@ -356,20 +442,22 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
             <Icon name="search" />
           </button>
           <button
-            class="esv-enquiry-link"
+            class="esv-enquiry-link esv-cart-link"
             type="button"
-            aria-label={`${enquiryLabel}, ${selection.length} itens`}
+            aria-label={`${enquiryLabel}, ${cartCount} itens`}
             onClick={(event) => openOverlay("enquiry", event.currentTarget)}
           >
             {enquiryLabel}
-            {selection.length > 0 && <sup key={selection.length}>{selection.length}</sup>}
+            {cartCount > 0 && <sup key={cartCount}>{cartCount}</sup>}
           </button>
         </div>
       </header>
 
       {overlay && (
         <div
-          class={`esv-header-overlay${overlayClosing ? " is-closing" : ""}`}
+          class={`esv-header-overlay esv-header-overlay-${overlay}${
+            overlayClosing ? " is-closing" : ""
+          }`}
           role="presentation"
           onClick={() => closeOverlay()}
         >
@@ -394,20 +482,34 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
             </button>
 
             {overlay === "menu" && (
-              <nav class="esv-header-menu-panel" aria-label="Navegação">
-                <small>Navegação</small>
-                {navigation.map((link, index) => (
-                  <button type="button" onClick={() => scrollTo(link.href)}>
-                    <span>{link.label}</span><sup>0{index + 1}</sup>
+              <nav class="esv-header-menu-panel esv-menu-v2" aria-label="Navegação">
+                <small>Menu</small>
+                <div class="esv-menu-collection">
+                  <button
+                    class="esv-menu-parent"
+                    type="button"
+                    onClick={() => scrollTo("#objects")}
+                  >
+                    <span>Coleção</span><sup>01</sup>
                   </button>
-                ))}
-                <div class="esv-object-taxonomy" aria-label="Categorias de objetos">
-                  <small>Objetos</small>
-                  {objectTaxonomy.map((label) => (
-                    <button type="button" onClick={() => scrollTo("#objects")}>
-                      {label}
-                    </button>
-                  ))}
+                  <div class="esv-menu-subnav" aria-label="Coleção">
+                    {collectionNavigation.map((label) => (
+                      <button type="button" onClick={() => scrollTo("#objects")}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div class="esv-menu-primary-links">
+                  <button type="button" onClick={() => scrollTo("#objects")}>
+                    <span>Pronta Entrega</span><sup>02</sup>
+                  </button>
+                  <button type="button" onClick={() => scrollTo("#objects")}>
+                    <span>Sob Encomenda</span><sup>03</sup>
+                  </button>
+                  <button type="button" onClick={() => scrollTo("#footer")}>
+                    <span>Contato</span><sup>04</sup>
+                  </button>
                 </div>
               </nav>
             )}
@@ -476,53 +578,89 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
             )}
 
             {overlay === "enquiry" && (
-              <div class="esv-enquiry-panel">
-                <p class="esv-kicker">Consulta privada</p>
-                <h2>Sua seleção</h2>
-                {selectedItems.length === 0
+              <div class="esv-enquiry-panel esv-cart-panel">
+                <p class="esv-kicker">Carrinho</p>
+                <h2>Seu carrinho</h2>
+                {cart.length === 0
                   ? (
                     <p class="esv-enquiry-empty">
-                      Sua seleção está vazia. Conheça uma peça e adicione-a à consulta privada.
+                      Seu carrinho está vazio. Conheça uma peça e adicione-a para continuar.
                     </p>
                   )
                   : (
                     <>
-                      <div class="esv-enquiry-list">
-                        {selectedItems.map((item) => {
-                          const availability = getAvailabilityMeta(item.availability);
-                          const meta = [availability.label, item.material]
+                      <div class="esv-enquiry-list esv-cart-list">
+                        {cart.map(({ product, quantity }) => {
+                          const availability = getAvailabilityMeta(product.availability);
+                          const meta = [availability.label, product.material]
                             .filter(Boolean)
                             .join(" · ");
 
                           return (
-                            <div key={item.id}>
+                            <div key={product.id} class="esv-cart-item">
                               <img
-                                src={item.image}
+                                src={product.image}
                                 alt=""
                                 loading="lazy"
                                 width="74"
                                 height="90"
                               />
                               <span>
-                                <strong>{item.title}</strong>
+                                <strong>{product.title}</strong>
                                 <small>{meta}</small>
+                                {product.price && (
+                                  <em class="esv-cart-item-price">{product.price}</em>
+                                )}
                               </span>
-                              <button
-                                type="button"
-                                aria-label={`Remover ${item.title}`}
-                                onClick={() =>
-                                  setSelection((current) =>
-                                    current.filter((id) => id !== item.id)
-                                  )}
-                              >
-                                Remover
-                              </button>
+                              <div class="esv-cart-item-actions">
+                                <div class="esv-cart-quantity" aria-label={`Quantidade de ${product.title}`}>
+                                  <button
+                                    type="button"
+                                    aria-label={`Diminuir quantidade de ${product.title}`}
+                                    onClick={() => changeQuantity(product.id, -1)}
+                                  >
+                                    −
+                                  </button>
+                                  <span>{quantity}</span>
+                                  <button
+                                    type="button"
+                                    aria-label={`Aumentar quantidade de ${product.title}`}
+                                    onClick={() => changeQuantity(product.id, 1)}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <button
+                                  class="esv-cart-remove"
+                                  type="button"
+                                  aria-label={`Remover ${product.title}`}
+                                  onClick={() => removeFromCart(product.id)}
+                                >
+                                  Remover
+                                </button>
+                              </div>
                             </div>
                           );
                         })}
                       </div>
-                      <a class="esv-enquiry-send" href={enquiryMailHref}>
-                        Falar com a curadoria <Icon name="arrow" size={15} />
+                      <div class="esv-cart-summary">
+                        {cartSubtotal > 0 && (
+                          <div>
+                            <span>Subtotal estimado</span>
+                            <strong>{formatBRL(cartSubtotal)}</strong>
+                          </div>
+                        )}
+                        {hasUnpricedItems && (
+                          <p>Itens sob consulta serão confirmados pela curadoria.</p>
+                        )}
+                      </div>
+                      <a
+                        class="esv-enquiry-send esv-cart-checkout"
+                        href={cartWhatsAppHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Finalizar pelo WhatsApp <Icon name="arrow" size={15} />
                       </a>
                     </>
                   )}
@@ -602,11 +740,9 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
                   <button
                     class="esv-enquiry-send"
                     type="button"
-                    onClick={() => addToSelection(selected)}
+                    onClick={() => addToCartFromModal(selected)}
                   >
-                    {selection.includes(selected.id)
-                      ? "Ver seleção"
-                      : "Consultar a peça"} <Icon name="arrow" size={15} />
+                    Adicionar ao carrinho <Icon name="arrow" size={15} />
                   </button>
                 )}
               </div>

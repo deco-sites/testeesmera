@@ -26,7 +26,9 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
         data-motion-order={String(motionOrder)}
       >
         <EsmeraImage
-          class="esv-product-image-primary"
+          class={item.detailImage
+            ? "esv-product-image-primary"
+            : "esv-product-image-static"}
           src={item.image}
           alt={item.alt}
           loading="lazy"

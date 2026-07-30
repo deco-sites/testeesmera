@@ -1,0 +1,591 @@
+/* ESMÉRA — chromatic + motion refinement / Jul 2026
+ * User-approved palette layered over the canonical Homepage Master.
+ * Motion remains editorial: opacity, transform, crossfade, no scroll-jacking.
+ */
+
+:root {
+  --color-ink: #151515;
+  --color-deep: #151515;
+  --color-paper: #f0ede6;
+  --color-paper-2: #f8f6f1;
+  --color-stone: #c3c5c2;
+  --color-muted: #6f716f;
+  --color-gray: #929693;
+  --color-sea: #76a8a6;
+  --color-bronze: #a98760;
+  --color-emerald: #0f4d47;
+  --color-blue: #294d76;
+  --line-master: 1px solid color-mix(in srgb, var(--color-ink) 13%, transparent);
+  --esv-paper: var(--color-paper);
+  --esv-paper-soft: var(--color-paper-2);
+  --esv-ink: var(--color-ink);
+  --esv-muted: var(--color-muted);
+  --esv-line: color-mix(in srgb, var(--color-ink) 13%, transparent);
+}
+
+html,
+body {
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+}
+
+::selection {
+  background: var(--color-sea);
+  color: var(--color-deep);
+}
+
+/* Chromatic hierarchy: accents are editorial markers, never decorative fills everywhere. */
+.esv-maison .esv-kicker,
+.esv-signature .esv-kicker {
+  color: var(--color-bronze);
+}
+
+.esv-maison .esv-text-link,
+.esv-selected .esv-product-actions button,
+.esv-signature .esv-product-actions button {
+  color: var(--color-emerald);
+}
+
+.esv-hero-cta,
+.esv-private-cta {
+  border-color: var(--color-sea);
+}
+
+.esv-footer-wordmark {
+  color: var(--color-emerald);
+}
+
+/* Selected Objects — category is editorial taxonomy; status is a precise availability label. */
+.esv-product-meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.esv-product-taxonomy {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.esv-product-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  color: var(--color-blue);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.esv-product-category::before {
+  content: "";
+  width: 20px;
+  height: 1px;
+  background: var(--color-bronze);
+  transform: scaleX(.62);
+  transform-origin: left;
+  transition: transform 240ms var(--ease-luxury);
+}
+
+.esv-product-card:hover .esv-product-category::before {
+  transform: scaleX(1);
+}
+
+.esv-product-material {
+  max-width: 32ch;
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 1.35;
+}
+
+.esv-product-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 27px;
+  padding: 5px 8px 4px;
+  border: 1px solid color-mix(in srgb, var(--color-gray) 60%, transparent);
+  border-radius: 0;
+  color: var(--color-muted);
+  background: transparent;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.esv-product-status-ready {
+  border-color: color-mix(in srgb, var(--color-sea) 72%, transparent);
+  background: color-mix(in srgb, var(--color-sea) 9%, transparent);
+  color: var(--color-emerald);
+}
+
+.esv-product-status-unique {
+  border-color: color-mix(in srgb, var(--color-bronze) 72%, transparent);
+  background: color-mix(in srgb, var(--color-bronze) 8%, transparent);
+  color: #75583a;
+}
+
+.esv-product-status-order {
+  border-color: color-mix(in srgb, var(--color-blue) 58%, transparent);
+  background: color-mix(in srgb, var(--color-blue) 6%, transparent);
+  color: var(--color-blue);
+}
+
+.esv-product-status-consult {
+  border-color: color-mix(in srgb, var(--color-gray) 55%, transparent);
+  color: var(--color-muted);
+}
+
+/* Matter — three category portals, still functioning as a sensory interlude. */
+.esv-matter.esv-matter-gallery {
+  min-height: 82svh;
+  background: var(--color-deep);
+  color: #fff;
+}
+
+.esv-matter-gallery-track {
+  min-height: 82svh;
+  gap: 1px;
+  background: rgba(255, 255, 255, .12);
+}
+
+.esv-matter-category {
+  position: relative;
+  display: block;
+  min-width: 0;
+  color: #fff;
+  text-decoration: none;
+}
+
+.esv-matter-gallery-item {
+  min-height: 82svh;
+}
+
+.esv-matter-gallery-item img {
+  transform: scale(1.005);
+  transition: transform 900ms var(--ease-luxury), filter 600ms var(--ease-luxury);
+}
+
+.esv-matter-category-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(15, 15, 15, .08) 20%, rgba(15, 15, 15, .18) 52%, rgba(15, 15, 15, .78) 100%),
+    linear-gradient(90deg, rgba(15, 15, 15, .22), transparent 60%);
+  transition: background-color 500ms var(--ease-luxury);
+}
+
+.esv-matter-category-copy {
+  position: absolute;
+  z-index: 2;
+  right: clamp(24px, 3vw, 48px);
+  bottom: clamp(30px, 4vw, 56px);
+  left: clamp(24px, 3vw, 48px);
+  margin: 0;
+  color: #fff;
+}
+
+.esv-matter-category-copy::before {
+  content: "";
+  display: block;
+  width: 34px;
+  height: 2px;
+  margin-bottom: 18px;
+  background: var(--color-sea);
+  transform-origin: left;
+  transition: transform 300ms var(--ease-luxury);
+}
+
+.esv-matter-category:nth-child(2) .esv-matter-category-copy::before {
+  background: var(--color-bronze);
+}
+
+.esv-matter-category:nth-child(3) .esv-matter-category-copy::before {
+  background: var(--color-blue);
+}
+
+.esv-matter-category-copy small {
+  display: block;
+  color: rgba(255, 255, 255, .72);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.esv-matter-category-copy h2 {
+  max-width: 7ch;
+  margin: 14px 0 0;
+  font-size: clamp(36px, 4vw, 58px);
+  font-weight: 300;
+  line-height: .96;
+  letter-spacing: -.035em;
+}
+
+.esv-matter-category-copy p {
+  max-width: 29ch;
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, .72);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.esv-matter-category-copy span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  margin-top: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, .68);
+  font-size: 12px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .esv-matter-category:hover .esv-matter-gallery-item img {
+    transform: scale(1.025);
+  }
+
+  .esv-matter-category:hover .esv-matter-category-copy::before {
+    transform: scaleX(1.55);
+  }
+
+  .esv-matter-category:hover .esv-matter-category-copy span svg {
+    transform: translate3d(3px, -2px, 0);
+  }
+}
+
+/* Signature remains the object chapter: large, light, singular. */
+.esv-signature {
+  background: var(--color-paper-2);
+}
+
+.esv-signature-media {
+  background: color-mix(in srgb, var(--color-sea) 12%, var(--color-paper));
+}
+
+.esv-signature-facts dt {
+  color: var(--color-blue);
+}
+
+.esv-signature-value {
+  color: var(--color-emerald);
+}
+
+/* Provenance becomes documentary and chromatically distinct from Signature. */
+.esv-provenance {
+  min-height: 100svh;
+  padding: clamp(112px, 9vw, 152px) 0 0;
+  background: var(--color-emerald);
+  color: var(--color-paper-2);
+}
+
+.esv-provenance-head {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--esv-grid-gap);
+  align-items: start;
+}
+
+.esv-provenance-head > .esv-kicker {
+  grid-column: 1 / span 3;
+  color: color-mix(in srgb, var(--color-sea) 76%, white);
+}
+
+.esv-provenance-head h2 {
+  grid-column: 4 / span 5;
+  max-width: 8ch;
+  margin: 0;
+  color: var(--color-paper-2);
+  font-size: clamp(44px, 5vw, 70px);
+  font-weight: 300;
+  line-height: .96;
+  letter-spacing: -.035em;
+}
+
+.esv-provenance-intro {
+  grid-column: 9 / -1;
+  align-self: end;
+  max-width: 48ch;
+  margin: 0;
+  color: rgba(248, 246, 241, .66);
+  font-size: clamp(14px, 1vw, 16px);
+  line-height: 1.6;
+}
+
+.esv-provenance-evidence {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: clamp(72px, 7vw, 104px);
+  border-top: 1px solid rgba(248, 246, 241, .2);
+}
+
+.esv-provenance-evidence article {
+  display: block;
+  min-height: 250px;
+  padding: 28px clamp(22px, 2.5vw, 38px) 40px 0;
+  border: 0;
+  border-right: 1px solid rgba(248, 246, 241, .16);
+}
+
+.esv-provenance-evidence article + article {
+  padding-left: clamp(22px, 2.5vw, 38px);
+}
+
+.esv-provenance-evidence article:last-child {
+  border-right: 0;
+}
+
+.esv-provenance-evidence small {
+  color: var(--color-bronze);
+}
+
+.esv-provenance-evidence h3 {
+  margin: 34px 0 0;
+  color: var(--color-paper-2);
+  font-size: clamp(20px, 1.8vw, 27px);
+  font-weight: 300;
+  letter-spacing: -.015em;
+}
+
+.esv-provenance-evidence p {
+  max-width: 34ch;
+  margin: 18px 0 0;
+  color: rgba(248, 246, 241, .62);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.esv-provenance-strip {
+  height: clamp(260px, 34svh, 430px);
+  margin: clamp(64px, 7vw, 104px) 0 0;
+  overflow: hidden;
+  background: var(--color-deep);
+}
+
+.esv-provenance-strip img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 48%;
+  transform: scale(1.015);
+}
+
+/* Context gets the blue depth; Experience returns to quiet off-white. */
+.esv-context {
+  background: var(--color-blue);
+}
+
+.esv-context-shade {
+  background: linear-gradient(90deg, rgba(41, 77, 118, .82) 0%, rgba(15, 21, 24, .38) 52%, rgba(15, 21, 24, .12) 100%);
+}
+
+.esv-experience .esv-kicker {
+  color: var(--color-emerald);
+}
+
+.esv-experience-pillars small {
+  color: var(--color-bronze);
+}
+
+.esv-private {
+  background: var(--color-deep);
+}
+
+.esv-private .esv-kicker {
+  color: var(--color-sea);
+}
+
+.esv-private-cta {
+  color: var(--color-paper-2);
+  border-color: var(--color-bronze);
+}
+
+/* Motion system — progressive enhancement and no layout-affecting animation. */
+.esv-motion-ready .esv-reveal {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 620ms var(--ease-luxury) var(--esv-reveal-delay, 0ms),
+    transform 620ms var(--ease-luxury) var(--esv-reveal-delay, 0ms);
+}
+
+.esv-motion-ready .esv-reveal.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.esv-motion-ready .esv-maison-main.esv-reveal,
+.esv-motion-ready .esv-maison-secondary.esv-reveal,
+.esv-motion-ready .esv-signature-media.esv-reveal,
+.esv-motion-ready .esv-provenance-strip.esv-reveal,
+.esv-motion-ready .esv-experience-main.esv-reveal {
+  transform: translate3d(0, 18px, 0) scale(.988);
+}
+
+.esv-motion-ready .esv-maison-main.esv-reveal.is-visible,
+.esv-motion-ready .esv-maison-secondary.esv-reveal.is-visible,
+.esv-motion-ready .esv-signature-media.esv-reveal.is-visible,
+.esv-motion-ready .esv-provenance-strip.esv-reveal.is-visible,
+.esv-motion-ready .esv-experience-main.esv-reveal.is-visible {
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.esv-hero-cta svg,
+.esv-text-link svg,
+.esv-product-actions svg,
+.esv-private-cta svg,
+.esv-matter-category-copy span svg,
+.esv-experience-pillars a svg {
+  transition: transform 200ms var(--ease-luxury);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .esv-hero-cta:hover svg,
+  .esv-text-link:hover svg,
+  .esv-product-actions button:hover svg,
+  .esv-private-cta:hover svg,
+  .esv-experience-pillars a:hover svg {
+    transform: translate3d(3px, -2px, 0);
+  }
+}
+
+@media (max-width: 899px) {
+  .esv-provenance-head {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+
+  .esv-provenance-head > .esv-kicker {
+    grid-column: 1 / span 2;
+  }
+
+  .esv-provenance-head h2 {
+    grid-column: 3 / span 4;
+  }
+
+  .esv-provenance-intro {
+    grid-column: 3 / -1;
+    margin-top: var(--space-8);
+  }
+}
+
+@media (max-width: 767px) {
+  .esv-product-meta {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  .esv-product-category {
+    font-size: 9px;
+  }
+
+  .esv-product-material {
+    font-size: 11px;
+  }
+
+  .esv-product-status {
+    min-height: 24px;
+    padding-inline: 6px;
+    font-size: 8px;
+  }
+
+  .esv-matter-gallery-track {
+    min-height: 72svh;
+  }
+
+  .esv-matter-category {
+    flex: 0 0 88vw;
+    scroll-snap-align: start;
+  }
+
+  .esv-matter-gallery-item {
+    min-height: 72svh;
+  }
+
+  .esv-matter-category-copy {
+    right: 22px;
+    bottom: 26px;
+    left: 22px;
+  }
+
+  .esv-matter-category-copy h2 {
+    font-size: clamp(34px, 11vw, 48px);
+  }
+
+  .esv-matter-category-copy p {
+    max-width: 26ch;
+  }
+
+  .esv-provenance {
+    min-height: auto;
+    padding-top: clamp(80px, 22vw, 112px);
+  }
+
+  .esv-provenance-head {
+    display: block;
+  }
+
+  .esv-provenance-head h2 {
+    max-width: 8ch;
+    margin-top: var(--space-8);
+    font-size: clamp(40px, 12vw, 58px);
+  }
+
+  .esv-provenance-intro {
+    max-width: 34ch;
+    margin-top: var(--space-8);
+  }
+
+  .esv-provenance-evidence {
+    display: block;
+    margin-top: var(--space-16);
+  }
+
+  .esv-provenance-evidence article,
+  .esv-provenance-evidence article + article {
+    min-height: 0;
+    padding: var(--space-6) 0 var(--space-8);
+    border-right: 0;
+    border-bottom: 1px solid rgba(248, 246, 241, .16);
+  }
+
+  .esv-provenance-evidence h3 {
+    margin-top: var(--space-4);
+  }
+
+  .esv-provenance-strip {
+    height: 42svh;
+    margin-top: var(--space-12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esv-motion-ready .esv-reveal,
+  .esv-motion-ready .esv-reveal.is-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .esv-matter-gallery-item img,
+  .esv-product-category::before,
+  .esv-hero-cta svg,
+  .esv-text-link svg,
+  .esv-product-actions svg,
+  .esv-private-cta svg,
+  .esv-matter-category-copy span svg,
+  .esv-experience-pillars a svg {
+    transform: none !important;
+    transition: none !important;
+  }
+}

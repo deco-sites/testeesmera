@@ -24,8 +24,14 @@ export default function PrivateInvitation({
       aria-labelledby="esv-private-title"
     >
       <div class="esv-shell esv-private-grid">
-        <p class="esv-kicker esv-kicker-light">{eyebrow}</p>
-        <div class="esv-private-copy">
+        <p
+          class="esv-kicker esv-kicker-light"
+          data-motion="reveal"
+          data-motion-order="0"
+        >
+          {eyebrow}
+        </p>
+        <div class="esv-private-copy" data-motion="reveal" data-motion-order="1">
           <h2 id="esv-private-title">{title}</h2>
           {text && <p>{text}</p>}
           {ctaLabel && (

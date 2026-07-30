@@ -31,6 +31,7 @@ export default function Header({
         <link rel="stylesheet" href={asset("/esmera-motion-v2.css")} />
         <link rel="stylesheet" href={asset("/esmera-structure-guard.css")} />
         <link rel="stylesheet" href={asset("/esmera-commerce-refine.css")} />
+        <link rel="stylesheet" href={asset("/esmera-hotfix-product-modal.css")} />
         <meta name="theme-color" content="#111210" />
       </Head>
 

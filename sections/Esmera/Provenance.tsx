@@ -1,4 +1,4 @@
-import Image from "apps/website/components/Image.tsx";
+import { EsmeraImage } from "../../components/esmera/ResponsiveMedia.tsx";
 
 export interface ProvenanceStage {
   title: string;
@@ -80,7 +80,7 @@ export default function Provenance({
           return (
             <article class={`esv-provenance-stage esv-provenance-stage-${tone}`}>
               <figure class="esv-provenance-stage-media">
-                <Image
+                <EsmeraImage
                   src={stage.image}
                   alt={stage.alt}
                   loading="lazy"

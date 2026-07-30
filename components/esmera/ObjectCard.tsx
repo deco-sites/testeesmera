@@ -1,6 +1,7 @@
 import ProductActions from "../../islands/ProductActions.tsx";
 import { getAvailabilityMeta } from "./availability.ts";
 import type { EsmeraObject } from "./data.ts";
+import { responsiveSrcSet } from "./image.ts";
 
 export interface Props {
   item: EsmeraObject;
@@ -18,6 +19,7 @@ export default function ObjectCard({ item }: Props) {
         <img
           class="esv-product-image-primary"
           src={item.image}
+          srcset={responsiveSrcSet(item.image, [480, 720, 960, 1200])}
           alt={item.alt}
           loading="lazy"
           decoding="async"
@@ -29,6 +31,7 @@ export default function ObjectCard({ item }: Props) {
           <img
             class="esv-product-image-detail"
             src={item.detailImage}
+            srcset={responsiveSrcSet(item.detailImage, [480, 720, 960, 1200])}
             alt=""
             loading="lazy"
             decoding="async"

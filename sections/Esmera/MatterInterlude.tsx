@@ -30,6 +30,7 @@ export default function MatterInterlude({
       id="matter"
       class={`esv-matter-interlude is-focal-${focalPoint}`}
       aria-labelledby="esv-matter-interlude-title"
+      data-motion-scene="interlude"
     >
       <EsmeraPicture
         class="esv-matter-interlude-media"
@@ -46,8 +47,19 @@ export default function MatterInterlude({
       <div class="esv-matter-interlude-shade" aria-hidden="true" />
 
       <div class="esv-shell esv-matter-interlude-content">
-        <p class="esv-matter-interlude-meta">{meta}</p>
-        <h2 id="esv-matter-interlude-title" class="esv-matter-interlude-title">
+        <p
+          class="esv-matter-interlude-meta"
+          data-motion="reveal"
+          data-motion-order="0"
+        >
+          {meta}
+        </p>
+        <h2
+          id="esv-matter-interlude-title"
+          class="esv-matter-interlude-title"
+          data-motion="reveal"
+          data-motion-order="1"
+        >
           {title}
         </h2>
       </div>

@@ -26,11 +26,14 @@ export default function Hero({
   overlay = 20,
   focalPoint = "right",
 }: Props) {
+  const statementLines = statement.split(/\n+/).filter(Boolean);
+
   return (
     <section
       id="main-content"
       class={`esv-hero is-overlay-${overlay} is-focal-${focalPoint}`}
       aria-labelledby="esv-hero-title"
+      data-motion-scene="hero"
     >
       <EsmeraPicture
         class="esv-hero-picture"
@@ -49,7 +52,16 @@ export default function Hero({
       <div class="esv-hero-overlay" aria-hidden="true" />
 
       <div class="esv-shell esv-hero-content">
-        <h1 id="esv-hero-title" class="esv-hero-statement">{statement}</h1>
+        <h1 id="esv-hero-title" class="esv-hero-statement">
+          {statementLines.map((line, index) => (
+            <span
+              class="esv-hero-line"
+              style={{ animationDelay: `${index * 55}ms` }}
+            >
+              {line}
+            </span>
+          ))}
+        </h1>
         {ctaLabel && (
           <a class="esv-hero-cta" href={ctaHref}>
             {ctaLabel} <Arrow size={14} />

@@ -9,6 +9,19 @@ import { getAvailabilityMeta } from "../components/esmera/availability.ts";
 type Overlay = "menu" | "search" | "enquiry" | null;
 type IconName = "menu" | "search" | "close" | "arrow";
 
+type EsmeraEventDetail = {
+  productId: string;
+  product?: EsmeraObject;
+  trigger?: HTMLElement;
+  sourceImage?: HTMLElement | null;
+};
+
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (
+    callback: () => void | Promise<void>,
+  ) => { finished: Promise<void> };
+};
+
 export interface Props {
   logo: string;
   enquiryLabel: string;
@@ -30,6 +43,8 @@ const objectTaxonomy = [
 ];
 
 const catalog = [...selectedObjects, ...collectionObjects];
+const prefersReducedMotion = () =>
+  globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 
 function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
   const paths = name === "menu"
@@ -63,7 +78,13 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
   const [selection, setSelection] = useState<string[]>([]);
   const [query, setQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const [overlayClosing, setOverlayClosing] = useState(false);
+  const [modalClosing, setModalClosing] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const modalCloseRef = useRef<HTMLButtonElement>(null);
+  const lastTriggerRef = useRef<HTMLElement | null>(null);
+  const overlayTimerRef = useRef<number | null>(null);
+  const modalTimerRef = useRef<number | null>(null);
 
   const searchResults = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("pt-BR");
@@ -88,6 +109,85 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
   }, [query]);
 
   const selectedItems = catalog.filter((item) => selection.includes(item.id));
+  const enquiryMailHref = `mailto:contact@esmera.com?subject=${
+    encodeURIComponent("Consulta privada — Esméra")
+  }&body=${
+    encodeURIComponent(
+      `Olá, gostaria de consultar: ${selectedItems.map((item) => item.title).join(", ")}.`,
+    )
+  }`;
+
+  const clearOverlayTimer = () => {
+    if (overlayTimerRef.current === null) return;
+    globalThis.clearTimeout(overlayTimerRef.current);
+    overlayTimerRef.current = null;
+  };
+
+  const clearModalTimer = () => {
+    if (modalTimerRef.current === null) return;
+    globalThis.clearTimeout(modalTimerRef.current);
+    modalTimerRef.current = null;
+  };
+
+  const openOverlay = (next: Exclude<Overlay, null>, trigger?: HTMLElement) => {
+    clearOverlayTimer();
+    if (trigger) lastTriggerRef.current = trigger;
+    setOverlayClosing(false);
+    setOverlay(next);
+  };
+
+  const closeOverlay = (
+    afterClose?: () => void,
+    returnFocus = true,
+  ) => {
+    if (!overlay) {
+      afterClose?.();
+      return;
+    }
+
+    clearOverlayTimer();
+    const finish = () => {
+      setOverlay(null);
+      setOverlayClosing(false);
+      afterClose?.();
+      if (returnFocus) {
+        globalThis.setTimeout(() => lastTriggerRef.current?.focus(), 0);
+      }
+    };
+
+    if (prefersReducedMotion()) {
+      finish();
+      return;
+    }
+
+    setOverlayClosing(true);
+    overlayTimerRef.current = globalThis.setTimeout(finish, 260);
+  };
+
+  const closeModal = (afterClose?: () => void, returnFocus = true) => {
+    if (!selected) {
+      afterClose?.();
+      return;
+    }
+
+    clearModalTimer();
+    const finish = () => {
+      setSelected(null);
+      setModalClosing(false);
+      afterClose?.();
+      if (returnFocus) {
+        globalThis.setTimeout(() => lastTriggerRef.current?.focus(), 0);
+      }
+    };
+
+    if (prefersReducedMotion()) {
+      finish();
+      return;
+    }
+
+    setModalClosing(true);
+    modalTimerRef.current = globalThis.setTimeout(finish, 260);
+  };
 
   useEffect(() => {
     const hero = document.getElementById("main-content");
@@ -105,43 +205,81 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
   useEffect(() => {
     const active = Boolean(overlay || selected);
     document.documentElement.classList.toggle("esv-lock", active);
-    if (overlay === "search") {
+    if (overlay === "search" && !overlayClosing) {
       globalThis.setTimeout(() => searchInputRef.current?.focus(), 40);
     }
+    if (selected && !modalClosing) {
+      globalThis.setTimeout(() => modalCloseRef.current?.focus(), 40);
+    }
     return () => document.documentElement.classList.remove("esv-lock");
-  }, [overlay, selected]);
+  }, [overlay, selected, overlayClosing, modalClosing]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
-      if (selected) setSelected(null);
-      else setOverlay(null);
+      if (selected) closeModal();
+      else if (overlay) closeOverlay();
     };
 
     globalThis.addEventListener("keydown", onKeyDown);
     return () => globalThis.removeEventListener("keydown", onKeyDown);
-  }, [selected]);
+  }, [selected, overlay]);
 
   useEffect(() => {
+    const getDetail = (event: Event) =>
+      (event as CustomEvent<EsmeraEventDetail>).detail;
+
     const getObject = (event: Event) => {
-      const { productId, product } = (event as CustomEvent<{
-        productId: string;
-        product?: EsmeraObject;
-      }>).detail;
+      const { productId, product } = getDetail(event);
       return product ?? catalog.find((item) => item.id === productId);
     };
 
     const onViewObject = (event: Event) => {
       const item = getObject(event);
-      if (item) setSelected(item);
+      if (!item) return;
+
+      const detail = getDetail(event);
+      if (detail.trigger) lastTriggerRef.current = detail.trigger;
+      setModalClosing(false);
+
+      const open = () => setSelected(item);
+      const sourceImage = detail.sourceImage;
+      const transitionDocument = document as ViewTransitionDocument;
+
+      if (
+        sourceImage &&
+        transitionDocument.startViewTransition &&
+        !prefersReducedMotion()
+      ) {
+        sourceImage.style.setProperty(
+          "view-transition-name",
+          "esmera-object-image",
+        );
+        const transition = transitionDocument.startViewTransition(async () => {
+          sourceImage.style.removeProperty("view-transition-name");
+          open();
+          await new Promise<void>((resolve) =>
+            requestAnimationFrame(() => resolve())
+          );
+        });
+        transition.finished.catch(() => undefined).finally(() => {
+          sourceImage.style.removeProperty("view-transition-name");
+        });
+        return;
+      }
+
+      open();
     };
 
     const onAddToEnquiry = (event: Event) => {
       const item = getObject(event);
       if (!item) return;
+      const detail = getDetail(event);
+      if (detail.trigger) lastTriggerRef.current = detail.trigger;
       setSelection((current) =>
         current.includes(item.id) ? current : [...current, item.id]
       );
+      setOverlayClosing(false);
       setOverlay("enquiry");
     };
 
@@ -154,20 +292,29 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
     };
   }, []);
 
+  useEffect(() => () => {
+    clearOverlayTimer();
+    clearModalTimer();
+  }, []);
+
   const scrollTo = (href: string) => {
-    setOverlay(null);
     const id = href.replace(/^#/, "");
-    globalThis.setTimeout(() => {
-      document.getElementById(id)?.scrollIntoView({ block: "start" });
-    }, 20);
+    const performScroll = () => {
+      document.getElementById(id)?.scrollIntoView({
+        block: "start",
+        behavior: prefersReducedMotion() ? "auto" : "smooth",
+      });
+    };
+
+    if (overlay) closeOverlay(performScroll, false);
+    else performScroll();
   };
 
   const addToSelection = (item: EsmeraObject) => {
     setSelection((current) =>
       current.includes(item.id) ? current : [...current, item.id]
     );
-    setSelected(null);
-    setOverlay("enquiry");
+    closeModal(() => openOverlay("enquiry"), false);
   };
 
   return (
@@ -177,7 +324,7 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
           class="esv-header-menu esv-header-icon"
           type="button"
           aria-label="Abrir menu"
-          onClick={() => setOverlay("menu")}
+          onClick={(event) => openOverlay("menu", event.currentTarget)}
         >
           <Icon name="menu" />
         </button>
@@ -204,7 +351,7 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
             class="esv-header-icon"
             type="button"
             aria-label="Buscar objetos"
-            onClick={() => setOverlay("search")}
+            onClick={(event) => openOverlay("search", event.currentTarget)}
           >
             <Icon name="search" />
           </button>
@@ -212,19 +359,19 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
             class="esv-enquiry-link"
             type="button"
             aria-label={`${enquiryLabel}, ${selection.length} itens`}
-            onClick={() => setOverlay("enquiry")}
+            onClick={(event) => openOverlay("enquiry", event.currentTarget)}
           >
             {enquiryLabel}
-            {selection.length > 0 && <sup>{selection.length}</sup>}
+            {selection.length > 0 && <sup key={selection.length}>{selection.length}</sup>}
           </button>
         </div>
       </header>
 
       {overlay && (
         <div
-          class="esv-header-overlay"
+          class={`esv-header-overlay${overlayClosing ? " is-closing" : ""}`}
           role="presentation"
-          onClick={() => setOverlay(null)}
+          onClick={() => closeOverlay()}
         >
           <aside
             class={`esv-header-panel esv-header-panel-${overlay}`}
@@ -241,7 +388,7 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
               class="esv-panel-close"
               type="button"
               aria-label="Fechar"
-              onClick={() => setOverlay(null)}
+              onClick={() => closeOverlay()}
             >
               <Icon name="close" size={21} />
             </button>
@@ -279,7 +426,7 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
                   placeholder="Nome, material, tipo ou disponibilidade"
                   autocomplete="off"
                 />
-                <div class="esv-search-results">
+                <div key={query} class="esv-search-results is-refreshing">
                   {searchResults.map((item) => {
                     const availability = getAvailabilityMeta(item.availability);
                     const meta = [availability.label, item.material]
@@ -289,8 +436,10 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
                     return (
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={(event) => {
+                          lastTriggerRef.current = event.currentTarget;
                           setOverlay(null);
+                          setOverlayClosing(false);
                           setSelected(item);
                         }}
                       >
@@ -346,7 +495,7 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
                             .join(" · ");
 
                           return (
-                            <div>
+                            <div key={item.id}>
                               <img
                                 src={item.image}
                                 alt=""
@@ -372,16 +521,7 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
                           );
                         })}
                       </div>
-                      <a
-                        class="esv-enquiry-send"
-                        href={`mailto:contact@esmera.com?subject=${
-                          encodeURIComponent("Consulta privada — Esméra")
-                        }&body=${
-                          encodeURIComponent(
-                            `Olá, gostaria de consultar: ${selectedItems.map((item) => item.title).join(", ")}.`,
-                          )
-                        }`}
-                      >
+                      <a class="esv-enquiry-send" href={enquiryMailHref}>
                         Falar com a curadoria <Icon name="arrow" size={15} />
                       </a>
                     </>
@@ -402,9 +542,9 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
 
         return (
           <div
-            class="esv-object-modal-backdrop"
+            class={`esv-object-modal-backdrop${modalClosing ? " is-closing" : ""}`}
             role="presentation"
-            onClick={() => setSelected(null)}
+            onClick={() => closeModal()}
           >
             <article
               class="esv-object-modal"
@@ -414,10 +554,11 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
               onClick={(event) => event.stopPropagation()}
             >
               <button
+                ref={modalCloseRef}
                 class="esv-panel-close"
                 type="button"
                 aria-label="Fechar"
-                onClick={() => setSelected(null)}
+                onClick={() => closeModal()}
               >
                 <Icon name="close" size={21} />
               </button>
@@ -425,7 +566,13 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
                 class="esv-object-modal-images"
                 style={selected.detailImage ? undefined : "grid-template-columns: 1fr;"}
               >
-                <img src={selected.image} alt={selected.alt} width="900" height="1125" />
+                <img
+                  src={selected.image}
+                  alt={selected.alt}
+                  width="900"
+                  height="1125"
+                  style="view-transition-name: esmera-object-image;"
+                />
                 {selected.detailImage && (
                   <img
                     src={selected.detailImage}

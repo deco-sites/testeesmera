@@ -1,0 +1,457 @@
+/* ESMÉRA — Motion system v2
+ * Source of truth: ESMERA_Auditoria_Motion_Transicoes_v1.pdf
+ * Structural scroll scenes stay native: sticky + one lightweight RAF coordinator.
+ */
+
+:root {
+  --motion-instant: 120ms;
+  --motion-fast: 180ms;
+  --motion-ui: 260ms;
+  --motion-medium: 420ms;
+  --motion-reveal: 620ms;
+  --motion-editorial: 820ms;
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --ease-standard: cubic-bezier(.22, .61, .36, 1);
+  --ease-inout: cubic-bezier(.65, 0, .35, 1);
+}
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(esmera-object-image),
+::view-transition-new(esmera-object-image) {
+  animation-duration: var(--motion-medium);
+  animation-timing-function: var(--ease-out);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Reveal contract                                                             */
+/* -------------------------------------------------------------------------- */
+
+.esv-motion-ready .esv-reveal {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+  transition:
+    opacity var(--motion-reveal) var(--ease-out) var(--esv-reveal-delay, 0ms),
+    transform var(--motion-reveal) var(--ease-out) var(--esv-reveal-delay, 0ms),
+    clip-path var(--motion-editorial) var(--ease-out) var(--esv-reveal-delay, 0ms);
+}
+
+.esv-motion-ready .esv-reveal.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.esv-motion-ready .esv-reveal-media {
+  opacity: .01;
+  clip-path: inset(0 0 12% 0);
+  transform: translate3d(0, 12px, 0) scale(1.008);
+}
+
+.esv-motion-ready .esv-reveal-media.is-visible {
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.esv-motion-ready .esv-provenance-stage-origin .esv-reveal-media {
+  clip-path: inset(0 10% 0 0);
+  transform: translate3d(-12px, 0, 0) scale(1.006);
+}
+
+.esv-motion-ready .esv-provenance-stage-transform .esv-reveal-media {
+  clip-path: inset(0 0 0 10%);
+  transform: translate3d(12px, 0, 0) scale(1.006);
+}
+
+.esv-motion-ready .esv-provenance-stage-register .esv-reveal-media {
+  clip-path: inset(0 8% 0 0);
+  transform: translate3d(-10px, 0, 0) scale(1.006);
+}
+
+.esv-motion-ready .esv-provenance-stage .esv-reveal-media.is-visible {
+  clip-path: inset(0 0 0 0);
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Hero — masked copy + contained parallax; never fixed                        */
+/* -------------------------------------------------------------------------- */
+
+.esv-hero {
+  overflow: hidden;
+  --esv-hero-y: 0px;
+}
+
+.esv-hero-picture {
+  transform: translate3d(0, var(--esv-hero-y), 0);
+  will-change: transform;
+}
+
+.esv-hero-picture img {
+  transform-origin: center center;
+  animation: esv-hero-settle 1000ms var(--ease-out) both;
+}
+
+.esv-hero-statement {
+  overflow: hidden;
+}
+
+.esv-hero-line {
+  display: block;
+  opacity: 0;
+  clip-path: inset(0 0 100% 0);
+  transform: translate3d(0, 18px, 0);
+  animation: esv-hero-line-in var(--motion-editorial) var(--ease-out) both;
+}
+
+.esv-hero-cta {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  animation: esv-hero-cta-in var(--motion-reveal) var(--ease-out) 150ms both;
+}
+
+@keyframes esv-hero-settle {
+  from { transform: scale(1.025); }
+  to { transform: scale(1); }
+}
+
+@keyframes esv-hero-line-in {
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes esv-hero-cta-in {
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Maison — editorial sticky composition                                      */
+/* -------------------------------------------------------------------------- */
+
+@media (min-width: 1024px) {
+  .esv-maison-scene {
+    height: 195svh;
+    padding-block: 0;
+  }
+
+  .esv-maison-scene .esv-maison-grid {
+    position: sticky;
+    top: var(--header-h);
+    min-height: calc(100svh - var(--header-h));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .esv-maison-scene {
+    height: 150svh;
+    padding-block: 0;
+  }
+
+  .esv-maison-scene .esv-maison-grid {
+    position: sticky;
+    top: var(--header-h);
+    min-height: calc(100svh - var(--header-h));
+  }
+}
+
+.esv-maison-scene .esv-maison-main {
+  clip-path: inset(0 0 var(--esv-maison-main-clip, 0%) 0);
+  transform: translate3d(0, var(--esv-maison-main-y, 0px), 0);
+  will-change: transform, clip-path;
+}
+
+.esv-maison-scene .esv-maison-secondary {
+  clip-path: inset(0 0 var(--esv-maison-secondary-clip, 0%) 0);
+  transform: translate3d(0, var(--esv-maison-secondary-y, 0px), 0);
+  will-change: transform, clip-path;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Selection — media first, copy second                                        */
+/* -------------------------------------------------------------------------- */
+
+.esv-product-card .esv-product-media {
+  transition: clip-path var(--motion-editorial) var(--ease-out);
+}
+
+.esv-selected-collection-link {
+  margin-top: var(--space-8);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Territory — three-panel curtain stack                                       */
+/* -------------------------------------------------------------------------- */
+
+@media (min-width: 768px) {
+  .esv-territory-track {
+    display: block;
+    height: auto;
+  }
+
+  .esv-territory-panel {
+    position: sticky;
+    top: var(--header-h);
+    height: calc(100svh - var(--header-h));
+    min-height: 680px;
+  }
+
+  .esv-territory-panel:nth-child(1) { z-index: 1; }
+  .esv-territory-panel:nth-child(2) { z-index: 2; }
+  .esv-territory-panel:nth-child(3) { z-index: 3; }
+
+  .esv-territory-panel::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    pointer-events: none;
+    background: #111210;
+    opacity: var(--esv-territory-dim, 0);
+  }
+
+  .esv-territory-media img,
+  .esv-territory-panel:hover .esv-territory-media img {
+    transform: scale(var(--esv-territory-scale, 1.02));
+    transition: none;
+    will-change: transform;
+  }
+
+  .esv-scenes-ready .esv-territory-copy {
+    opacity: .46;
+    clip-path: inset(0 0 16% 0);
+    transform: translate3d(0, 10px, 0);
+    transition:
+      opacity var(--motion-reveal) var(--ease-out),
+      transform var(--motion-reveal) var(--ease-out),
+      clip-path var(--motion-editorial) var(--ease-out);
+  }
+
+  .esv-scenes-ready .esv-territory-panel.is-active .esv-territory-copy {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Remove legacy CTA styling accidentally attached to the kicker span. */
+.esv-territory-copy > .esv-kicker {
+  display: block;
+  min-height: 0;
+  margin-top: 0;
+  border-bottom: 0;
+  font-size: 11px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Signature — safe hover + staged facts                                       */
+/* -------------------------------------------------------------------------- */
+
+@media (hover: hover) and (pointer: fine) {
+  .esv-signature-media:not(.has-detail):hover .esv-signature-image-primary {
+    opacity: 1;
+    transform: none;
+  }
+
+  .esv-signature-media.has-detail:hover .esv-signature-image-primary {
+    opacity: 0;
+  }
+
+  .esv-signature-media.has-detail:hover .esv-signature-image-detail {
+    opacity: 1;
+    transform: scale(1.015);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Matter interlude — breathing image                                          */
+/* -------------------------------------------------------------------------- */
+
+.esv-matter-interlude-media {
+  transform: translate3d(0, var(--esv-interlude-y, 0px), 0)
+    scale(var(--esv-interlude-scale, 1));
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* -------------------------------------------------------------------------- */
+/* UI state motion: overlays, modal, search and selection feedback             */
+/* -------------------------------------------------------------------------- */
+
+.esv-header-overlay,
+.esv-object-modal-backdrop {
+  animation: esv-backdrop-in var(--motion-fast) var(--ease-standard) both;
+}
+
+.esv-header-overlay.is-closing,
+.esv-object-modal-backdrop.is-closing {
+  animation: esv-backdrop-out var(--motion-ui) var(--ease-standard) both;
+}
+
+.esv-header-overlay.is-closing .esv-header-panel,
+.esv-object-modal-backdrop.is-closing .esv-object-modal {
+  animation: esv-panel-out var(--motion-ui) var(--ease-standard) both;
+}
+
+.esv-search-results.is-refreshing {
+  animation: esv-search-in 150ms var(--ease-standard) both;
+}
+
+.esv-enquiry-link sup {
+  animation: esv-count-in 160ms var(--ease-standard) both;
+}
+
+.esv-enquiry-list > div {
+  animation: esv-enquiry-item-in 160ms var(--ease-standard) both;
+}
+
+@keyframes esv-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes esv-backdrop-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes esv-panel-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to { opacity: 0; transform: translate3d(12px, 0, 0); }
+}
+
+@keyframes esv-search-in {
+  from { opacity: .45; transform: translate3d(0, 4px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes esv-count-in {
+  from { opacity: 0; transform: translate3d(0, 4px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes esv-enquiry-item-in {
+  from { opacity: 0; transform: translate3d(0, 4px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Responsive degradation                                                      */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 1023px) and (min-width: 768px) {
+  .esv-territory-panel {
+    min-height: 560px;
+  }
+}
+
+@media (max-width: 767px) {
+  .esv-maison-scene {
+    height: auto;
+    padding-block: var(--section-y);
+  }
+
+  .esv-maison-scene .esv-maison-grid {
+    position: relative;
+    top: auto;
+    min-height: 0;
+  }
+
+  .esv-maison-scene .esv-maison-main,
+  .esv-maison-scene .esv-maison-secondary,
+  .esv-matter-interlude-media {
+    clip-path: none;
+    transform: none;
+    will-change: auto;
+  }
+
+  .esv-territory-track {
+    display: block;
+    height: auto;
+  }
+
+  .esv-territory-panel {
+    position: relative;
+    top: auto;
+    height: clamp(420px, 70svh, 560px);
+    min-height: 0;
+  }
+
+  .esv-territory-media img,
+  .esv-territory-panel:hover .esv-territory-media img {
+    transform: none;
+    transition: transform var(--motion-medium) var(--ease-standard);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Reduced motion                                                              */
+/* -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .esv-header,
+  .esv-header-panel,
+  .esv-header-overlay,
+  .esv-object-modal,
+  .esv-object-modal-backdrop,
+  .esv-skip,
+  .esv-header-nav button::after,
+  .esv-enquiry-link::after,
+  .esv-enquiry-link sup,
+  .esv-search-results,
+  .esv-enquiry-list > div,
+  .esv-hero-picture,
+  .esv-hero-picture img,
+  .esv-hero-line,
+  .esv-hero-cta,
+  .esv-maison-main,
+  .esv-maison-secondary,
+  .esv-matter-interlude-media,
+  .esv-motion-ready .esv-reveal,
+  .esv-motion-ready .esv-reveal-media {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .esv-hero-line,
+  .esv-hero-cta {
+    opacity: 1;
+    clip-path: none;
+    transform: none;
+  }
+
+  .esv-maison-scene {
+    height: auto;
+    padding-block: var(--section-y);
+  }
+
+  .esv-maison-scene .esv-maison-grid,
+  .esv-territory-panel {
+    position: relative;
+    top: auto;
+    min-height: 0;
+  }
+
+  .esv-territory-panel {
+    height: clamp(420px, 70svh, 620px);
+  }
+
+  .esv-maison-main,
+  .esv-maison-secondary,
+  .esv-territory-media img,
+  .esv-matter-interlude-media {
+    clip-path: none !important;
+    transform: none !important;
+    will-change: auto !important;
+  }
+
+  .esv-scenes-ready .esv-territory-copy {
+    opacity: 1;
+    clip-path: none;
+    transform: none;
+  }
+}

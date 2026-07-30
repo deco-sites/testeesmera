@@ -48,25 +48,27 @@ export default function SelectedObjects({
       style={{ paddingTop: "clamp(56px, 6vw, 118px)" }}
     >
       <div class="esv-shell esv-selected-head">
-        <span class="esv-kicker">{eyebrow}</span>
-        <h2 id="esv-selected-title">{title}</h2>
-        {text && <p>{text}</p>}
+        <span class="esv-kicker" data-motion="reveal" data-motion-order="0">
+          {eyebrow}
+        </span>
+        <h2 id="esv-selected-title" data-motion="reveal" data-motion-order="1">
+          {title}
+        </h2>
+        {text && <p data-motion="reveal" data-motion-order="2">{text}</p>}
       </div>
 
       <div id="objects" class="esv-shell esv-product-shelf" role="list">
-        {curatedProducts.map((item) => (
-          <ObjectCard item={item} />
+        {curatedProducts.map((item, index) => (
+          <ObjectCard item={item} motionOrder={index} />
         ))}
       </div>
 
       {collectionLabel && collectionHref && (
         <div
-          class="esv-shell"
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            marginTop: "var(--space-8)",
-          }}
+          class="esv-shell esv-selected-collection-link"
+          style={{ display: "flex", justifyContent: "flex-end" }}
+          data-motion="reveal"
+          data-motion-order="1"
         >
           <a class="esv-text-link" href={collectionHref}>
             {collectionLabel} <Arrow size={14} />

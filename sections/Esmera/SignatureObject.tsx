@@ -33,7 +33,11 @@ export default function SignatureObject({
       aria-labelledby="esv-signature-title"
     >
       <div class="esv-shell esv-signature-grid">
-        <figure class="esv-signature-media">
+        <figure
+          class={`esv-signature-media${product.detailImage ? " has-detail" : ""}`}
+          data-motion="media-reveal"
+          data-motion-order="0"
+        >
           <EsmeraImage
             class="esv-signature-image-primary"
             src={product.image}
@@ -58,15 +62,19 @@ export default function SignatureObject({
           )}
         </figure>
 
-        <div class="esv-signature-copy">
+        <div
+          class="esv-signature-copy"
+          data-motion="reveal"
+          data-motion-order="2"
+        >
           <p class="esv-kicker">{eyebrow}</p>
           <h2 id="esv-signature-title">{product.title}</h2>
           {product.subtitle && <p class="esv-signature-subtitle">{product.subtitle}</p>}
           <p class="esv-signature-text">{editorialText}</p>
 
           <dl class="esv-signature-facts">
-            {facts.slice(0, 4).map((fact) => (
-              <div>
+            {facts.slice(0, 4).map((fact, index) => (
+              <div data-motion="reveal" data-motion-order={String(index + 3)}>
                 <dt>{fact.label}</dt>
                 <dd>{fact.value}</dd>
               </div>

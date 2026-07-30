@@ -33,12 +33,12 @@ export default function Manifesto({
   return (
     <section
       id="about"
-      class="esv-maison"
+      class="esv-maison esv-maison-scene"
       aria-labelledby="esv-maison-title"
-      style={{ paddingBottom: "clamp(64px, 7vw, 136px)" }}
+      data-motion-scene="maison"
     >
       <div class="esv-shell esv-maison-grid">
-        <div class="esv-maison-copy">
+        <div class="esv-maison-copy" data-motion="reveal">
           <p class="esv-kicker">{eyebrow}</p>
           <h2 id="esv-maison-title">{title}</h2>
           {text && <p class="esv-maison-text">{text}</p>}

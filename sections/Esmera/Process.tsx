@@ -65,6 +65,8 @@ export default function Process({
     "A aquisição é conduzida como uma sequência de rituais discretos: curadoria, prova e chegada da obra ao seu contexto.",
   pillars = defaultPillars,
 }: Props) {
+  const rituals = pillars.length === 3 ? pillars : defaultPillars;
+
   return (
     <section
       id="experience"
@@ -95,7 +97,7 @@ export default function Process({
       )}
 
       <div class="esv-shell esv-experience-pillars">
-        {pillars.slice(0, 3).map((pillar, index) => (
+        {rituals.map((pillar, index) => (
           <article>
             <img
               src={pillar.image}

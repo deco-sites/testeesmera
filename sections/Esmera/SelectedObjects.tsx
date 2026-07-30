@@ -4,12 +4,23 @@ import {
   selectedObjects,
 } from "../../components/esmera/data.ts";
 
+/**
+ * Optional CMS override for one of the four curated objects.
+ * Technical identifiers and fallback content remain owned by the catalogue,
+ * so editors can change only the fields they actually need.
+ */
+export type SelectedObjectOverride = Partial<EsmeraObject>;
+
 export interface Props {
   eyebrow?: string;
   title?: string;
   /** @format textarea */
   text?: string;
-  products?: EsmeraObject[];
+  /**
+   * @description Optional overrides for the four curated objects. Leave empty to use the catalogue defaults.
+   * @maxItems 4
+   */
+  products?: SelectedObjectOverride[];
 }
 
 export default function SelectedObjects({
@@ -17,8 +28,13 @@ export default function SelectedObjects({
   title = "Objetos de\npresença singular.",
   text =
     "Uma seleção curta de obras disponíveis, reunidas por matéria, presença e permanência.",
-  products = selectedObjects,
+  products = [],
 }: Props) {
+  const curatedProducts = selectedObjects.slice(0, 4).map((fallback, index) => ({
+    ...fallback,
+    ...(products[index] ?? {}),
+  }));
+
   return (
     <section
       id="selection"
@@ -32,7 +48,7 @@ export default function SelectedObjects({
       </div>
 
       <div id="objects" class="esv-shell esv-product-shelf" role="list">
-        {products.slice(0, 4).map((item) => (
+        {curatedProducts.map((item) => (
           <ObjectCard item={item} />
         ))}
       </div>

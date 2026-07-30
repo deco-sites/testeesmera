@@ -5,6 +5,14 @@ export interface Props {
   item: EsmeraObject;
 }
 
+function statusTone(status: string) {
+  const normalized = status.toLocaleLowerCase("pt-BR");
+  if (normalized.includes("pronta")) return "ready";
+  if (normalized.includes("única")) return "unique";
+  if (normalized.includes("encomenda")) return "order";
+  return "consult";
+}
+
 export default function ObjectCard({ item }: Props) {
   return (
     <article class="esv-product-card" role="listitem">
@@ -30,8 +38,13 @@ export default function ObjectCard({ item }: Props) {
       </figure>
       <div class="esv-product-card-copy">
         <div class="esv-product-meta">
-          <small>{item.category} · {item.material}</small>
-          <small>{item.availability}</small>
+          <div class="esv-product-taxonomy">
+            <span class="esv-product-category">{item.category}</span>
+            <span class="esv-product-material">{item.material}</span>
+          </div>
+          <span class={`esv-product-status esv-product-status-${statusTone(item.availability)}`}>
+            {item.availability}
+          </span>
         </div>
         <h3>{item.title}</h3>
         <p>{item.subtitle}</p>

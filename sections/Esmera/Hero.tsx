@@ -1,5 +1,5 @@
-import { Picture, Source } from "apps/website/components/Picture.tsx";
 import Arrow from "../../components/esmera/Arrow.tsx";
+import { EsmeraPicture } from "../../components/esmera/ResponsiveMedia.tsx";
 
 export interface Props {
   /** @format image-uri @description Objeto Esméra acabado, protagonista do hero */
@@ -26,41 +26,26 @@ export default function Hero({
   overlay = 20,
   focalPoint = "right",
 }: Props) {
-  const mobileAsset = mobileImage ?? desktopImage;
-
   return (
     <section
       id="main-content"
       class={`esv-hero is-overlay-${overlay} is-focal-${focalPoint}`}
       aria-labelledby="esv-hero-title"
     >
-      <Picture class="esv-hero-picture" preload>
-        <Source
-          media="(max-width: 767px)"
-          fetchPriority="high"
-          src={mobileAsset}
-          width={900}
-          height={1200}
-          sizes="100vw"
-        />
-        <Source
-          media="(min-width: 768px)"
-          fetchPriority="high"
-          src={desktopImage}
-          width={1920}
-          height={1200}
-          sizes="100vw"
-        />
-        <img
-          {...{ fetchPriority: "high" }}
-          src={desktopImage}
-          alt="Objeto escultórico Esméra apresentado sobre fundo mineral escuro"
-          loading="eager"
-          decoding="async"
-          width="1920"
-          height="1200"
-        />
-      </Picture>
+      <EsmeraPicture
+        class="esv-hero-picture"
+        desktopSrc={desktopImage}
+        mobileSrc={mobileImage}
+        alt="Objeto escultórico Esméra apresentado sobre fundo mineral escuro"
+        desktopWidth={1920}
+        desktopHeight={1200}
+        mobileWidth={900}
+        mobileHeight={1200}
+        loading="eager"
+        decoding="async"
+        preload
+        fetchPriority="high"
+      />
       <div class="esv-hero-overlay" aria-hidden="true" />
 
       <div class="esv-shell esv-hero-content">

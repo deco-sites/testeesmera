@@ -12,9 +12,16 @@ export interface Props {
 export default function ProductActions(
   { productId, productTitle, product, compact = false, emphasized = false }: Props,
 ) {
-  const dispatch = (name: string) => {
+  const dispatch = (name: string, trigger: HTMLElement) => {
+    const scope = trigger.closest(".esv-product-card, .esv-signature");
+    const sourceImage = scope?.querySelector<HTMLElement>(
+      ".esv-product-image-primary, .esv-signature-image-primary",
+    ) ?? null;
+
     globalThis.dispatchEvent(
-      new CustomEvent(name, { detail: { productId, product } }),
+      new CustomEvent(name, {
+        detail: { productId, product, trigger, sourceImage },
+      }),
     );
   };
 
@@ -24,7 +31,8 @@ export default function ProductActions(
         <button
           type="button"
           aria-label={`Conhecer a peça ${productTitle}`}
-          onClick={() => dispatch("esmera:view-object")}
+          onClick={(event) =>
+            dispatch("esmera:view-object", event.currentTarget)}
           style={emphasized
             ? {
               width: "100%",
@@ -48,14 +56,15 @@ export default function ProductActions(
       <button
         type="button"
         aria-label={`Conhecer a peça ${productTitle}`}
-        onClick={() => dispatch("esmera:view-object")}
+        onClick={(event) => dispatch("esmera:view-object", event.currentTarget)}
       >
         Conhecer a peça <Arrow size={13} />
       </button>
       <button
         type="button"
         aria-label={`Adicionar ${productTitle} à consulta`}
-        onClick={() => dispatch("esmera:add-to-enquiry")}
+        onClick={(event) =>
+          dispatch("esmera:add-to-enquiry", event.currentTarget)}
       >
         Adicionar à consulta
       </button>

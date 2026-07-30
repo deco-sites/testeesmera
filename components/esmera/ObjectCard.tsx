@@ -1,7 +1,7 @@
+import Image from "apps/website/components/Image.tsx";
 import ProductActions from "../../islands/ProductActions.tsx";
 import { getAvailabilityMeta } from "./availability.ts";
 import type { EsmeraObject } from "./data.ts";
-import { responsiveSrcSet } from "./image.ts";
 
 export interface Props {
   item: EsmeraObject;
@@ -9,35 +9,33 @@ export interface Props {
 
 export default function ObjectCard({ item }: Props) {
   const availability = getAvailabilityMeta(item.availability);
-  const meta = [item.category, item.material]
+  const meta = [availability.compactLabel, item.material]
     .filter(Boolean)
     .join(" · ");
 
   return (
     <article class="esv-product-card" role="listitem">
       <figure class="esv-product-media">
-        <img
+        <Image
           class="esv-product-image-primary"
           src={item.image}
-          srcset={responsiveSrcSet(item.image, [480, 720, 960, 1200])}
           alt={item.alt}
           loading="lazy"
           decoding="async"
-          width="960"
-          height="1200"
-          sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1023px) 45vw, 24vw"
+          width={960}
+          height={1200}
+          sizes="(max-width: 767px) calc(100vw - 36px), (max-width: 1023px) 46vw, 24vw"
         />
         {item.detailImage && (
-          <img
+          <Image
             class="esv-product-image-detail"
             src={item.detailImage}
-            srcset={responsiveSrcSet(item.detailImage, [480, 720, 960, 1200])}
             alt=""
             loading="lazy"
             decoding="async"
-            width="960"
-            height="1200"
-            sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1023px) 45vw, 24vw"
+            width={960}
+            height={1200}
+            sizes="(max-width: 767px) calc(100vw - 36px), (max-width: 1023px) 46vw, 24vw"
           />
         )}
       </figure>
@@ -45,7 +43,7 @@ export default function ObjectCard({ item }: Props) {
       <div class="esv-product-card-copy">
         <p class="esv-product-meta-line">{meta}</p>
         <h3>{item.title}</h3>
-        {item.subtitle && <p>{item.subtitle}</p>}
+        {item.subtitle && <p class="esv-product-subtitle">{item.subtitle}</p>}
 
         {(item.price || availability.label) && (
           <div class="esv-product-commercial">

@@ -6,6 +6,7 @@ export interface Props {
   privacyHref?: string;
   termsLabel?: string;
   termsHref?: string;
+  location?: string;
 }
 
 export default function Footer({
@@ -16,8 +17,10 @@ export default function Footer({
   privacyHref = "#contact",
   termsLabel = "Termos",
   termsHref = "#contact",
+  location = "Brasil",
 }: Props) {
   const year = new Date().getFullYear();
+
   return (
     <footer id="footer" class="esv-footer">
       <div class="esv-shell">
@@ -29,13 +32,14 @@ export default function Footer({
             <a href={contactHref}>{contactLabel}</a>
           </div>
         </div>
+
         <div class="esv-footer-bottom">
           <span>© {year} Esméra</span>
           <nav aria-label="Informações legais">
             <a href={privacyHref}>{privacyLabel}</a>
             <a href={termsHref}>{termsLabel}</a>
           </nav>
-          <span>Precious objects / Brazil</span>
+          {location && <span>{location}</span>}
         </div>
       </div>
     </footer>

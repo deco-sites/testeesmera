@@ -15,7 +15,7 @@ export default function ProductActions(
   const dispatch = (name: string, trigger: HTMLElement) => {
     const scope = trigger.closest(".esv-product-card, .esv-signature");
     const sourceImage = scope?.querySelector<HTMLElement>(
-      ".esv-product-image-primary, .esv-signature-image-primary",
+      ".esv-product-image-primary, .esv-product-image-static, .esv-signature-image-primary",
     ) ?? null;
 
     globalThis.dispatchEvent(

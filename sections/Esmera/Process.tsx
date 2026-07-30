@@ -102,7 +102,7 @@ export default function Process({
               decoding="async"
               width={900}
               height={675}
-              sizes="(max-width: 767px) calc(100vw - 36px), 32vw"
+              sizes="(max-width: 429px) calc(100vw - 36px), (max-width: 767px) calc(100vw - 44px), 32vw"
             />
             <small>0{index + 1}</small>
             <h3>{pillar.title}</h3>

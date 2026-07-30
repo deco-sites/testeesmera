@@ -1,0 +1,355 @@
+/* ESMÉRA — Final refinement layer v1.0
+ * Source: ESMERA_Homepage_10of10_Master_Plan_Asymmetry_Section8_v1.0
+ * Scope: calibration only — no macro redesign.
+ */
+
+/* -------------------------------------------------------------------------- */
+/* Global micro-hierarchy                                                     */
+/* -------------------------------------------------------------------------- */
+
+.esv-hero-statement {
+  font-size: clamp(44px, 4.35vw, 56px);
+  line-height: .97;
+}
+
+.esv-maison-copy h2,
+.esv-selected-head h2,
+.esv-shelf-head h2,
+.esv-provenance-intro-copy h2,
+.esv-experience-intro h2 {
+  font-size: clamp(38px, 3.15vw, 50px);
+}
+
+.esv-signature-copy h2,
+.esv-provenance-stage-copy h3 {
+  font-size: clamp(24px, 2.15vw, 34px);
+}
+
+.esv-private-copy h2 {
+  font-size: clamp(40px, 3.9vw, 56px);
+}
+
+.esv-maison-text,
+.esv-selected-head > p:not(.esv-kicker),
+.esv-shelf-head > p:last-child,
+.esv-signature-subtitle,
+.esv-signature-text,
+.esv-provenance-intro-copy > p,
+.esv-provenance-stage-copy p,
+.esv-experience-text,
+.esv-experience-pillars p,
+.esv-private-copy p,
+.esv-footer-main > p {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 02 — Maison: retain one dominant asymmetry, remove incidental drift        */
+/* -------------------------------------------------------------------------- */
+
+.esv-maison-main {
+  inset-left: 10%;
+}
+
+.esv-maison-secondary {
+  left: -5%;
+  bottom: 11%;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 03 — Objetos: cleaner heading axis + disciplined card baselines            */
+/* -------------------------------------------------------------------------- */
+
+.esv-selected-head > .esv-kicker {
+  grid-column: 1 / span 3;
+  align-self: start;
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+}
+
+.esv-selected-head > p:not(.esv-kicker) {
+  grid-column: 8 / -1;
+  margin-top: var(--space-6);
+}
+
+.esv-product-shelf {
+  margin-top: var(--space-16);
+}
+
+.esv-product-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.esv-product-card-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.esv-product-meta-line {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: .075em;
+}
+
+.esv-product-commercial {
+  margin-top: auto;
+  padding-top: var(--space-4);
+}
+
+.esv-product-state {
+  color: var(--accent);
+}
+
+.esv-product-actions.is-compact {
+  margin-top: var(--space-3);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 07 — Proveniência: keep the zig-zag, standardize vertical rhythm           */
+/* -------------------------------------------------------------------------- */
+
+.esv-provenance-stages {
+  margin-top: var(--space-24);
+}
+
+.esv-provenance-stage {
+  padding-top: var(--space-16);
+}
+
+.esv-provenance-stage + .esv-provenance-stage {
+  margin-top: var(--space-24);
+}
+
+.esv-provenance-stage-copy p {
+  max-width: 38ch;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 08 — Da escolha à entrega: aligned ritual grid                             */
+/* -------------------------------------------------------------------------- */
+
+.esv-experience-head {
+  display: block;
+  max-width: min(620px, 100%);
+}
+
+.esv-experience-intro {
+  margin-top: var(--space-6);
+}
+
+.esv-experience-intro h2 {
+  max-width: 10ch;
+}
+
+.esv-experience-text {
+  max-width: 48ch;
+}
+
+.esv-experience-pillars {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--grid-gap);
+  align-items: stretch;
+  margin-top: var(--space-16);
+}
+
+.esv-experience-pillars article,
+.esv-experience-pillars article:nth-child(1),
+.esv-experience-pillars article:nth-child(2),
+.esv-experience-pillars article:nth-child(3) {
+  grid-column: auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  margin-top: 0;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+.esv-experience-pillars article:nth-child(1) img,
+.esv-experience-pillars article:nth-child(2) img,
+.esv-experience-pillars article:nth-child(3) img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  margin-bottom: var(--space-4);
+  object-fit: cover;
+}
+
+.esv-experience-pillars small {
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.esv-experience-pillars h3 {
+  margin-top: var(--space-3);
+  font-size: clamp(20px, 1.7vw, 24px);
+  line-height: 1.12;
+}
+
+.esv-experience-pillars p {
+  max-width: 35ch;
+  margin-top: var(--space-3);
+}
+
+.esv-experience-pillars a {
+  margin-top: auto;
+  padding-top: var(--space-4);
+  align-self: flex-start;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 10 — Footer: informational close, not a second conversion block            */
+/* -------------------------------------------------------------------------- */
+
+.esv-footer {
+  padding-block: var(--space-16) var(--space-8);
+}
+
+.esv-footer-main > p {
+  max-width: 28ch;
+}
+
+.esv-footer-contact small,
+.esv-footer-bottom {
+  font-size: 10px;
+}
+
+.esv-footer-contact a {
+  font-size: 12px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Tablet                                                                     */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 1023px) {
+  .esv-selected-head > .esv-kicker {
+    grid-column: 1 / span 2;
+  }
+
+  .esv-experience-head {
+    max-width: min(560px, 100%);
+  }
+
+  .esv-experience-pillars {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .esv-experience-pillars article,
+  .esv-experience-pillars article:nth-child(1),
+  .esv-experience-pillars article:nth-child(2),
+  .esv-experience-pillars article:nth-child(3) {
+    grid-column: auto;
+    margin-top: 0;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Mobile                                                                     */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  .esv-hero-statement {
+    font-size: clamp(40px, 11.5vw, 52px);
+  }
+
+  .esv-maison-copy h2,
+  .esv-selected-head h2,
+  .esv-provenance-intro-copy h2,
+  .esv-experience-intro h2 {
+    font-size: clamp(34px, 9.8vw, 44px);
+  }
+
+  .esv-maison-main {
+    inset-left: 8%;
+  }
+
+  .esv-maison-secondary {
+    left: 0;
+    bottom: 8%;
+  }
+
+  .esv-selected-head > .esv-kicker,
+  .esv-selected-head h2,
+  .esv-selected-head > p:not(.esv-kicker) {
+    grid-column: 1 / -1;
+  }
+
+  .esv-selected-head h2 {
+    margin-top: var(--space-8);
+  }
+
+  .esv-product-shelf {
+    margin-top: var(--space-12);
+  }
+
+  .esv-product-card + .esv-product-card {
+    margin-top: var(--space-8);
+  }
+
+  .esv-product-meta-line {
+    font-size: 11px;
+  }
+
+  .esv-provenance-stages {
+    margin-top: var(--space-12);
+  }
+
+  .esv-provenance-stage,
+  .esv-provenance-stage + .esv-provenance-stage {
+    margin-top: 0;
+    padding-block: var(--space-12);
+  }
+
+  .esv-provenance-stage-origin .esv-provenance-stage-media,
+  .esv-provenance-stage-transform .esv-provenance-stage-media,
+  .esv-provenance-stage-register .esv-provenance-stage-media {
+    height: min(54svh, 520px);
+  }
+
+  .esv-experience-head {
+    max-width: 100%;
+  }
+
+  .esv-experience-intro {
+    margin-top: var(--space-6);
+  }
+
+  .esv-experience-pillars {
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-top: var(--space-12);
+  }
+
+  .esv-experience-pillars article,
+  .esv-experience-pillars article:nth-child(1),
+  .esv-experience-pillars article:nth-child(2),
+  .esv-experience-pillars article:nth-child(3) {
+    grid-column: 1;
+    margin-top: 0;
+  }
+
+  .esv-experience-pillars article + article {
+    margin-top: var(--space-12);
+  }
+
+  .esv-experience-pillars article:nth-child(1) img,
+  .esv-experience-pillars article:nth-child(2) img,
+  .esv-experience-pillars article:nth-child(3) img {
+    aspect-ratio: 4 / 3;
+  }
+
+  .esv-footer {
+    padding-block: var(--space-12) var(--space-6);
+  }
+}

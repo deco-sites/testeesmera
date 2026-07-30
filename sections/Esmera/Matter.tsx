@@ -1,4 +1,4 @@
-import Image from "apps/website/components/Image.tsx";
+import { EsmeraImage } from "../../components/esmera/ResponsiveMedia.tsx";
 
 export interface TerritoryPanel {
   /** @format image-uri */
@@ -52,7 +52,7 @@ export default function Matter({ panels = defaultPanels }: Props) {
         {panels.slice(0, 3).map((panel) => (
           <article class="esv-territory-panel">
             <figure class="esv-territory-media">
-              <Image
+              <EsmeraImage
                 src={panel.image}
                 alt={panel.alt}
                 loading="lazy"

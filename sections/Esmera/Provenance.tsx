@@ -1,4 +1,4 @@
-import { responsiveSrcSet } from "../../components/esmera/image.ts";
+import Image from "apps/website/components/Image.tsx";
 
 export interface ProvenanceStage {
   title: string;
@@ -80,15 +80,14 @@ export default function Provenance({
           return (
             <article class={`esv-provenance-stage esv-provenance-stage-${tone}`}>
               <figure class="esv-provenance-stage-media">
-                <img
+                <Image
                   src={stage.image}
-                  srcset={responsiveSrcSet(stage.image, [720, 960, 1280, 1800])}
                   alt={stage.alt}
                   loading="lazy"
                   decoding="async"
-                  width="1600"
-                  height="1200"
-                  sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1023px) 62vw, 58vw"
+                  width={1600}
+                  height={1200}
+                  sizes="(max-width: 767px) calc(100vw - 36px), (max-width: 1023px) 62vw, 58vw"
                 />
               </figure>
 

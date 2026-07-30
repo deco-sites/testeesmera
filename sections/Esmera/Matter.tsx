@@ -1,4 +1,4 @@
-import { responsiveSrcSet } from "../../components/esmera/image.ts";
+import Image from "apps/website/components/Image.tsx";
 
 export interface TerritoryPanel {
   /** @format image-uri */
@@ -52,14 +52,13 @@ export default function Matter({ panels = defaultPanels }: Props) {
         {panels.slice(0, 3).map((panel) => (
           <article class="esv-territory-panel">
             <figure class="esv-territory-media">
-              <img
+              <Image
                 src={panel.image}
-                srcset={responsiveSrcSet(panel.image, [640, 960, 1280, 1800])}
                 alt={panel.alt}
                 loading="lazy"
                 decoding="async"
-                width="1200"
-                height="1500"
+                width={1200}
+                height={1500}
                 sizes="(max-width: 767px) 100vw, 33vw"
               />
             </figure>

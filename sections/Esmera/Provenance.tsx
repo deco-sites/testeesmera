@@ -62,8 +62,14 @@ export default function Provenance({
       aria-labelledby="esv-provenance-title"
     >
       <div class="esv-shell esv-provenance-intro-grid">
-        <p class="esv-kicker">{eyebrow}</p>
-        <div class="esv-provenance-intro-copy">
+        <p class="esv-kicker" data-motion="reveal" data-motion-order="0">
+          {eyebrow}
+        </p>
+        <div
+          class="esv-provenance-intro-copy"
+          data-motion="reveal"
+          data-motion-order="1"
+        >
           <h2 id="esv-provenance-title">{title}</h2>
           {text && <p>{text}</p>}
         </div>
@@ -79,7 +85,11 @@ export default function Provenance({
 
           return (
             <article class={`esv-provenance-stage esv-provenance-stage-${tone}`}>
-              <figure class="esv-provenance-stage-media">
+              <figure
+                class="esv-provenance-stage-media"
+                data-motion="media-reveal"
+                data-motion-order="0"
+              >
                 <EsmeraImage
                   src={stage.image}
                   alt={stage.alt}
@@ -92,11 +102,18 @@ export default function Provenance({
               </figure>
 
               <div class="esv-provenance-stage-copy">
-                <small>0{index + 1}</small>
-                <h3>{stage.title}</h3>
-                <p>{stage.text}</p>
+                <small data-motion="reveal" data-motion-order="1">0{index + 1}</small>
+                <h3 data-motion="reveal" data-motion-order="2">{stage.title}</h3>
+                <p data-motion="reveal" data-motion-order="3">{stage.text}</p>
                 {stage.linkLabel && stage.linkHref && (
-                  <a class="esv-text-link" href={stage.linkHref}>{stage.linkLabel}</a>
+                  <a
+                    class="esv-text-link"
+                    href={stage.linkHref}
+                    data-motion="reveal"
+                    data-motion-order="4"
+                  >
+                    {stage.linkLabel}
+                  </a>
                 )}
               </div>
             </article>

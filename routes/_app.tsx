@@ -11,6 +11,9 @@ export default defineApp(async (_req, ctx) => {
 
       {/* Include Icons and manifest */}
       <Head>
+        {/* Standards-based cross-document View Transitions opt-in. */}
+        <style>{`@view-transition { navigation: auto; }`}</style>
+
         {/* Tailwind v3 CSS file */}
         <link
           href={asset(`/styles.css?revision=${revision}`)}

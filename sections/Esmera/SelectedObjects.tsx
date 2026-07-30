@@ -1,3 +1,4 @@
+import Arrow from "../../components/esmera/Arrow.tsx";
 import ObjectCard from "../../components/esmera/ObjectCard.tsx";
 import {
   type EsmeraObject,
@@ -21,6 +22,8 @@ export interface Props {
    * @maxItems 4
    */
   products?: SelectedObjectOverride[];
+  collectionLabel?: string;
+  collectionHref?: string;
 }
 
 export default function SelectedObjects({
@@ -29,6 +32,8 @@ export default function SelectedObjects({
   text =
     "Uma seleção curta de obras disponíveis, reunidas por matéria, presença e permanência.",
   products = [],
+  collectionLabel = "Ver coleção",
+  collectionHref = "#territory",
 }: Props) {
   const curatedProducts = selectedObjects.slice(0, 4).map((fallback, index) => ({
     ...fallback,
@@ -40,7 +45,7 @@ export default function SelectedObjects({
       id="selection"
       class="esv-selected"
       aria-labelledby="esv-selected-title"
-      style={{ paddingTop: "clamp(64px, 7vw, 136px)" }}
+      style={{ paddingTop: "clamp(56px, 6vw, 118px)" }}
     >
       <div class="esv-shell esv-selected-head">
         <span class="esv-kicker">{eyebrow}</span>
@@ -53,6 +58,21 @@ export default function SelectedObjects({
           <ObjectCard item={item} />
         ))}
       </div>
+
+      {collectionLabel && collectionHref && (
+        <div
+          class="esv-shell"
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginTop: "var(--space-8)",
+          }}
+        >
+          <a class="esv-text-link" href={collectionHref}>
+            {collectionLabel} <Arrow size={14} />
+          </a>
+        </div>
+      )}
     </section>
   );
 }

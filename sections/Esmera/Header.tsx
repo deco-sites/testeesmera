@@ -24,10 +24,8 @@ export default function Header({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap"
           rel="stylesheet"
         />
-        <link rel="stylesheet" href={asset("/esmera.css")} />
-        <link rel="stylesheet" href={asset("/esmera-refined.css")} />
-        <link rel="stylesheet" href={asset("/esmera-v2.css")} />
-        <meta name="theme-color" content="#151515" />
+        <link rel="stylesheet" href={asset("/esmera-master.css")} />
+        <meta name="theme-color" content="#111210" />
       </Head>
 
       <a class="esv-skip" href="#main-content">Pular para o conteúdo</a>

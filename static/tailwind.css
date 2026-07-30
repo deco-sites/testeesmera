@@ -1070,6 +1070,13 @@ html {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
 }
+.\!hero {
+  display: grid !important;
+  width: 100% !important;
+  place-items: center !important;
+  background-size: cover !important;
+  background-position: center !important;
+}
 .hero {
   display: grid;
   width: 100%;
@@ -1077,17 +1084,13 @@ html {
   background-size: cover;
   background-position: center;
 }
+.\!hero > * {
+  grid-column-start: 1 !important;
+  grid-row-start: 1 !important;
+}
 .hero > * {
   grid-column-start: 1;
   grid-row-start: 1;
-}
-.hero-overlay {
-  grid-column-start: 1;
-  grid-row-start: 1;
-  height: 100%;
-  width: 100%;
-  background-color: var(--fallback-n,oklch(var(--n)/var(--tw-bg-opacity)));
-  --tw-bg-opacity: 0.5;
 }
 .input {
   flex-shrink: 1;

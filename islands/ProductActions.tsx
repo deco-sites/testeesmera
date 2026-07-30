@@ -12,17 +12,48 @@ export interface Props {
 export default function ProductActions(
   { productId, productTitle, product, compact = false, emphasized = false }: Props,
 ) {
-  const dispatch = (name: string, trigger: HTMLElement) => {
+  const findSourceImage = (trigger: HTMLElement) => {
     const scope = trigger.closest(".esv-product-card, .esv-signature");
-    const sourceImage = scope?.querySelector<HTMLElement>(
+    return scope?.querySelector<HTMLImageElement>(
       ".esv-product-image-primary, .esv-product-image-static, .esv-signature-image-primary",
     ) ?? null;
+  };
+
+  const warmDetailImage = () => {
+    if (!product?.detailImage || typeof globalThis.Image !== "function") return;
+    const image = new globalThis.Image();
+    image.decoding = "async";
+    image.src = product.detailImage;
+  };
+
+  const dispatch = (name: string, trigger: HTMLElement) => {
+    const sourceImage = findSourceImage(trigger);
+    const cachedSource = sourceImage?.currentSrc || sourceImage?.src;
+
+    // Product cards already display a responsive/optimized image. Reuse that decoded
+    // browser resource for the modal instead of requesting the original CMS PNG again.
+    // The modal opens immediately; the heavier detail image can continue loading after.
+    const eventProduct = name === "esmera:view-object" && product && cachedSource
+      ? { ...product, image: cachedSource }
+      : product;
 
     globalThis.dispatchEvent(
       new CustomEvent(name, {
-        detail: { productId, product, trigger, sourceImage },
+        detail: {
+          productId,
+          product: eventProduct,
+          trigger,
+          // Do not gate modal opening behind the View Transition snapshot cycle.
+          // The cached source above provides the visual continuity without delaying UI.
+          sourceImage: null,
+        },
       }),
     );
+  };
+
+  const commonWarmup = {
+    onPointerEnter: warmDetailImage,
+    onFocus: warmDetailImage,
   };
 
   if (compact) {
@@ -31,6 +62,7 @@ export default function ProductActions(
         <button
           type="button"
           aria-label={`Conhecer a peça ${productTitle}`}
+          {...commonWarmup}
           onClick={(event) =>
             dispatch("esmera:view-object", event.currentTarget)}
           style={emphasized
@@ -56,6 +88,7 @@ export default function ProductActions(
       <button
         type="button"
         aria-label={`Conhecer a peça ${productTitle}`}
+        {...commonWarmup}
         onClick={(event) => dispatch("esmera:view-object", event.currentTarget)}
       >
         Conhecer a peça <Arrow size={13} />

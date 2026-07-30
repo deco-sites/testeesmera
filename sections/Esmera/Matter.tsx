@@ -65,7 +65,7 @@ export default function Matter({ panels = defaultPanels }: Props) {
             </figure>
             <div class="esv-territory-shade" aria-hidden="true" />
             <div class="esv-territory-copy">
-              <small>{panel.eyebrow}</small>
+              <span class="esv-kicker esv-kicker-light">{panel.eyebrow}</span>
               <h2>{panel.title}</h2>
               {panel.text && <p>{panel.text}</p>}
             </div>

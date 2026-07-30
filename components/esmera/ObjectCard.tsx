@@ -5,17 +5,26 @@ import { EsmeraImage } from "./ResponsiveMedia.tsx";
 
 export interface Props {
   item: EsmeraObject;
+  motionOrder?: number;
 }
 
-export default function ObjectCard({ item }: Props) {
+export default function ObjectCard({ item, motionOrder = 0 }: Props) {
   const availability = getAvailabilityMeta(item.availability);
   const meta = [availability.compactLabel, item.material]
     .filter(Boolean)
     .join(" · ");
 
   return (
-    <article class="esv-product-card" role="listitem">
-      <figure class="esv-product-media">
+    <article
+      class={`esv-product-card${item.detailImage ? " has-detail" : ""}`}
+      role="listitem"
+      data-product-id={item.id}
+    >
+      <figure
+        class="esv-product-media"
+        data-motion="media-reveal"
+        data-motion-order={String(motionOrder)}
+      >
         <EsmeraImage
           class="esv-product-image-primary"
           src={item.image}
@@ -40,7 +49,11 @@ export default function ObjectCard({ item }: Props) {
         )}
       </figure>
 
-      <div class="esv-product-card-copy">
+      <div
+        class="esv-product-card-copy"
+        data-motion="reveal"
+        data-motion-order={String(motionOrder + 2)}
+      >
         <p class="esv-product-meta-line" style={{ minHeight: "2.7em" }}>{meta}</p>
         <h3>{item.title}</h3>
         {item.subtitle && (

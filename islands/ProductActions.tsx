@@ -6,10 +6,11 @@ export interface Props {
   productTitle: string;
   product?: EsmeraObject;
   compact?: boolean;
+  emphasized?: boolean;
 }
 
 export default function ProductActions(
-  { productId, productTitle, product, compact = false }: Props,
+  { productId, productTitle, product, compact = false, emphasized = false }: Props,
 ) {
   const dispatch = (name: string) => {
     globalThis.dispatchEvent(
@@ -24,8 +25,19 @@ export default function ProductActions(
           type="button"
           aria-label={`Conhecer a peça ${productTitle}`}
           onClick={() => dispatch("esmera:view-object")}
+          style={emphasized
+            ? {
+              width: "100%",
+              minHeight: "46px",
+              justifyContent: "space-between",
+              padding: "0 2px",
+              borderTop: "1px solid var(--line)",
+              borderBottom: "1px solid rgba(38, 39, 36, .48)",
+              fontWeight: 500,
+            }
+            : undefined}
         >
-          Conhecer a peça <Arrow size={13} />
+          Conhecer a peça <Arrow size={14} />
         </button>
       </div>
     );

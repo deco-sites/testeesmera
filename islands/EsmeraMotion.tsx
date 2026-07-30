@@ -28,7 +28,6 @@ const revealSelectors = [
 
 const staggerSelectors = [
   ".esv-product-card",
-  ".esv-experience-pillars article",
 ];
 
 export default function EsmeraMotion() {

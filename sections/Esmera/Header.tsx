@@ -1,5 +1,6 @@
 import { asset, Head } from "$fresh/runtime.ts";
 import EsmeraHeader from "../../islands/EsmeraHeader.tsx";
+import EsmeraMotion from "../../islands/EsmeraMotion.tsx";
 
 export interface Props {
   logo?: string;
@@ -25,11 +26,13 @@ export default function Header({
         />
         <link rel="stylesheet" href={asset("/esmera.css")} />
         <link rel="stylesheet" href={asset("/esmera-refined.css")} />
-        <meta name="theme-color" content="#0F1115" />
+        <link rel="stylesheet" href={asset("/esmera-v2.css")} />
+        <meta name="theme-color" content="#151515" />
       </Head>
 
       <a class="esv-skip" href="#main-content">Pular para o conteúdo</a>
       <EsmeraHeader logo={logo} enquiryLabel={enquiryLabel} />
+      <EsmeraMotion />
     </>
   );
 }

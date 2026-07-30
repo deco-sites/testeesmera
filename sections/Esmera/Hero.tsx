@@ -1,4 +1,5 @@
 import Arrow from "../../components/esmera/Arrow.tsx";
+import { responsiveSrcSet } from "../../components/esmera/image.ts";
 
 export interface Props {
   /** @format image-uri @description Objeto Esméra acabado, protagonista do hero */
@@ -33,11 +34,16 @@ export default function Hero({
     >
       <picture class="esv-hero-picture">
         {mobileImage && (
-          <source media="(max-width: 767px)" srcset={mobileImage} />
+          <source
+            media="(max-width: 767px)"
+            srcset={responsiveSrcSet(mobileImage, [480, 768, 1080, 1440]) ?? mobileImage}
+            sizes="100vw"
+          />
         )}
         <img
           {...{ fetchPriority: "high" }}
           src={desktopImage}
+          srcset={responsiveSrcSet(desktopImage, [960, 1440, 1920, 2400])}
           alt="Objeto escultórico Esméra apresentado sobre fundo mineral escuro"
           loading="eager"
           decoding="async"

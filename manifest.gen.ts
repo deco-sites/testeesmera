@@ -13,7 +13,6 @@ import * as $$$$$$5 from "./sections/Esmera/Manifesto.tsx";
 import * as $$$$$$6 from "./sections/Esmera/Matter.tsx";
 import * as $$$$$$7 from "./sections/Esmera/MatterInterlude.tsx";
 import * as $$$$$$8 from "./sections/Esmera/PrivateInvitation.tsx";
-import * as $$$$$$9 from "./sections/Esmera/Process.tsx";
 import * as $$$$$$10 from "./sections/Esmera/Provenance.tsx";
 import * as $$$$$$11 from "./sections/Esmera/SelectedObjects.tsx";
 import * as $$$$$$12 from "./sections/Esmera/SignatureObject.tsx";
@@ -32,7 +31,6 @@ const manifest = {
     "site/sections/Esmera/Matter.tsx": $$$$$$6,
     "site/sections/Esmera/MatterInterlude.tsx": $$$$$$7,
     "site/sections/Esmera/PrivateInvitation.tsx": $$$$$$8,
-    "site/sections/Esmera/Process.tsx": $$$$$$9,
     "site/sections/Esmera/Provenance.tsx": $$$$$$10,
     "site/sections/Esmera/SelectedObjects.tsx": $$$$$$11,
     "site/sections/Esmera/SignatureObject.tsx": $$$$$$12,

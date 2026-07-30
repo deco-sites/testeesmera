@@ -50,20 +50,17 @@ export default function Matter({ panels = defaultPanels }: Props) {
       data-motion-scene="territory-stack"
     >
       <div class="esv-territory-track">
-        {panels.slice(0, 3).map((panel, index) => (
-          <article
-            class={`esv-territory-panel${index === 0 ? " is-active" : ""}`}
-            data-territory-panel={String(index + 1)}
-          >
+        {panels.slice(0, 3).map((panel) => (
+          <article class="esv-territory-panel">
             <figure class="esv-territory-media">
               <EsmeraImage
                 src={panel.image}
                 alt={panel.alt}
                 loading="lazy"
                 decoding="async"
-                width={1600}
-                height={1200}
-                sizes="(max-width: 767px) 100vw, 100vw"
+                width={1200}
+                height={1500}
+                sizes="(max-width: 767px) 100vw, 33vw"
               />
             </figure>
             <div class="esv-territory-shade" aria-hidden="true" />

@@ -41,9 +41,13 @@ export default function ObjectCard({ item }: Props) {
       </figure>
 
       <div class="esv-product-card-copy">
-        <p class="esv-product-meta-line">{meta}</p>
+        <p class="esv-product-meta-line" style={{ minHeight: "2.7em" }}>{meta}</p>
         <h3>{item.title}</h3>
-        {item.subtitle && <p class="esv-product-subtitle">{item.subtitle}</p>}
+        {item.subtitle && (
+          <p class="esv-product-subtitle" style={{ marginBottom: "6px" }}>
+            {item.subtitle}
+          </p>
+        )}
 
         {(item.price || availability.label) && (
           <div class="esv-product-commercial">
@@ -57,6 +61,7 @@ export default function ObjectCard({ item }: Props) {
           productTitle={item.title}
           product={item}
           compact
+          emphasized
         />
       </div>
     </article>

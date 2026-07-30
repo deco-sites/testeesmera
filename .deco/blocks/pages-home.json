@@ -6,13 +6,26 @@
       "__resolveType": "site/sections/Esmera/Header.tsx"
     },
     {
-      "__resolveType": "site/sections/Esmera/Hero.tsx"
+      "__resolveType": "site/sections/Esmera/Hero.tsx",
+      "mobileImage": "https://decoims.com/testeesmera/5ab135ff-8940-4ab4-ad5d-3977997b2297/ba4f8b3d-9ebb-42a3-a066-69ad194e1302.png",
+      "focalPoint": "center",
+      "desktopImage": "https://decoims.com/testeesmera/686e4503-8062-4516-8072-393ca6d3db59/9c7240e1-7977-4baa-bcc1-dd0373c3d538.png"
     },
     {
-      "__resolveType": "site/sections/Esmera/Manifesto.tsx"
+      "__resolveType": "site/sections/Esmera/Manifesto.tsx",
+      "secondaryImage": "https://decoims.com/testeesmera/903b6444-0e90-4701-957d-6c512ce98065/c8409492-1d48-4c5c-aa3f-4242cc5f921e.png",
+      "mainImage": "https://decoims.com/testeesmera/210b80ad-b013-4644-b92b-d240a2bbc7c7/ChatGPT-Image-30-de-jul.-de-2026-10_37_48.png"
     },
     {
-      "__resolveType": "site/sections/Esmera/SelectedObjects.tsx"
+      "__resolveType": "site/sections/Esmera/SelectedObjects.tsx",
+      "products": [
+        {
+          "availability": "unique"
+        },
+        {
+          "availability": "unique"
+        }
+      ]
     },
     {
       "__resolveType": "site/sections/Esmera/Matter.tsx"

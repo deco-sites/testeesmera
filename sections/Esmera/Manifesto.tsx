@@ -35,6 +35,7 @@ export default function Manifesto({
       id="about"
       class="esv-maison"
       aria-labelledby="esv-maison-title"
+      style={{ paddingBottom: "clamp(64px, 7vw, 136px)" }}
     >
       <div class="esv-shell esv-maison-grid">
         <div class="esv-maison-copy">

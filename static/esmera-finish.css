@@ -2,7 +2,8 @@
  * Sources:
  * - ESMERA_Homepage_10of10_Master_Plan_Asymmetry_Section8_v1.0
  * - ESMERA_Responsive_Master_Plan_10of10_v1.0
- * Scope: responsive calibration and QA before consolidation into esmera-master.css.
+ * - ESMERA_Visual_Contract_Final_Responsive_Round_v1.0
+ * Scope: final responsive calibration and QA before consolidation into esmera-master.css.
  */
 
 /* -------------------------------------------------------------------------- */
@@ -324,13 +325,13 @@
   }
 
   .esv-maison-main {
-    inset: 0 0 0 8%;
+    inset: 0 0 0 4%;
   }
 
   .esv-maison-secondary {
     left: 0;
     bottom: 8%;
-    width: 34%;
+    width: 36%;
   }
 
   .esv-selected-head > .esv-kicker,
@@ -352,8 +353,26 @@
     margin-top: 0;
   }
 
+  .esv-product-card-copy {
+    padding-top: 12px;
+  }
+
   .esv-product-meta-line {
     font-size: 11px;
+  }
+
+  .esv-product-subtitle {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .esv-product-actions button {
+    min-height: 44px;
+    font-size: 12px;
   }
 
   .esv-territory-panel {
@@ -451,13 +470,13 @@
   }
 
   .esv-footer {
-    padding-block: var(--space-12) var(--space-6);
+    padding-block: 48px 24px;
   }
 
   .esv-footer-main {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-6);
+    gap: 28px;
   }
 
   .esv-footer-wordmark,
@@ -466,17 +485,40 @@
     grid-column: 1;
   }
 
+  .esv-footer-main > p {
+    max-width: 22ch;
+    font-size: 14px;
+  }
+
+  .esv-footer-contact {
+    gap: 10px;
+  }
+
+  .esv-footer-contact a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 13px;
+  }
+
   .esv-footer-bottom {
     display: grid;
     grid-template-columns: 1fr auto;
-    gap: var(--space-3) var(--space-6);
+    gap: 12px 20px;
     align-items: center;
-    margin-top: var(--space-8);
+    margin-top: 40px;
+    padding-top: 16px;
   }
 
   .esv-footer-bottom nav {
     grid-column: 1 / -1;
     order: -1;
+  }
+
+  .esv-footer-bottom nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
   }
 
   .esv-footer-bottom > span:last-child {
@@ -527,21 +569,28 @@
     min-height: clamp(400px, 124vw, 480px);
   }
 
+  .esv-maison-main {
+    inset: 0 0 0 4%;
+  }
+
+  .esv-maison-secondary {
+    width: 36%;
+  }
+
   .esv-product-shelf {
     gap: var(--space-6);
   }
 
-  .esv-product-card-copy > p:not(.esv-product-meta-line) {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+  .esv-product-subtitle {
+    -webkit-line-clamp: 1;
   }
 
   .esv-product-commercial {
     display: grid;
     grid-template-columns: minmax(0, 1fr) max-content;
     gap: var(--space-3);
+    margin-top: 12px;
+    padding-top: 12px;
   }
 
   .esv-territory-panel {
@@ -587,7 +636,7 @@
   }
 
   .esv-footer-main {
-    gap: var(--space-6);
+    gap: 28px;
   }
 
   .esv-footer-bottom {

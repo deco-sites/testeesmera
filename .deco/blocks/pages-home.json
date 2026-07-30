@@ -17,15 +17,7 @@
       "mainImage": "https://decoims.com/testeesmera/210b80ad-b013-4644-b92b-d240a2bbc7c7/ChatGPT-Image-30-de-jul.-de-2026-10_37_48.png"
     },
     {
-      "__resolveType": "site/sections/Esmera/SelectedObjects.tsx",
-      "products": [
-        {
-          "availability": "unique"
-        },
-        {
-          "availability": "unique"
-        }
-      ]
+      "__resolveType": "site/sections/Esmera/SelectedObjects.tsx"
     },
     {
       "__resolveType": "site/sections/Esmera/Matter.tsx"

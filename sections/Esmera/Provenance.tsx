@@ -44,7 +44,7 @@ const archiveStyles = `
   .esv-provenance.esv-provenance-archive {
     display: flex;
     flex-direction: column;
-    min-height: 96svh;
+    min-height: 90svh;
     padding: 0;
     overflow: hidden;
     background: var(--color-paper-2, #f8f6f1);
@@ -93,26 +93,34 @@ const archiveStyles = `
     text-align: right;
   }
 
+  /* Reset the legacy Provenance card grid completely. The archive must be
+     three photographic plates, not three nested text grids. */
   .esv-provenance-archive .esv-provenance-evidence {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 4px;
-    width: min(68vw, 920px);
-    margin: clamp(130px, 18vh, 220px) auto 0;
+    width: min(72vw, 980px);
+    margin: clamp(96px, 13vh, 150px) auto 0;
     padding: 0;
     border: 0;
   }
 
   .esv-provenance-archive .esv-provenance-evidence article,
   .esv-provenance-archive .esv-provenance-evidence article + article {
+    display: block;
+    grid-template-columns: none;
+    gap: 0;
+    align-items: initial;
     min-width: 0;
     min-height: 0;
     padding: 0;
     border: 0;
+    background: transparent;
   }
 
   .esv-provenance-archive-media {
     position: relative;
+    width: 100%;
     aspect-ratio: 1.08 / 1;
     margin: 0;
     overflow: hidden;
@@ -120,6 +128,7 @@ const archiveStyles = `
   }
 
   .esv-provenance-archive-media img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -172,17 +181,22 @@ const archiveStyles = `
     align-items: end;
     width: 100%;
     margin-top: auto;
+    padding-top: clamp(52px, 7vh, 88px);
     padding-bottom: clamp(28px, 3.5vw, 52px);
   }
 
-  .esv-provenance-intro {
+  .esv-provenance-archive .esv-provenance-intro {
     grid-column: 1 / span 4;
     max-width: 45ch;
-    margin: clamp(74px, 10vh, 120px) 0 0;
+    margin: 0;
     color: var(--color-muted, #6f716f);
     font-size: 12px;
     font-weight: 300;
     line-height: 1.55;
+  }
+
+  .esv-provenance-archive .esv-provenance-intro p {
+    margin: 0;
   }
 
   .esv-provenance-archive-link {
@@ -233,16 +247,16 @@ const archiveStyles = `
 
     .esv-provenance-archive .esv-provenance-evidence {
       width: calc(100% - 2 * var(--esv-page-x, 28px));
-      margin-top: 110px;
+      margin-top: 88px;
     }
 
     .esv-provenance-archive-bottom {
-      margin-top: 96px;
+      margin-top: 84px;
+      padding-top: 0;
     }
 
-    .esv-provenance-intro {
+    .esv-provenance-archive .esv-provenance-intro {
       grid-column: 1 / span 6;
-      margin-top: 0;
     }
   }
 
@@ -262,7 +276,7 @@ const archiveStyles = `
     .esv-provenance-archive .esv-provenance-evidence {
       display: flex;
       width: 100%;
-      margin-top: 76px;
+      margin-top: 68px;
       padding-left: var(--esv-page-x, 20px);
       overflow-x: auto;
       scroll-snap-type: x proximity;
@@ -273,24 +287,27 @@ const archiveStyles = `
       display: none;
     }
 
-    .esv-provenance-archive .esv-provenance-evidence article {
+    .esv-provenance-archive .esv-provenance-evidence article,
+    .esv-provenance-archive .esv-provenance-evidence article + article {
+      display: block;
       flex: 0 0 76vw;
+      padding: 0;
       scroll-snap-align: start;
     }
 
     .esv-provenance-archive-bottom {
       display: block;
-      margin-top: 72px;
+      margin-top: 64px;
     }
 
-    .esv-provenance-intro {
+    .esv-provenance-archive .esv-provenance-intro {
       max-width: 32ch;
       margin: 0;
       font-size: 12px;
     }
 
     .esv-provenance-archive-note {
-      margin-top: 48px;
+      margin-top: 40px;
       text-align: left;
     }
   }

@@ -1,3 +1,5 @@
+import { responsiveSrcSet } from "../../components/esmera/image.ts";
+
 export interface Props {
   /** @format image-uri */
   image?: string;
@@ -31,10 +33,15 @@ export default function MatterInterlude({
     >
       <picture class="esv-matter-interlude-media">
         {mobileImage && (
-          <source media="(max-width: 767px)" srcset={mobileImage} />
+          <source
+            media="(max-width: 767px)"
+            srcset={responsiveSrcSet(mobileImage, [480, 768, 1080, 1440]) ?? mobileImage}
+            sizes="100vw"
+          />
         )}
         <img
           src={image}
+          srcset={responsiveSrcSet(image, [960, 1440, 1920, 2400])}
           alt={imageAlt}
           loading="lazy"
           decoding="async"

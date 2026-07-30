@@ -47,7 +47,7 @@ const defaultPillars: ExperiencePillar[] = [
 export default function Process({
   image = "",
   imageAlt = "",
-  eyebrow = "08 — Experiência de aquisição",
+  eyebrow = "07 — Experiência de aquisição",
   title = "Da escolha\nà entrega.",
   text =
     "Cada aquisição é conduzida com contexto sobre matéria, procedência, conservação e presença da peça no espaço.",

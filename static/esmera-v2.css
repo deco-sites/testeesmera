@@ -1,7 +1,7 @@
-/* ESMÉRA — chromatic + interaction layer / stable
- * The Homepage Master remains responsible for global grid, rhythm and section sizing.
- * This file only owns the approved palette, product labels, Matter category portals,
- * Provenance differentiation and compositor-safe interaction states.
+/* ESMÉRA — cohesion layer / Jul 2026
+ * The approved Homepage Master remains the structural base.
+ * This layer owns the user-approved palette, shared rhythm/type scale,
+ * category/status treatments and the intentionally distinct section archetypes.
  */
 
 :root {
@@ -16,6 +16,13 @@
   --color-bronze: #a98760;
   --color-emerald: #0f4d47;
   --color-blue: #294d76;
+
+  --esv-display-xl: clamp(48px, 4.7vw, 68px);
+  --esv-display-lg: clamp(44px, 4.2vw, 60px);
+  --esv-display-md: clamp(38px, 3.5vw, 54px);
+  --esv-section-pad: clamp(96px, 8vw, 128px);
+  --esv-section-pad-compact: clamp(80px, 6.5vw, 112px);
+
   --line-master: 1px solid color-mix(in srgb, var(--color-ink) 13%, transparent);
   --esv-paper: var(--color-paper);
   --esv-paper-soft: var(--color-paper-2);
@@ -35,7 +42,27 @@ body {
   color: var(--color-deep);
 }
 
-/* Accent hierarchy */
+/* -------------------------------------------------------------------------- */
+/* Global hierarchy                                                           */
+/* -------------------------------------------------------------------------- */
+
+.esv-hero-statement,
+.esv-context-copy h2,
+.esv-private-copy h2 {
+  font-size: var(--esv-display-xl);
+}
+
+.esv-maison-copy h2,
+.esv-signature-copy h2,
+.esv-provenance-head h2,
+.esv-experience-intro h2 {
+  font-size: var(--esv-display-lg);
+}
+
+.esv-selected-head h2 {
+  font-size: var(--esv-display-md);
+}
+
 .esv-maison .esv-kicker,
 .esv-signature .esv-kicker {
   color: var(--color-bronze);
@@ -55,7 +82,65 @@ body {
   color: var(--color-emerald);
 }
 
-/* Selected Objects — taxonomy + availability only */
+/* -------------------------------------------------------------------------- */
+/* 01 Hero                                                                    */
+/* -------------------------------------------------------------------------- */
+
+.esv-hero-statement {
+  max-width: 11ch;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 02 Maison — one editorial split                                            */
+/* -------------------------------------------------------------------------- */
+
+.esv-maison {
+  min-height: 88svh;
+  padding-block: var(--esv-section-pad);
+}
+
+.esv-maison-grid {
+  min-height: calc(88svh - 2 * var(--esv-section-pad));
+}
+
+.esv-maison-copy h2 {
+  max-width: 9ch;
+}
+
+.esv-maison-media {
+  min-height: clamp(500px, 46vw, 680px);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 03 Selection — commercial, dense enough to feel intentional                */
+/* -------------------------------------------------------------------------- */
+
+.esv-selected {
+  min-height: auto;
+  padding-block: var(--esv-section-pad);
+}
+
+.esv-selected-head {
+  margin-bottom: clamp(52px, 5.5vw, 76px);
+}
+
+.esv-selected-head h2 {
+  max-width: 10ch;
+}
+
+.esv-selected-head > p {
+  padding-top: 18px;
+}
+
+.esv-selected .esv-product-shelf {
+  margin-top: 0;
+}
+
+.esv-product-card h3 {
+  margin-top: 14px;
+}
+
+/* taxonomy + availability */
 .esv-product-meta {
   display: grid;
   grid-template-columns: minmax(0, 1fr) max-content;
@@ -149,9 +234,12 @@ body {
   }
 }
 
-/* Matter — category portals. Explicit geometry prevents percentage-height collapse. */
+/* -------------------------------------------------------------------------- */
+/* 04 Matter — one coherent triptych, all copies share the same baseline       */
+/* -------------------------------------------------------------------------- */
+
 .esv-matter.esv-matter-gallery {
-  min-height: 82svh;
+  min-height: 0;
   background: var(--color-deep);
   color: #fff;
 }
@@ -160,7 +248,8 @@ body {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   width: 100%;
-  min-height: 82svh;
+  height: clamp(560px, 74svh, 780px);
+  min-height: 0;
   gap: 1px;
   overflow: hidden;
   background: rgba(255, 255, 255, .12);
@@ -170,8 +259,7 @@ body {
   position: relative;
   display: block;
   min-width: 0;
-  height: 82svh;
-  min-height: 620px;
+  height: 100%;
   overflow: hidden;
   color: #fff;
   text-decoration: none;
@@ -194,8 +282,20 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1.005);
+  transform: scale(1.01);
   transition: transform 800ms var(--ease-luxury);
+}
+
+.esv-matter-category:first-child .esv-matter-gallery-item img {
+  object-position: center 44%;
+}
+
+.esv-matter-category:nth-child(2) .esv-matter-gallery-item img {
+  object-position: center center;
+}
+
+.esv-matter-category:nth-child(3) .esv-matter-gallery-item img {
+  object-position: center 46%;
 }
 
 .esv-matter-category-shade {
@@ -203,8 +303,8 @@ body {
   z-index: 1;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(15, 15, 15, .05) 20%, rgba(15, 15, 15, .16) 52%, rgba(15, 15, 15, .78) 100%),
-    linear-gradient(90deg, rgba(15, 15, 15, .22), transparent 60%);
+    linear-gradient(180deg, rgba(15, 15, 15, .04) 18%, rgba(15, 15, 15, .12) 52%, rgba(15, 15, 15, .82) 100%),
+    linear-gradient(90deg, rgba(15, 15, 15, .18), transparent 62%);
 }
 
 .esv-matter-category-copy {
@@ -246,35 +346,35 @@ body {
 }
 
 .esv-matter-category-copy h2 {
-  max-width: 8ch;
-  margin: 14px 0 0;
-  font-size: clamp(34px, 3.6vw, 56px);
+  max-width: 9ch;
+  margin: 13px 0 0;
+  font-size: clamp(36px, 3.4vw, 52px);
   font-weight: 300;
-  line-height: .96;
-  letter-spacing: -.035em;
+  line-height: .97;
+  letter-spacing: -.032em;
 }
 
 .esv-matter-category-copy p {
-  max-width: 29ch;
-  margin: 16px 0 0;
-  color: rgba(255, 255, 255, .74);
+  max-width: 28ch;
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, .72);
   font-size: 13px;
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
 .esv-matter-category-copy span {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  min-height: 40px;
-  margin-top: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, .66);
+  min-height: 38px;
+  margin-top: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, .64);
   font-size: 12px;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .esv-matter-category:hover .esv-matter-gallery-item img {
-    transform: scale(1.024);
+    transform: scale(1.026);
   }
 
   .esv-matter-category:hover .esv-matter-category-copy::before {
@@ -282,13 +382,31 @@ body {
   }
 }
 
-/* Signature stays light and object-led. */
+/* -------------------------------------------------------------------------- */
+/* 05 Signature — object-led, lighter and more compact than a hero             */
+/* -------------------------------------------------------------------------- */
+
 .esv-signature {
+  min-height: auto;
+  padding-block: var(--esv-section-pad);
   background: var(--color-paper-2);
 }
 
+.esv-signature-grid {
+  align-items: center;
+}
+
 .esv-signature-media {
+  min-height: clamp(540px, 68svh, 780px);
   background: color-mix(in srgb, var(--color-sea) 10%, var(--color-paper));
+}
+
+.esv-signature-copy h2 {
+  max-width: 9ch;
+}
+
+.esv-signature-facts {
+  margin-top: 36px;
 }
 
 .esv-signature-facts dt {
@@ -299,10 +417,13 @@ body {
   color: var(--color-emerald);
 }
 
-/* Provenance is documentary, not another split product section. */
+/* -------------------------------------------------------------------------- */
+/* 06 Provenance — documentary band, not another split section                */
+/* -------------------------------------------------------------------------- */
+
 .esv-provenance {
-  min-height: 100svh;
-  padding: clamp(112px, 9vw, 152px) 0 0;
+  min-height: auto;
+  padding: var(--esv-section-pad-compact) 0 0;
   background: var(--color-emerald);
   color: var(--color-paper-2);
 }
@@ -324,10 +445,9 @@ body {
   max-width: 8ch;
   margin: 0;
   color: var(--color-paper-2);
-  font-size: clamp(44px, 5vw, 70px);
   font-weight: 300;
-  line-height: .96;
-  letter-spacing: -.035em;
+  line-height: .97;
+  letter-spacing: -.032em;
 }
 
 .esv-provenance-intro {
@@ -344,19 +464,19 @@ body {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
-  margin-top: clamp(64px, 6vw, 96px);
+  margin-top: clamp(52px, 5vw, 76px);
   border-top: 1px solid rgba(248, 246, 241, .2);
 }
 
 .esv-provenance-evidence article {
   min-width: 0;
-  min-height: 240px;
-  padding: 28px clamp(22px, 2.5vw, 38px) 40px 0;
+  min-height: 200px;
+  padding: 26px clamp(22px, 2.5vw, 36px) 34px 0;
   border-right: 1px solid rgba(248, 246, 241, .16);
 }
 
 .esv-provenance-evidence article + article {
-  padding-left: clamp(22px, 2.5vw, 38px);
+  padding-left: clamp(22px, 2.5vw, 36px);
 }
 
 .esv-provenance-evidence article:last-child {
@@ -368,25 +488,25 @@ body {
 }
 
 .esv-provenance-evidence h3 {
-  margin: 32px 0 0;
+  margin: 26px 0 0;
   color: var(--color-paper-2);
-  font-size: clamp(20px, 1.8vw, 27px);
+  font-size: clamp(19px, 1.6vw, 24px);
   font-weight: 300;
-  letter-spacing: -.015em;
+  letter-spacing: -.012em;
 }
 
 .esv-provenance-evidence p {
   max-width: 34ch;
-  margin: 16px 0 0;
+  margin: 14px 0 0;
   color: rgba(248, 246, 241, .64);
   font-size: 13px;
-  line-height: 1.65;
+  line-height: 1.6;
 }
 
 .esv-provenance-strip {
   width: 100%;
-  height: clamp(280px, 34svh, 430px);
-  margin: clamp(56px, 6vw, 96px) 0 0;
+  height: clamp(190px, 23svh, 280px);
+  margin: clamp(44px, 4.5vw, 68px) 0 0;
   overflow: hidden;
   background: var(--color-deep);
 }
@@ -395,32 +515,164 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 48%;
+  object-position: center 54%;
+  transform: scale(1.08);
 }
 
-/* Remaining palette moments */
+/* -------------------------------------------------------------------------- */
+/* 07 Context — immersive image chapter, blue is a tint not a block           */
+/* -------------------------------------------------------------------------- */
+
+.esv-context,
+.esv-context-copy {
+  min-height: 82svh;
+}
+
 .esv-context {
   background: var(--color-blue);
 }
 
 .esv-context-shade {
-  background: linear-gradient(90deg, rgba(41, 77, 118, .82) 0%, rgba(15, 21, 24, .38) 52%, rgba(15, 21, 24, .12) 100%);
+  background:
+    linear-gradient(90deg, rgba(41, 77, 118, .66) 0%, rgba(24, 38, 52, .34) 48%, rgba(15, 21, 24, .12) 100%),
+    linear-gradient(0deg, rgba(15, 21, 24, .28), transparent 48%);
 }
 
-.esv-experience .esv-kicker {
+.esv-context-copy h2 {
+  max-width: 9ch;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 08 Experience — service chapter, no repeated split-hero                    */
+/* -------------------------------------------------------------------------- */
+
+.esv-experience {
+  min-height: auto;
+  padding-block: var(--esv-section-pad);
+  background: var(--color-paper-2);
+}
+
+.esv-experience-head {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--esv-grid-gap);
+  align-items: start;
+}
+
+.esv-experience-head > .esv-kicker {
+  grid-column: 1 / span 3;
   color: var(--color-emerald);
+}
+
+.esv-experience-intro {
+  grid-column: 5 / span 6;
+}
+
+.esv-experience-intro h2 {
+  max-width: 9ch;
+  margin: 0;
+  white-space: pre-line;
+  font-weight: 300;
+  line-height: .98;
+  letter-spacing: -.03em;
+}
+
+.esv-experience-text {
+  max-width: 52ch;
+  margin: 24px 0 0;
+  color: var(--color-muted);
+  font-size: clamp(14px, 1vw, 16px);
+  line-height: 1.6;
+}
+
+.esv-experience-main {
+  width: min(100%, var(--esv-max));
+  height: clamp(300px, 38vw, 500px);
+  min-height: 0;
+  margin: clamp(52px, 5vw, 72px) auto 0;
+  padding-inline: var(--esv-page-x);
+  background: transparent;
+}
+
+.esv-experience-main img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.esv-experience-pillars {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(22px, 2.2vw, 34px);
+  margin-top: clamp(56px, 5.5vw, 80px);
+  background: transparent;
+}
+
+.esv-experience-pillars article,
+.esv-experience-pillars article:first-child,
+.esv-experience-pillars article:last-child {
+  min-width: 0;
+  padding: 18px 0 0;
+  border-top: var(--line-master);
+  background: transparent;
+}
+
+.esv-experience-pillars img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  margin: 0 0 20px;
+  object-fit: cover;
 }
 
 .esv-experience-pillars small {
   color: var(--color-bronze);
+  font-size: 10px;
 }
 
+.esv-experience-pillars h3 {
+  margin: 16px 0 8px;
+  font-size: clamp(17px, 1.4vw, 21px);
+  font-weight: 400;
+}
+
+.esv-experience-pillars p {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.esv-experience-pillars a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  margin-top: 10px;
+  color: var(--color-ink);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 09 Private invitation — controlled dark ending                             */
+/* -------------------------------------------------------------------------- */
+
 .esv-private {
+  min-height: 62svh;
   background: var(--color-deep);
+}
+
+.esv-private-grid {
+  padding-block: var(--esv-section-pad-compact);
 }
 
 .esv-private .esv-kicker {
   color: var(--color-sea);
+}
+
+.esv-private-copy h2 {
+  max-width: 11ch;
 }
 
 .esv-private-cta {
@@ -428,13 +680,16 @@ body {
   border-color: var(--color-bronze);
 }
 
-/* Motion: paint/compositor only. Geometry never depends on these rules. */
+/* -------------------------------------------------------------------------- */
+/* Motion — only paint/compositor properties; layout never depends on motion  */
+/* -------------------------------------------------------------------------- */
+
 .esv-motion-ready .esv-reveal {
   opacity: 0;
-  transform: translate3d(0, 12px, 0);
+  transform: translate3d(0, 10px, 0);
   transition:
-    opacity 560ms var(--ease-luxury) var(--esv-reveal-delay, 0ms),
-    transform 560ms var(--ease-luxury) var(--esv-reveal-delay, 0ms);
+    opacity 520ms var(--ease-luxury) var(--esv-reveal-delay, 0ms),
+    transform 520ms var(--ease-luxury) var(--esv-reveal-delay, 0ms);
 }
 
 .esv-motion-ready .esv-reveal.is-visible {
@@ -462,7 +717,32 @@ body {
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Tablet                                                                      */
+/* -------------------------------------------------------------------------- */
+
 @media (max-width: 899px) {
+  :root {
+    --esv-section-pad: clamp(80px, 11vw, 104px);
+    --esv-section-pad-compact: clamp(72px, 10vw, 96px);
+  }
+
+  .esv-maison {
+    min-height: auto;
+  }
+
+  .esv-maison-grid {
+    min-height: auto;
+  }
+
+  .esv-matter-gallery-track {
+    height: clamp(520px, 68svh, 680px);
+  }
+
+  .esv-signature-media {
+    min-height: clamp(500px, 62svh, 680px);
+  }
+
   .esv-provenance-head {
     grid-template-columns: repeat(8, minmax(0, 1fr));
   }
@@ -477,11 +757,39 @@ body {
 
   .esv-provenance-intro {
     grid-column: 3 / -1;
-    margin-top: var(--space-8);
+    margin-top: 24px;
+  }
+
+  .esv-experience-head {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+
+  .esv-experience-head > .esv-kicker {
+    grid-column: 1 / span 2;
+  }
+
+  .esv-experience-intro {
+    grid-column: 3 / -1;
   }
 }
 
+/* -------------------------------------------------------------------------- */
+/* Mobile — re-edited, not compressed desktop                                 */
+/* -------------------------------------------------------------------------- */
+
 @media (max-width: 767px) {
+  :root {
+    --esv-display-xl: clamp(38px, 11vw, 48px);
+    --esv-display-lg: clamp(36px, 10.6vw, 46px);
+    --esv-display-md: clamp(34px, 10vw, 44px);
+    --esv-section-pad: clamp(72px, 20vw, 96px);
+    --esv-section-pad-compact: clamp(64px, 18vw, 88px);
+  }
+
+  .esv-selected-head {
+    margin-bottom: 44px;
+  }
+
   .esv-product-meta {
     grid-template-columns: minmax(0, 1fr) max-content;
     gap: 8px;
@@ -503,7 +811,8 @@ body {
 
   .esv-matter-gallery-track {
     display: flex;
-    min-height: 72svh;
+    height: 68svh;
+    min-height: 520px;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-snap-type: x proximity;
@@ -517,8 +826,7 @@ body {
   .esv-matter-category {
     flex: 0 0 88vw;
     width: 88vw;
-    height: 72svh;
-    min-height: 540px;
+    height: 100%;
     scroll-snap-align: start;
   }
 
@@ -529,12 +837,19 @@ body {
   }
 
   .esv-matter-category-copy h2 {
-    font-size: clamp(34px, 11vw, 48px);
+    font-size: clamp(34px, 11vw, 46px);
+  }
+
+  .esv-matter-category-copy p {
+    max-width: 26ch;
+  }
+
+  .esv-signature-media {
+    min-height: 66svh;
   }
 
   .esv-provenance {
-    min-height: auto;
-    padding-top: clamp(80px, 22vw, 112px);
+    padding-top: var(--esv-section-pad-compact);
   }
 
   .esv-provenance-head {
@@ -543,36 +858,72 @@ body {
 
   .esv-provenance-head h2 {
     max-width: 8ch;
-    margin-top: var(--space-8);
-    font-size: clamp(40px, 12vw, 58px);
+    margin-top: 28px;
   }
 
   .esv-provenance-intro {
     max-width: 34ch;
-    margin-top: var(--space-8);
+    margin-top: 24px;
   }
 
   .esv-provenance-evidence {
     display: block;
-    margin-top: var(--space-16);
+    margin-top: 48px;
   }
 
   .esv-provenance-evidence article,
   .esv-provenance-evidence article + article {
     min-height: 0;
-    padding: var(--space-6) 0 var(--space-8);
+    padding: 22px 0 28px;
     border-right: 0;
     border-bottom: 1px solid rgba(248, 246, 241, .16);
   }
 
   .esv-provenance-evidence h3 {
-    margin-top: var(--space-4);
+    margin-top: 16px;
   }
 
   .esv-provenance-strip {
-    height: 42svh;
-    min-height: 280px;
-    margin-top: var(--space-12);
+    height: 200px;
+    margin-top: 36px;
+  }
+
+  .esv-context,
+  .esv-context-copy {
+    min-height: 78svh;
+  }
+
+  .esv-experience-head {
+    display: block;
+  }
+
+  .esv-experience-intro {
+    margin-top: 28px;
+  }
+
+  .esv-experience-intro h2 {
+    max-width: 9ch;
+  }
+
+  .esv-experience-pillars {
+    grid-template-columns: 1fr;
+    gap: 38px;
+    margin-top: 48px;
+  }
+
+  .esv-experience-pillars article,
+  .esv-experience-pillars article:first-child,
+  .esv-experience-pillars article:last-child {
+    padding-top: 16px;
+  }
+
+  .esv-experience-main {
+    height: 300px;
+    margin-top: 44px;
+  }
+
+  .esv-private {
+    min-height: 64svh;
   }
 }
 

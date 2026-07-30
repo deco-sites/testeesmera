@@ -21,8 +21,8 @@ export default function Manifesto({
   title = "Rara por\nnatureza.\nEscolhida para\npermanecer.",
   text =
     "A Esméra reúne objetos de presença singular, criados ou selecionados a partir de matérias preciosas e concebidos para atravessar o tempo.",
-  ctaLabel = "Sobre a Maison",
-  ctaHref = "#experience",
+  ctaLabel = "Descobrir a seleção",
+  ctaHref = "#selection",
   mainImage =
     "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=1500&q=90",
   mainImageAlt = "Objeto escultórico final apresentado em composição controlada",

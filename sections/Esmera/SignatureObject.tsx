@@ -42,7 +42,7 @@ export default function SignatureObject({
             decoding="async"
             width={1400}
             height={1050}
-            sizes="(max-width: 767px) calc(100vw - 36px), (max-width: 1023px) 62vw, 58vw"
+            sizes="(max-width: 429px) calc(100vw - 36px), (max-width: 767px) calc(100vw - 44px), (max-width: 1023px) 62vw, 58vw"
           />
           {product.detailImage && (
             <EsmeraImage
@@ -53,7 +53,7 @@ export default function SignatureObject({
               decoding="async"
               width={1400}
               height={1050}
-              sizes="(max-width: 767px) calc(100vw - 36px), (max-width: 1023px) 62vw, 58vw"
+              sizes="(max-width: 429px) calc(100vw - 36px), (max-width: 767px) calc(100vw - 44px), (max-width: 1023px) 62vw, 58vw"
             />
           )}
         </figure>

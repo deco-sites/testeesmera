@@ -5,6 +5,7 @@
 import * as $_app from "./routes/_app.tsx";
 import * as $EsmeraHeader from "./islands/EsmeraHeader.tsx";
 import * as $EsmeraMotion from "./islands/EsmeraMotion.tsx";
+import * as $EsmeraScrollScenes from "./islands/EsmeraScrollScenes.tsx";
 import * as $ProductActions from "./islands/ProductActions.tsx";
 import * as $SpatialMatter from "./islands/SpatialMatter.tsx";
 import type { Manifest } from "$fresh/server.ts";
@@ -16,6 +17,7 @@ const manifest = {
   islands: {
     "./islands/EsmeraHeader.tsx": $EsmeraHeader,
     "./islands/EsmeraMotion.tsx": $EsmeraMotion,
+    "./islands/EsmeraScrollScenes.tsx": $EsmeraScrollScenes,
     "./islands/ProductActions.tsx": $ProductActions,
     "./islands/SpatialMatter.tsx": $SpatialMatter,
   },

@@ -25,6 +25,7 @@ export default function Header({
           rel="stylesheet"
         />
         <link rel="stylesheet" href={asset("/esmera-master.css")} />
+        <link rel="stylesheet" href={asset("/esmera-finish.css")} />
         <meta name="theme-color" content="#111210" />
       </Head>
 

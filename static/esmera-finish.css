@@ -1,6 +1,8 @@
-/* ESMÉRA — Final refinement layer v1.0
- * Source: ESMERA_Homepage_10of10_Master_Plan_Asymmetry_Section8_v1.0
- * Scope: calibration only — no macro redesign.
+/* ESMÉRA — Responsive refinement layer v1.0
+ * Sources:
+ * - ESMERA_Homepage_10of10_Master_Plan_Asymmetry_Section8_v1.0
+ * - ESMERA_Responsive_Master_Plan_10of10_v1.0
+ * Scope: responsive calibration and QA before consolidation into esmera-master.css.
  */
 
 /* -------------------------------------------------------------------------- */
@@ -45,7 +47,15 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* 02 — Maison: retain one dominant asymmetry, remove incidental drift        */
+/* Header                                                                     */
+/* -------------------------------------------------------------------------- */
+
+.esv-header {
+  min-height: 56px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 02 — Maison: one dominant asymmetry, no incidental drift                  */
 /* -------------------------------------------------------------------------- */
 
 .esv-maison-main {
@@ -114,7 +124,7 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* 07 — Proveniência: keep the zig-zag, standardize vertical rhythm           */
+/* 07 — Proveniência: preserve zig-zag, standardize vertical rhythm           */
 /* -------------------------------------------------------------------------- */
 
 .esv-provenance-stages {
@@ -202,13 +212,13 @@
 }
 
 .esv-experience-pillars a {
+  align-self: flex-start;
   margin-top: auto;
   padding-top: var(--space-4);
-  align-self: flex-start;
 }
 
 /* -------------------------------------------------------------------------- */
-/* 10 — Footer: informational close, not a second conversion block            */
+/* 10 — Footer: informational close                                           */
 /* -------------------------------------------------------------------------- */
 
 .esv-footer {
@@ -221,7 +231,7 @@
 
 .esv-footer-contact .esv-kicker,
 .esv-footer-bottom .esv-kicker {
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .esv-footer-contact a {
@@ -229,12 +239,21 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Tablet                                                                     */
+/* Tablet — 768–1023                                                          */
 /* -------------------------------------------------------------------------- */
 
 @media (max-width: 1023px) {
+  :root {
+    --page-x: clamp(24px, 3.4vw, 32px);
+    --section-y: clamp(88px, 10vw, 120px);
+  }
+
   .esv-selected-head > .esv-kicker {
     grid-column: 1 / span 2;
+  }
+
+  .esv-product-shelf {
+    margin-top: var(--space-12);
   }
 
   .esv-experience-head {
@@ -255,12 +274,42 @@
 }
 
 /* -------------------------------------------------------------------------- */
-/* Mobile                                                                     */
+/* Mobile — 430–767                                                           */
 /* -------------------------------------------------------------------------- */
 
 @media (max-width: 767px) {
+  :root {
+    --page-x: clamp(18px, 5vw, 22px);
+    --section-y: clamp(68px, 16vw, 88px);
+    --header-h: 56px;
+  }
+
+  .esv-header {
+    min-height: 56px;
+  }
+
+  .esv-wordmark {
+    position: absolute;
+    left: 50%;
+    justify-self: auto;
+    transform: translateX(-50%);
+  }
+
+  .esv-enquiry-link {
+    font-size: 12px;
+  }
+
+  .esv-hero {
+    min-height: 86svh;
+  }
+
   .esv-hero-statement {
-    font-size: clamp(40px, 11.5vw, 52px);
+    max-width: 8.5ch;
+    font-size: clamp(38px, 9vw, 48px);
+  }
+
+  .esv-hero-content {
+    padding-bottom: clamp(48px, 10vw, 72px);
   }
 
   .esv-maison-copy h2,
@@ -270,6 +319,10 @@
     font-size: clamp(34px, 9.8vw, 44px);
   }
 
+  .esv-maison-media {
+    min-height: clamp(420px, 118vw, 520px);
+  }
+
   .esv-maison-main {
     inset: 0 0 0 8%;
   }
@@ -277,6 +330,7 @@
   .esv-maison-secondary {
     left: 0;
     bottom: 8%;
+    width: 34%;
   }
 
   .esv-selected-head > .esv-kicker,
@@ -291,14 +345,28 @@
 
   .esv-product-shelf {
     margin-top: var(--space-12);
+    gap: var(--space-8);
   }
 
   .esv-product-card + .esv-product-card {
-    margin-top: var(--space-8);
+    margin-top: 0;
   }
 
   .esv-product-meta-line {
     font-size: 11px;
+  }
+
+  .esv-territory-panel {
+    height: clamp(420px, 118vw, 560px);
+    min-height: 0;
+  }
+
+  .esv-signature-copy {
+    margin-top: clamp(24px, 6vw, 28px);
+  }
+
+  .esv-matter-interlude {
+    min-height: min(80svh, 760px);
   }
 
   .esv-provenance-stages {
@@ -314,7 +382,36 @@
   .esv-provenance-stage-origin .esv-provenance-stage-media,
   .esv-provenance-stage-transform .esv-provenance-stage-media,
   .esv-provenance-stage-register .esv-provenance-stage-media {
-    height: min(54svh, 520px);
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .esv-provenance-stage-origin .esv-provenance-stage-media {
+    width: calc(100% - 16px);
+    margin-right: 16px;
+  }
+
+  .esv-provenance-stage-transform .esv-provenance-stage-media {
+    width: calc(100% - 16px);
+    margin-left: 16px;
+  }
+
+  .esv-provenance-stage-register .esv-provenance-stage-media {
+    width: calc(100% - 24px);
+    margin-left: auto;
+  }
+
+  .esv-provenance-stage-copy {
+    margin-top: var(--space-6);
+  }
+
+  .esv-provenance-stage-copy h3 {
+    font-size: clamp(22px, 7vw, 28px);
+  }
+
+  .esv-provenance-stage-copy p {
+    max-width: 38ch;
+    font-size: 14px;
   }
 
   .esv-experience-head {
@@ -349,7 +446,151 @@
     aspect-ratio: 4 / 3;
   }
 
+  .esv-private {
+    min-height: min(70svh, 680px);
+  }
+
   .esv-footer {
     padding-block: var(--space-12) var(--space-6);
+  }
+
+  .esv-footer-main {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .esv-footer-wordmark,
+  .esv-footer-main > p,
+  .esv-footer-contact {
+    grid-column: 1;
+  }
+
+  .esv-footer-bottom {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-3) var(--space-6);
+    align-items: center;
+    margin-top: var(--space-8);
+  }
+
+  .esv-footer-bottom nav {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+
+  .esv-footer-bottom > span:last-child {
+    justify-self: end;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Micro-mobile — ≤429                                                        */
+/* -------------------------------------------------------------------------- */
+
+@media (max-width: 429px) {
+  :root {
+    --page-x: 18px;
+    --section-y: 72px;
+    --grid-gap: 14px;
+  }
+
+  .esv-header {
+    padding-inline: 8px 10px;
+  }
+
+  .esv-wordmark {
+    font-size: 12px;
+  }
+
+  .esv-enquiry-link {
+    min-width: 62px;
+    font-size: 12px;
+  }
+
+  .esv-hero-statement {
+    font-size: clamp(32px, 9.8vw, 42px);
+  }
+
+  .esv-hero-content {
+    padding-bottom: 44px;
+  }
+
+  .esv-maison-copy h2,
+  .esv-selected-head h2,
+  .esv-provenance-intro-copy h2,
+  .esv-experience-intro h2 {
+    font-size: clamp(32px, 9.2vw, 40px);
+  }
+
+  .esv-maison-media {
+    min-height: clamp(400px, 124vw, 480px);
+  }
+
+  .esv-product-shelf {
+    gap: var(--space-6);
+  }
+
+  .esv-product-card-copy > p:not(.esv-product-meta-line) {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .esv-product-commercial {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    gap: var(--space-3);
+  }
+
+  .esv-territory-panel {
+    height: clamp(400px, 122vw, 520px);
+  }
+
+  .esv-provenance-stage,
+  .esv-provenance-stage + .esv-provenance-stage {
+    padding-block: 42px;
+  }
+
+  .esv-provenance-stage-origin .esv-provenance-stage-media,
+  .esv-provenance-stage-transform .esv-provenance-stage-media {
+    width: calc(100% - 14px);
+  }
+
+  .esv-provenance-stage-origin .esv-provenance-stage-media {
+    margin-right: 14px;
+  }
+
+  .esv-provenance-stage-transform .esv-provenance-stage-media {
+    margin-left: 14px;
+  }
+
+  .esv-provenance-stage-register .esv-provenance-stage-media {
+    width: calc(100% - 20px);
+  }
+
+  .esv-experience-pillars {
+    margin-top: var(--space-8);
+  }
+
+  .esv-experience-pillars article + article {
+    margin-top: var(--space-8);
+  }
+
+  .esv-experience-pillars h3 {
+    font-size: 21px;
+  }
+
+  .esv-experience-pillars p {
+    font-size: 13px;
+  }
+
+  .esv-footer-main {
+    gap: var(--space-6);
+  }
+
+  .esv-footer-bottom {
+    gap: 12px 20px;
   }
 }

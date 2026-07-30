@@ -21,7 +21,7 @@ export default function MatterInterlude({
   title = "Formada lentamente.\nTransformada uma vez.",
   focalPoint = "center",
 }: Props) {
-  const meta = [material, location].filter(Boolean).join(" · ");
+  const meta = ["06 — Matéria", material, location].filter(Boolean).join(" · ");
 
   return (
     <section
@@ -46,7 +46,7 @@ export default function MatterInterlude({
       <div class="esv-matter-interlude-shade" aria-hidden="true" />
 
       <div class="esv-shell esv-matter-interlude-content">
-        {meta && <p class="esv-matter-interlude-meta">{meta}</p>}
+        <p class="esv-matter-interlude-meta">{meta}</p>
         <h2 id="esv-matter-interlude-title" class="esv-matter-interlude-title">
           {title}
         </h2>

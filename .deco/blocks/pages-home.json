@@ -25,7 +25,8 @@
           "title": "Cartografia Verde",
           "subtitle": "Paisagem mineral em camadas.",
           "material": "Ágata verde / latão",
-          "price": "R$14.900"
+          "price": "R$14.900",
+          "detailImage": "https://decoims.com/testeesmera/3c81ab8b-12a3-4d36-8957-e0a435a5de40/e5187a05-8eb0-47ed-80e8-f713980c453b.png"
         },
         {
           "availability": "unique",
@@ -33,7 +34,8 @@
           "title": "Fluidez Esmeralda",
           "subtitle": "Forma em movimento.",
           "material": "esmeralda / vidro",
-          "price": "R$2.490"
+          "price": "R$2.490",
+          "detailImage": "https://decoims.com/testeesmera/1933d54e-af21-47f5-915a-3718341b573b/c4d6d05d-e80c-47b3-8624-dde2f081fac6.png"
         },
         {
           "availability": "unique",
@@ -41,7 +43,8 @@
           "title": "Luz Esmeralda",
           "material": "Esmeralda, cristal e latão.",
           "subtitle": "Matéria que ilumina.",
-          "price": "R$4.900"
+          "price": "R$4.900",
+          "detailImage": "https://decoims.com/testeesmera/9c76e353-1995-4112-a3b4-e75b465f682e/94291bc7-aa06-498f-8438-ac189ece224e.png"
         },
         {
           "availability": "unique",
@@ -49,7 +52,8 @@
           "title": "Metamorfose Esmeralda",
           "material": "esmeralda / metal dourado",
           "subtitle": "Uma celebração da transformação",
-          "price": "R$ 9.800"
+          "price": "R$ 9.800",
+          "detailImage": "https://decoims.com/testeesmera/e44933a3-11a4-46a4-b073-0a84955b8826/032d4d9a-a299-4829-add7-6a9d953b6921.png"
         }
       ]
     },
@@ -92,7 +96,6 @@
         "alt": "Nódulo I, escultura em esmeralda bruta",
         "category": "Esculturas",
         "material": "Esmeralda bruta",
-        "detailImage": "close/macro da esmeralda mostrando fissuras, transparência e inclusões naturais",
         "description": "Um fragmento mineral preservado em sua expressão natural. Fissuras, variações cromáticas e irregularidades tornam cada ângulo da peça singular.",
         "price": "Sob consulta",
         "image": "https://decoims.com/testeesmera/0860e1ad-80ba-40fe-a83c-f53f72e8d599/31c2ba25-1824-40fe-ac68-f00806e298e5.png"
@@ -122,7 +125,8 @@
         {
           "title": "Registro",
           "text": "Status de peça única ou edição, documentação e registro fotográfico acompanham a apresentação e a consulta.",
-          "image": "https://decoims.com/testeesmera/ef4ff38f-f74b-49c2-918c-cfacafb9820f/e31edf3a-ce06-4564-a8a0-84c1ec5e1602.png"
+          "image": "https://decoims.com/testeesmera/ef4ff38f-f74b-49c2-918c-cfacafb9820f/e31edf3a-ce06-4564-a8a0-84c1ec5e1602.png",
+          "alt": "peca-concluida-arte-em-esmeralda"
         }
       ]
     },

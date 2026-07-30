@@ -5,6 +5,7 @@ import {
 } from "../../components/esmera/data.ts";
 
 export interface Props {
+  eyebrow?: string;
   title?: string;
   /** @format textarea */
   text?: string;
@@ -12,9 +13,10 @@ export interface Props {
 }
 
 export default function SelectedObjects({
+  eyebrow = "03 — Seleção",
   title = "Objetos de\npresença singular.",
   text =
-    "Uma seleção curta de peças concretas, reunidas por matéria, presença e permanência. Cada objeto apresenta status, material e condição de aquisição sem perder o ritmo editorial da maison.",
+    "Uma seleção curta de obras disponíveis, reunidas por matéria, presença e permanência.",
   products = selectedObjects,
 }: Props) {
   return (
@@ -24,8 +26,9 @@ export default function SelectedObjects({
       aria-labelledby="esv-selected-title"
     >
       <div class="esv-shell esv-selected-head">
+        <p class="esv-kicker">{eyebrow}</p>
         <h2 id="esv-selected-title">{title}</h2>
-        <p>{text}</p>
+        {text && <p>{text}</p>}
       </div>
 
       <div id="objects" class="esv-shell esv-product-shelf" role="list">

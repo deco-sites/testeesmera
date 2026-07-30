@@ -19,9 +19,6 @@ const revealSelectors = [
   ".esv-provenance-intro-copy",
   ".esv-provenance-stage-media",
   ".esv-provenance-stage-copy",
-  ".esv-experience-head > .esv-kicker",
-  ".esv-experience-intro",
-  ".esv-experience-pillars article",
   ".esv-private-grid > .esv-kicker",
   ".esv-private-copy",
 ];

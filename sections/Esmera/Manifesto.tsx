@@ -1,5 +1,5 @@
+import Image from "apps/website/components/Image.tsx";
 import Arrow from "../../components/esmera/Arrow.tsx";
-import { responsiveSrcSet } from "../../components/esmera/image.ts";
 
 export interface Props {
   eyebrow?: string;
@@ -50,26 +50,24 @@ export default function Manifesto({
 
         <div class="esv-maison-media" aria-label="Objeto e matéria Esméra">
           <figure class="esv-maison-main">
-            <img
+            <Image
               src={mainImage}
-              srcset={responsiveSrcSet(mainImage, [720, 960, 1200, 1500])}
               alt={mainImageAlt}
               loading="lazy"
               decoding="async"
-              width="936"
-              height="1170"
+              width={1200}
+              height={1500}
               sizes="(max-width: 767px) 85vw, (max-width: 1023px) 48vw, 42vw"
             />
           </figure>
           <figure class="esv-maison-secondary">
-            <img
+            <Image
               src={secondaryImage}
-              srcset={responsiveSrcSet(secondaryImage, [320, 480, 640, 800])}
               alt={secondaryImageAlt}
               loading="lazy"
               decoding="async"
-              width="360"
-              height="480"
+              width={480}
+              height={640}
               sizes="(max-width: 767px) 30vw, 16vw"
             />
           </figure>

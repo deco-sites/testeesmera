@@ -1,6 +1,7 @@
-/* ESMÉRA — chromatic + motion refinement / Jul 2026
- * User-approved palette layered over the canonical Homepage Master.
- * Motion remains editorial: opacity, transform, crossfade, no scroll-jacking.
+/* ESMÉRA — chromatic + interaction layer / stable
+ * The Homepage Master remains responsible for global grid, rhythm and section sizing.
+ * This file only owns the approved palette, product labels, Matter category portals,
+ * Provenance differentiation and compositor-safe interaction states.
  */
 
 :root {
@@ -34,7 +35,7 @@ body {
   color: var(--color-deep);
 }
 
-/* Chromatic hierarchy: accents are editorial markers, never decorative fills everywhere. */
+/* Accent hierarchy */
 .esv-maison .esv-kicker,
 .esv-signature .esv-kicker {
   color: var(--color-bronze);
@@ -46,8 +47,7 @@ body {
   color: var(--color-emerald);
 }
 
-.esv-hero-cta,
-.esv-private-cta {
+.esv-hero-cta {
   border-color: var(--color-sea);
 }
 
@@ -55,12 +55,12 @@ body {
   color: var(--color-emerald);
 }
 
-/* Selected Objects — category is editorial taxonomy; status is a precise availability label. */
+/* Selected Objects — taxonomy + availability only */
 .esv-product-meta {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-3);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 12px;
+  align-items: start;
 }
 
 .esv-product-taxonomy {
@@ -84,6 +84,7 @@ body {
 
 .esv-product-category::before {
   content: "";
+  flex: 0 0 auto;
   width: 20px;
   height: 1px;
   background: var(--color-bronze);
@@ -92,12 +93,9 @@ body {
   transition: transform 240ms var(--ease-luxury);
 }
 
-.esv-product-card:hover .esv-product-category::before {
-  transform: scaleX(1);
-}
-
 .esv-product-material {
-  max-width: 32ch;
+  max-width: 30ch;
+  overflow-wrap: anywhere;
   color: var(--color-muted);
   font-size: 12px;
   font-weight: 300;
@@ -108,17 +106,17 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
+  max-width: 100%;
   min-height: 27px;
   padding: 5px 8px 4px;
   border: 1px solid color-mix(in srgb, var(--color-gray) 60%, transparent);
-  border-radius: 0;
   color: var(--color-muted);
   background: transparent;
+  white-space: nowrap;
   font-size: 9px;
   font-weight: 500;
   line-height: 1;
-  letter-spacing: .09em;
+  letter-spacing: .08em;
   text-transform: uppercase;
 }
 
@@ -145,7 +143,13 @@ body {
   color: var(--color-muted);
 }
 
-/* Matter — three category portals, still functioning as a sensory interlude. */
+@media (hover: hover) and (pointer: fine) {
+  .esv-product-card:hover .esv-product-category::before {
+    transform: scaleX(1);
+  }
+}
+
+/* Matter — category portals. Explicit geometry prevents percentage-height collapse. */
 .esv-matter.esv-matter-gallery {
   min-height: 82svh;
   background: var(--color-deep);
@@ -153,8 +157,12 @@ body {
 }
 
 .esv-matter-gallery-track {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
   min-height: 82svh;
   gap: 1px;
+  overflow: hidden;
   background: rgba(255, 255, 255, .12);
 }
 
@@ -162,34 +170,49 @@ body {
   position: relative;
   display: block;
   min-width: 0;
+  height: 82svh;
+  min-height: 620px;
+  overflow: hidden;
   color: #fff;
   text-decoration: none;
 }
 
 .esv-matter-gallery-item {
-  min-height: 82svh;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+  background: var(--color-deep);
 }
 
 .esv-matter-gallery-item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   transform: scale(1.005);
-  transition: transform 900ms var(--ease-luxury), filter 600ms var(--ease-luxury);
+  transition: transform 800ms var(--ease-luxury);
 }
 
 .esv-matter-category-shade {
   position: absolute;
+  z-index: 1;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(15, 15, 15, .08) 20%, rgba(15, 15, 15, .18) 52%, rgba(15, 15, 15, .78) 100%),
+    linear-gradient(180deg, rgba(15, 15, 15, .05) 20%, rgba(15, 15, 15, .16) 52%, rgba(15, 15, 15, .78) 100%),
     linear-gradient(90deg, rgba(15, 15, 15, .22), transparent 60%);
-  transition: background-color 500ms var(--ease-luxury);
 }
 
 .esv-matter-category-copy {
   position: absolute;
   z-index: 2;
-  right: clamp(24px, 3vw, 48px);
-  bottom: clamp(30px, 4vw, 56px);
-  left: clamp(24px, 3vw, 48px);
+  right: clamp(22px, 2.7vw, 44px);
+  bottom: clamp(28px, 3.5vw, 52px);
+  left: clamp(22px, 2.7vw, 44px);
   margin: 0;
   color: #fff;
 }
@@ -215,7 +238,7 @@ body {
 
 .esv-matter-category-copy small {
   display: block;
-  color: rgba(255, 255, 255, .72);
+  color: rgba(255, 255, 255, .74);
   font-size: 10px;
   font-weight: 500;
   letter-spacing: .12em;
@@ -223,9 +246,9 @@ body {
 }
 
 .esv-matter-category-copy h2 {
-  max-width: 7ch;
+  max-width: 8ch;
   margin: 14px 0 0;
-  font-size: clamp(36px, 4vw, 58px);
+  font-size: clamp(34px, 3.6vw, 56px);
   font-weight: 300;
   line-height: .96;
   letter-spacing: -.035em;
@@ -233,8 +256,8 @@ body {
 
 .esv-matter-category-copy p {
   max-width: 29ch;
-  margin: 18px 0 0;
-  color: rgba(255, 255, 255, .72);
+  margin: 16px 0 0;
+  color: rgba(255, 255, 255, .74);
   font-size: 13px;
   line-height: 1.55;
 }
@@ -243,33 +266,29 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  min-height: 44px;
-  margin-top: 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, .68);
+  min-height: 40px;
+  margin-top: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, .66);
   font-size: 12px;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .esv-matter-category:hover .esv-matter-gallery-item img {
-    transform: scale(1.025);
+    transform: scale(1.024);
   }
 
   .esv-matter-category:hover .esv-matter-category-copy::before {
-    transform: scaleX(1.55);
-  }
-
-  .esv-matter-category:hover .esv-matter-category-copy span svg {
-    transform: translate3d(3px, -2px, 0);
+    transform: scaleX(1.5);
   }
 }
 
-/* Signature remains the object chapter: large, light, singular. */
+/* Signature stays light and object-led. */
 .esv-signature {
   background: var(--color-paper-2);
 }
 
 .esv-signature-media {
-  background: color-mix(in srgb, var(--color-sea) 12%, var(--color-paper));
+  background: color-mix(in srgb, var(--color-sea) 10%, var(--color-paper));
 }
 
 .esv-signature-facts dt {
@@ -280,7 +299,7 @@ body {
   color: var(--color-emerald);
 }
 
-/* Provenance becomes documentary and chromatically distinct from Signature. */
+/* Provenance is documentary, not another split product section. */
 .esv-provenance {
   min-height: 100svh;
   padding: clamp(112px, 9vw, 152px) 0 0;
@@ -316,7 +335,7 @@ body {
   align-self: end;
   max-width: 48ch;
   margin: 0;
-  color: rgba(248, 246, 241, .66);
+  color: rgba(248, 246, 241, .68);
   font-size: clamp(14px, 1vw, 16px);
   line-height: 1.6;
 }
@@ -325,15 +344,14 @@ body {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
-  margin-top: clamp(72px, 7vw, 104px);
+  margin-top: clamp(64px, 6vw, 96px);
   border-top: 1px solid rgba(248, 246, 241, .2);
 }
 
 .esv-provenance-evidence article {
-  display: block;
-  min-height: 250px;
+  min-width: 0;
+  min-height: 240px;
   padding: 28px clamp(22px, 2.5vw, 38px) 40px 0;
-  border: 0;
   border-right: 1px solid rgba(248, 246, 241, .16);
 }
 
@@ -350,7 +368,7 @@ body {
 }
 
 .esv-provenance-evidence h3 {
-  margin: 34px 0 0;
+  margin: 32px 0 0;
   color: var(--color-paper-2);
   font-size: clamp(20px, 1.8vw, 27px);
   font-weight: 300;
@@ -359,15 +377,16 @@ body {
 
 .esv-provenance-evidence p {
   max-width: 34ch;
-  margin: 18px 0 0;
-  color: rgba(248, 246, 241, .62);
+  margin: 16px 0 0;
+  color: rgba(248, 246, 241, .64);
   font-size: 13px;
   line-height: 1.65;
 }
 
 .esv-provenance-strip {
-  height: clamp(260px, 34svh, 430px);
-  margin: clamp(64px, 7vw, 104px) 0 0;
+  width: 100%;
+  height: clamp(280px, 34svh, 430px);
+  margin: clamp(56px, 6vw, 96px) 0 0;
   overflow: hidden;
   background: var(--color-deep);
 }
@@ -377,10 +396,9 @@ body {
   height: 100%;
   object-fit: cover;
   object-position: center 48%;
-  transform: scale(1.015);
 }
 
-/* Context gets the blue depth; Experience returns to quiet off-white. */
+/* Remaining palette moments */
 .esv-context {
   background: var(--color-blue);
 }
@@ -410,34 +428,18 @@ body {
   border-color: var(--color-bronze);
 }
 
-/* Motion system — progressive enhancement and no layout-affecting animation. */
+/* Motion: paint/compositor only. Geometry never depends on these rules. */
 .esv-motion-ready .esv-reveal {
   opacity: 0;
-  transform: translate3d(0, 14px, 0);
+  transform: translate3d(0, 12px, 0);
   transition:
-    opacity 620ms var(--ease-luxury) var(--esv-reveal-delay, 0ms),
-    transform 620ms var(--ease-luxury) var(--esv-reveal-delay, 0ms);
+    opacity 560ms var(--ease-luxury) var(--esv-reveal-delay, 0ms),
+    transform 560ms var(--ease-luxury) var(--esv-reveal-delay, 0ms);
 }
 
 .esv-motion-ready .esv-reveal.is-visible {
   opacity: 1;
   transform: translate3d(0, 0, 0);
-}
-
-.esv-motion-ready .esv-maison-main.esv-reveal,
-.esv-motion-ready .esv-maison-secondary.esv-reveal,
-.esv-motion-ready .esv-signature-media.esv-reveal,
-.esv-motion-ready .esv-provenance-strip.esv-reveal,
-.esv-motion-ready .esv-experience-main.esv-reveal {
-  transform: translate3d(0, 18px, 0) scale(.988);
-}
-
-.esv-motion-ready .esv-maison-main.esv-reveal.is-visible,
-.esv-motion-ready .esv-maison-secondary.esv-reveal.is-visible,
-.esv-motion-ready .esv-signature-media.esv-reveal.is-visible,
-.esv-motion-ready .esv-provenance-strip.esv-reveal.is-visible,
-.esv-motion-ready .esv-experience-main.esv-reveal.is-visible {
-  transform: translate3d(0, 0, 0) scale(1);
 }
 
 .esv-hero-cta svg,
@@ -454,6 +456,7 @@ body {
   .esv-text-link:hover svg,
   .esv-product-actions button:hover svg,
   .esv-private-cta:hover svg,
+  .esv-matter-category:hover .esv-matter-category-copy span svg,
   .esv-experience-pillars a:hover svg {
     transform: translate3d(3px, -2px, 0);
   }
@@ -480,9 +483,8 @@ body {
 
 @media (max-width: 767px) {
   .esv-product-meta {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    gap: 8px;
   }
 
   .esv-product-category {
@@ -500,16 +502,24 @@ body {
   }
 
   .esv-matter-gallery-track {
+    display: flex;
     min-height: 72svh;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .esv-matter-gallery-track::-webkit-scrollbar {
+    display: none;
   }
 
   .esv-matter-category {
     flex: 0 0 88vw;
+    width: 88vw;
+    height: 72svh;
+    min-height: 540px;
     scroll-snap-align: start;
-  }
-
-  .esv-matter-gallery-item {
-    min-height: 72svh;
   }
 
   .esv-matter-category-copy {
@@ -520,10 +530,6 @@ body {
 
   .esv-matter-category-copy h2 {
     font-size: clamp(34px, 11vw, 48px);
-  }
-
-  .esv-matter-category-copy p {
-    max-width: 26ch;
   }
 
   .esv-provenance {
@@ -565,7 +571,18 @@ body {
 
   .esv-provenance-strip {
     height: 42svh;
+    min-height: 280px;
     margin-top: var(--space-12);
+  }
+}
+
+@media (max-width: 429px) {
+  .esv-product-meta {
+    display: block;
+  }
+
+  .esv-product-status {
+    margin-top: 10px;
   }
 }
 
@@ -577,8 +594,8 @@ body {
     transition: none !important;
   }
 
-  .esv-matter-gallery-item img,
   .esv-product-category::before,
+  .esv-matter-gallery-item img,
   .esv-hero-cta svg,
   .esv-text-link svg,
   .esv-product-actions svg,

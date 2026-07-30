@@ -26,33 +26,30 @@ export interface Props {
 const defaultPillars: ExperiencePillar[] = [
   {
     title: "Curadoria privada",
-    text:
-      "Uma conversa precede a escolha. A seleção considera residência, coleção, projeto e intenção de permanência.",
+    text: "Uma conversa antecede a escolha.",
     image:
       "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=1200&q=88",
     imageAlt: "Objeto escultórico apresentado isoladamente em composição curatorial",
     href: "mailto:contact@esmera.com?subject=Curadoria%20privada",
-    linkLabel: "Falar com a curadoria",
+    linkLabel: "Saiba mais",
   },
   {
     title: "Proveniência",
-    text:
-      "Toda peça carrega as informações verificáveis sobre matéria, origem, transformação e registro.",
+    text: "Cada objeto carrega seu registro.",
     image:
       "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=1200&q=88",
     imageAlt: "Detalhe de matéria mineral em superfície irregular",
     href: "#provenance",
-    linkLabel: "Rever a proveniência",
+    linkLabel: "Saiba mais",
   },
   {
     title: "Entrega assistida",
-    text:
-      "A chegada também pertence à experiência: acompanhamento, acondicionamento e orientação quando aplicável.",
+    text: "A chegada também integra a experiência.",
     image:
       "https://images.unsplash.com/photo-1613424777445-f93a2a48e285?auto=format&fit=crop&w=1200&q=88",
     imageAlt: "Objeto de superfície terrosa apresentado sob luz natural",
     href: "mailto:contact@esmera.com?subject=Entrega%20assistida",
-    linkLabel: "Consultar o serviço",
+    linkLabel: "Saiba mais",
   },
 ];
 
@@ -62,7 +59,7 @@ export default function Process({
   eyebrow = "08 — Experiência",
   title = "Da escolha\nà entrega.",
   text =
-    "A aquisição é conduzida como uma sequência de rituais discretos: curadoria, prova e chegada da obra ao seu contexto.",
+    "Três rituais acompanham a aquisição: curadoria, registro e chegada da obra ao seu contexto.",
   pillars = defaultPillars,
 }: Props) {
   const rituals = pillars.length === 3 ? pillars : defaultPillars;
@@ -106,14 +103,14 @@ export default function Process({
               loading="lazy"
               decoding="async"
               width="900"
-              height="1100"
+              height="675"
               sizes="(max-width: 767px) calc(100vw - 40px), 32vw"
             />
             <small>0{index + 1}</small>
             <h3>{pillar.title}</h3>
             <p>{pillar.text}</p>
             {pillar.href && pillar.linkLabel && (
-              <a href={pillar.href} aria-label={pillar.linkLabel}>
+              <a href={pillar.href} aria-label={`${pillar.linkLabel}: ${pillar.title}`}>
                 {pillar.linkLabel} <Arrow size={12} />
               </a>
             )}

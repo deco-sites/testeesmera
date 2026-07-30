@@ -1,6 +1,6 @@
-import Image from "apps/website/components/Image.tsx";
 import { getAvailabilityMeta } from "../../components/esmera/availability.ts";
 import { selectedObjects, type EsmeraObject } from "../../components/esmera/data.ts";
+import { EsmeraImage } from "../../components/esmera/ResponsiveMedia.tsx";
 import ProductActions from "../../islands/ProductActions.tsx";
 
 export interface Props {
@@ -34,7 +34,7 @@ export default function SignatureObject({
     >
       <div class="esv-shell esv-signature-grid">
         <figure class="esv-signature-media">
-          <Image
+          <EsmeraImage
             class="esv-signature-image-primary"
             src={product.image}
             alt={product.alt}
@@ -45,7 +45,7 @@ export default function SignatureObject({
             sizes="(max-width: 767px) calc(100vw - 36px), (max-width: 1023px) 62vw, 58vw"
           />
           {product.detailImage && (
-            <Image
+            <EsmeraImage
               class="esv-signature-image-detail"
               src={product.detailImage}
               alt=""

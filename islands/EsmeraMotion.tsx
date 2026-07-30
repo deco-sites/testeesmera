@@ -1,8 +1,6 @@
 import { useEffect } from "preact/hooks";
 
-const revealSelectors = [
-  ".esv-hero-statement",
-  ".esv-hero-cta",
+const fallbackRevealSelectors = [
   ".esv-maison-copy",
   ".esv-maison-main",
   ".esv-maison-secondary",
@@ -23,9 +21,7 @@ const revealSelectors = [
   ".esv-private-copy",
 ];
 
-const staggerSelectors = [
-  ".esv-product-card",
-];
+const legacyStaggerSelectors = [".esv-product-card"];
 
 export default function EsmeraMotion() {
   useEffect(() => {
@@ -36,21 +32,44 @@ export default function EsmeraMotion() {
 
     if (reduceMotion || !("IntersectionObserver" in globalThis)) return;
 
-    const elements = Array.from(
-      new Set(
-        revealSelectors.flatMap((selector) =>
-          Array.from(document.querySelectorAll<HTMLElement>(selector))
-        ),
+    const declared = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        '[data-motion="reveal"], [data-motion="media-reveal"]',
       ),
     );
 
+    const fallback = fallbackRevealSelectors.flatMap((selector) =>
+      Array.from(document.querySelectorAll<HTMLElement>(selector)).filter(
+        (element) =>
+          !element.matches("[data-motion]") &&
+          !element.querySelector("[data-motion]"),
+      )
+    );
+
+    const elements = Array.from(new Set([...declared, ...fallback]));
     if (elements.length === 0) return;
 
-    elements.forEach((element) => element.classList.add("esv-reveal"));
+    elements.forEach((element) => {
+      element.classList.add("esv-reveal");
+      if (element.dataset.motion === "media-reveal") {
+        element.classList.add("esv-reveal-media");
+      }
 
-    staggerSelectors.forEach((selector) => {
+      const order = Number.parseInt(element.dataset.motionOrder ?? "", 10);
+      if (Number.isFinite(order)) {
+        element.style.setProperty(
+          "--esv-reveal-delay",
+          `${Math.min(Math.max(order, 0) * 55, 275)}ms`,
+        );
+      }
+    });
+
+    legacyStaggerSelectors.forEach((selector) => {
       const groups = new Map<Element, HTMLElement[]>();
       document.querySelectorAll<HTMLElement>(selector).forEach((element) => {
+        if (element.matches("[data-motion]") || element.querySelector("[data-motion]")) {
+          return;
+        }
         const parent = element.parentElement;
         if (!parent) return;
         const current = groups.get(parent) ?? [];
@@ -102,7 +121,7 @@ export default function EsmeraMotion() {
       observer.disconnect();
       root.classList.remove("esv-motion-ready");
       elements.forEach((element) => {
-        element.classList.remove("esv-reveal", "is-visible");
+        element.classList.remove("esv-reveal", "esv-reveal-media", "is-visible");
         element.style.removeProperty("--esv-reveal-delay");
       });
     };

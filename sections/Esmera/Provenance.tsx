@@ -38,7 +38,7 @@ export default function Provenance({
   text =
     "Proveniência é parte do valor. A Esméra apresenta o que pode ser documentado sobre matéria, transformação e singularidade antes da aquisição.",
   image =
-    "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=1600&q=90",
+    "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=2000&q=90",
   imageAlt = "Superfície mineral em detalhe, revelando textura e irregularidade",
   evidence = defaultEvidence,
 }: Props) {
@@ -48,33 +48,32 @@ export default function Provenance({
       class="esv-provenance"
       aria-labelledby="esv-provenance-title"
     >
-      <div class="esv-shell esv-provenance-grid">
-        <figure class="esv-provenance-media">
-          <img
-            src={image}
-            alt={imageAlt}
-            loading="lazy"
-            decoding="async"
-            width="1200"
-            height="1500"
-          />
-        </figure>
-
-        <div class="esv-provenance-copy">
-          <p class="esv-kicker">{eyebrow}</p>
-          <h2 id="esv-provenance-title">{title}</h2>
-          <p class="esv-provenance-intro">{text}</p>
-          <div class="esv-provenance-evidence">
-            {evidence.slice(0, 3).map((item, index) => (
-              <article>
-                <small>0{index + 1}</small>
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </article>
-            ))}
-          </div>
-        </div>
+      <div class="esv-shell esv-provenance-head">
+        <p class="esv-kicker esv-kicker-light">{eyebrow}</p>
+        <h2 id="esv-provenance-title">{title}</h2>
+        <p class="esv-provenance-intro">{text}</p>
       </div>
+
+      <div class="esv-shell esv-provenance-evidence">
+        {evidence.slice(0, 3).map((item, index) => (
+          <article>
+            <small>0{index + 1}</small>
+            <h3>{item.title}</h3>
+            <p>{item.text}</p>
+          </article>
+        ))}
+      </div>
+
+      <figure class="esv-provenance-strip">
+        <img
+          src={image}
+          alt={imageAlt}
+          loading="lazy"
+          decoding="async"
+          width="2000"
+          height="720"
+        />
+      </figure>
     </section>
   );
 }

@@ -34,18 +34,22 @@ export default function Hero({
       class={`esv-hero is-overlay-${overlay} is-focal-${focalPoint}`}
       aria-labelledby="esv-hero-title"
     >
-      <Picture class="esv-hero-picture">
+      <Picture class="esv-hero-picture" preload>
         <Source
           media="(max-width: 767px)"
+          fetchPriority="high"
           src={mobileAsset}
           width={900}
           height={1200}
+          sizes="100vw"
         />
         <Source
           media="(min-width: 768px)"
+          fetchPriority="high"
           src={desktopImage}
           width={1920}
           height={1200}
+          sizes="100vw"
         />
         <img
           {...{ fetchPriority: "high" }}

@@ -40,6 +40,7 @@ export default function SelectedObjects({
       id="selection"
       class="esv-selected"
       aria-labelledby="esv-selected-title"
+      style={{ paddingTop: "clamp(64px, 7vw, 136px)" }}
     >
       <div class="esv-shell esv-selected-head">
         <span class="esv-kicker">{eyebrow}</span>

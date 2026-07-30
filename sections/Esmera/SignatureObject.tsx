@@ -1,5 +1,6 @@
 import { selectedObjects, type EsmeraObject } from "../../components/esmera/data.ts";
 import { getAvailabilityMeta } from "../../components/esmera/availability.ts";
+import { responsiveSrcSet } from "../../components/esmera/image.ts";
 import ProductActions from "../../islands/ProductActions.tsx";
 
 export interface Props {
@@ -36,6 +37,7 @@ export default function SignatureObject({
           <img
             class="esv-signature-image-primary"
             src={product.image}
+            srcset={responsiveSrcSet(product.image, [720, 960, 1200, 1600])}
             alt={product.alt}
             loading="lazy"
             decoding="async"
@@ -47,6 +49,7 @@ export default function SignatureObject({
             <img
               class="esv-signature-image-detail"
               src={product.detailImage}
+              srcset={responsiveSrcSet(product.detailImage, [720, 960, 1200, 1600])}
               alt=""
               loading="lazy"
               decoding="async"

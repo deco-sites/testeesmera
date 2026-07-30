@@ -22,10 +22,10 @@ export default function ProductActions(
       <div class="esv-product-actions is-compact">
         <button
           type="button"
-          aria-label={`Ver detalhes de ${productTitle}`}
+          aria-label={`Conhecer a peça ${productTitle}`}
           onClick={() => dispatch("esmera:view-object")}
         >
-          Ver objeto <Arrow size={13} />
+          Conhecer a peça <Arrow size={13} />
         </button>
       </div>
     );
@@ -35,10 +35,10 @@ export default function ProductActions(
     <div class="esv-product-actions">
       <button
         type="button"
-        aria-label={`Ver detalhes de ${productTitle}`}
+        aria-label={`Conhecer a peça ${productTitle}`}
         onClick={() => dispatch("esmera:view-object")}
       >
-        Ver objeto <Arrow size={13} />
+        Conhecer a peça <Arrow size={13} />
       </button>
       <button
         type="button"

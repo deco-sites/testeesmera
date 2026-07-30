@@ -421,7 +421,10 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
               >
                 <Icon name="close" size={21} />
               </button>
-              <div class="esv-object-modal-images">
+              <div
+                class="esv-object-modal-images"
+                style={selected.detailImage ? undefined : "grid-template-columns: 1fr;"}
+              >
                 <img src={selected.image} alt={selected.alt} width="900" height="1125" />
                 {selected.detailImage && (
                   <img

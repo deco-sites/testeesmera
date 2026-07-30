@@ -1,19 +1,17 @@
 import ProductActions from "../../islands/ProductActions.tsx";
+import { getAvailabilityMeta } from "./availability.ts";
 import type { EsmeraObject } from "./data.ts";
 
 export interface Props {
   item: EsmeraObject;
 }
 
-function statusTone(status: string) {
-  const normalized = status.toLocaleLowerCase("pt-BR");
-  if (normalized.includes("pronta")) return "ready";
-  if (normalized.includes("única")) return "unique";
-  if (normalized.includes("encomenda")) return "order";
-  return "consult";
-}
-
 export default function ObjectCard({ item }: Props) {
+  const availability = getAvailabilityMeta(item.availability);
+  const meta = [availability.compactLabel, item.material]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
     <article class="esv-product-card" role="listitem">
       <figure class="esv-product-media">
@@ -25,30 +23,34 @@ export default function ObjectCard({ item }: Props) {
           decoding="async"
           width="960"
           height="1200"
+          sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1023px) 45vw, 24vw"
         />
-        <img
-          class="esv-product-image-detail"
-          src={item.detailImage}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          width="960"
-          height="1200"
-        />
+        {item.detailImage && (
+          <img
+            class="esv-product-image-detail"
+            src={item.detailImage}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            width="960"
+            height="1200"
+            sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1023px) 45vw, 24vw"
+          />
+        )}
       </figure>
+
       <div class="esv-product-card-copy">
-        <div class="esv-product-meta">
-          <div class="esv-product-taxonomy">
-            <span class="esv-product-category">{item.category}</span>
-            <span class="esv-product-material">{item.material}</span>
-          </div>
-          <span class={`esv-product-status esv-product-status-${statusTone(item.availability)}`}>
-            {item.availability}
-          </span>
-        </div>
+        <p class="esv-product-meta-line">{meta}</p>
         <h3>{item.title}</h3>
-        <p>{item.subtitle}</p>
-        <strong class="esv-product-price">{item.price}</strong>
+        {item.subtitle && <p>{item.subtitle}</p>}
+
+        {(item.price || availability.label) && (
+          <div class="esv-product-commercial">
+            <span class="esv-product-state">{availability.label}</span>
+            {item.price && <span class="esv-product-price">{item.price}</span>}
+          </div>
+        )}
+
         <ProductActions
           productId={item.id}
           productTitle={item.title}

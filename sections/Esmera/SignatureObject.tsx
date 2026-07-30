@@ -1,6 +1,6 @@
-import { selectedObjects, type EsmeraObject } from "../../components/esmera/data.ts";
+import Image from "apps/website/components/Image.tsx";
 import { getAvailabilityMeta } from "../../components/esmera/availability.ts";
-import { responsiveSrcSet } from "../../components/esmera/image.ts";
+import { selectedObjects, type EsmeraObject } from "../../components/esmera/data.ts";
 import ProductActions from "../../islands/ProductActions.tsx";
 
 export interface Props {
@@ -34,28 +34,26 @@ export default function SignatureObject({
     >
       <div class="esv-shell esv-signature-grid">
         <figure class="esv-signature-media">
-          <img
+          <Image
             class="esv-signature-image-primary"
             src={product.image}
-            srcset={responsiveSrcSet(product.image, [720, 960, 1200, 1600])}
             alt={product.alt}
             loading="lazy"
             decoding="async"
-            width="1400"
-            height="1050"
-            sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1023px) 62vw, 58vw"
+            width={1400}
+            height={1050}
+            sizes="(max-width: 767px) calc(100vw - 36px), (max-width: 1023px) 62vw, 58vw"
           />
           {product.detailImage && (
-            <img
+            <Image
               class="esv-signature-image-detail"
               src={product.detailImage}
-              srcset={responsiveSrcSet(product.detailImage, [720, 960, 1200, 1600])}
               alt=""
               loading="lazy"
               decoding="async"
-              width="1400"
-              height="1050"
-              sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1023px) 62vw, 58vw"
+              width={1400}
+              height={1050}
+              sizes="(max-width: 767px) calc(100vw - 36px), (max-width: 1023px) 62vw, 58vw"
             />
           )}
         </figure>

@@ -33,8 +33,9 @@ export default function Manifesto({
   return (
     <section
       id="about"
-      class="esv-maison esv-maison-scene"
+      class="esv-maison"
       aria-labelledby="esv-maison-title"
+      style={{ paddingBottom: "clamp(64px, 7vw, 136px)" }}
       data-motion-scene="maison"
     >
       <div class="esv-shell esv-maison-grid">

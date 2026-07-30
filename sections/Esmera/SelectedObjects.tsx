@@ -26,7 +26,7 @@ export default function SelectedObjects({
       aria-labelledby="esv-selected-title"
     >
       <div class="esv-shell esv-selected-head">
-        <p class="esv-kicker">{eyebrow}</p>
+        <span class="esv-kicker">{eyebrow}</span>
         <h2 id="esv-selected-title">{title}</h2>
         {text && <p>{text}</p>}
       </div>

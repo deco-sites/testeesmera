@@ -1,4 +1,5 @@
 import Arrow from "../../components/esmera/Arrow.tsx";
+import { responsiveSrcSet } from "../../components/esmera/image.ts";
 
 export interface ExperiencePillar {
   title: string;
@@ -82,6 +83,7 @@ export default function Process({
         <figure class="esv-experience-main">
           <img
             src={image}
+            srcset={responsiveSrcSet(image, [960, 1440, 1800])}
             alt={imageAlt}
             loading="lazy"
             decoding="async"
@@ -97,6 +99,7 @@ export default function Process({
           <article>
             <img
               src={pillar.image}
+              srcset={responsiveSrcSet(pillar.image, [480, 720, 900, 1200])}
               alt={pillar.imageAlt}
               loading="lazy"
               decoding="async"

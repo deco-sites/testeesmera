@@ -8,28 +8,28 @@ export interface AvailabilityMeta {
 
 export const availabilityMeta: Record<AvailabilityStatus, AvailabilityMeta> = {
   unique: {
-    label: "Peça única",
+    label: "Disponível",
     compactLabel: "PEÇA ÚNICA",
     enquiryLabel: "Peça única · consulta",
   },
   available: {
-    label: "Disponível para aquisição",
+    label: "Disponível",
     compactLabel: "DISPONÍVEL PARA AQUISIÇÃO",
     enquiryLabel: "Disponível para aquisição",
   },
   made_to_order: {
-    label: "Sob encomenda · consulta",
-    compactLabel: "SOB ENCOMENDA · CONSULTA",
+    label: "Sob encomenda",
+    compactLabel: "SOB ENCOMENDA",
     enquiryLabel: "Sob encomenda · consulta",
   },
   limited: {
-    label: "Edição limitada",
+    label: "Disponível",
     compactLabel: "EDIÇÃO LIMITADA",
     enquiryLabel: "Edição limitada · consulta",
   },
   archive: {
-    label: "Acervo / indisponível",
-    compactLabel: "ACERVO / INDISPONÍVEL",
+    label: "Indisponível",
+    compactLabel: "ACERVO",
     enquiryLabel: "Acervo / indisponível",
   },
 };

@@ -1,27 +1,26 @@
 import { useEffect } from "preact/hooks";
 
 const revealSelectors = [
-  ".esv-hero-content",
+  ".esv-hero-statement",
+  ".esv-hero-cta",
   ".esv-maison-copy",
   ".esv-maison-main",
   ".esv-maison-secondary",
-  ".esv-selected-head",
+  ".esv-selected-head > .esv-kicker",
+  ".esv-selected-head > h2",
+  ".esv-selected-head > p:last-child",
   ".esv-product-card",
-  ".esv-matter-category-copy",
+  ".esv-territory-copy",
   ".esv-signature-media",
   ".esv-signature-copy",
-  ".esv-provenance-head > .esv-kicker",
-  ".esv-provenance-head > h2",
-  ".esv-provenance-intro",
-  ".esv-provenance-evidence article",
-  ".esv-provenance-strip",
-  ".esv-context-copy > .esv-kicker",
-  ".esv-context-copy > h2",
-  ".esv-context-copy > p:last-child",
-  ".esv-experience-main",
-  ".esv-experience-copy > .esv-kicker",
-  ".esv-experience-copy > h2",
-  ".esv-experience-text",
+  ".esv-matter-interlude-meta",
+  ".esv-matter-interlude-title",
+  ".esv-provenance-intro-grid > .esv-kicker",
+  ".esv-provenance-intro-copy",
+  ".esv-provenance-stage-media",
+  ".esv-provenance-stage-copy",
+  ".esv-experience-head > .esv-kicker",
+  ".esv-experience-intro",
   ".esv-experience-pillars article",
   ".esv-private-grid > .esv-kicker",
   ".esv-private-copy",
@@ -29,14 +28,15 @@ const revealSelectors = [
 
 const staggerSelectors = [
   ".esv-product-card",
-  ".esv-provenance-evidence article",
   ".esv-experience-pillars article",
 ];
 
 export default function EsmeraMotion() {
   useEffect(() => {
     const root = document.documentElement;
-    const reduceMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = globalThis.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
 
     if (reduceMotion || !("IntersectionObserver" in globalThis)) return;
 
@@ -75,7 +75,7 @@ export default function EsmeraMotion() {
     const viewportHeight = globalThis.innerHeight || 800;
     elements.forEach((element) => {
       const rect = element.getBoundingClientRect();
-      if (rect.top < viewportHeight * 0.92 && rect.bottom > 0) {
+      if (rect.top < viewportHeight * .94 && rect.bottom > 0) {
         element.classList.add("is-visible");
       }
     });
@@ -90,8 +90,8 @@ export default function EsmeraMotion() {
         });
       },
       {
-        threshold: 0.1,
-        rootMargin: "0px 0px -6% 0px",
+        threshold: .08,
+        rootMargin: "0px 0px -5% 0px",
       },
     );
 

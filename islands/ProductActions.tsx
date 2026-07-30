@@ -62,11 +62,11 @@ export default function ProductActions(
       </button>
       <button
         type="button"
-        aria-label={`Adicionar ${productTitle} à consulta`}
+        aria-label={`Adicionar ${productTitle} ao carrinho`}
         onClick={(event) =>
           dispatch("esmera:add-to-enquiry", event.currentTarget)}
       >
-        Adicionar à consulta
+        Adicionar ao carrinho
       </button>
     </div>
   );

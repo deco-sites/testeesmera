@@ -49,7 +49,7 @@
 /* -------------------------------------------------------------------------- */
 
 .esv-maison-main {
-  inset-left: 10%;
+  inset: 0 0 0 10%;
 }
 
 .esv-maison-secondary {
@@ -219,8 +219,8 @@
   max-width: 28ch;
 }
 
-.esv-footer-contact small,
-.esv-footer-bottom {
+.esv-footer-contact .esv-kicker,
+.esv-footer-bottom .esv-kicker {
   font-size: 10px;
 }
 
@@ -271,7 +271,7 @@
   }
 
   .esv-maison-main {
-    inset-left: 8%;
+    inset: 0 0 0 8%;
   }
 
   .esv-maison-secondary {

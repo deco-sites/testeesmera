@@ -109,6 +109,13 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
   }, [query]);
 
   const selectedItems = catalog.filter((item) => selection.includes(item.id));
+  const enquiryMailHref = `mailto:contact@esmera.com?subject=${
+    encodeURIComponent("Consulta privada — Esméra")
+  }&body=${
+    encodeURIComponent(
+      `Olá, gostaria de consultar: ${selectedItems.map((item) => item.title).join(", ")}.`,
+    )
+  }`;
 
   const clearOverlayTimer = () => {
     if (overlayTimerRef.current === null) return;
@@ -514,14 +521,7 @@ export default function EsmeraHeader({ logo, enquiryLabel }: Props) {
                           );
                         })}
                       </div>
-                      <a
-                        class="esv-enquiry-send"
-                        href={`mailto:contact@esmera.com?subject=$
-                          {encodeURIComponent("Consulta privada — Esméra")}&body=$
-                          {encodeURIComponent(
-                            `Olá, gostaria de consultar: ${selectedItems.map((item) => item.title).join(", ")}.`,
-                          )}`.replace(/\s+/g, "")}
-                      >
+                      <a class="esv-enquiry-send" href={enquiryMailHref}>
                         Falar com a curadoria <Icon name="arrow" size={15} />
                       </a>
                     </>

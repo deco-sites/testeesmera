@@ -1,5 +1,5 @@
-import Image from "apps/website/components/Image.tsx";
 import Arrow from "../../components/esmera/Arrow.tsx";
+import { EsmeraImage } from "../../components/esmera/ResponsiveMedia.tsx";
 
 export interface ExperiencePillar {
   title: string;
@@ -80,7 +80,7 @@ export default function Process({
 
       {image && (
         <figure class="esv-experience-main">
-          <Image
+          <EsmeraImage
             src={image}
             alt={imageAlt}
             loading="lazy"
@@ -95,7 +95,7 @@ export default function Process({
       <div class="esv-shell esv-experience-pillars">
         {rituals.map((pillar, index) => (
           <article>
-            <Image
+            <EsmeraImage
               src={pillar.image}
               alt={pillar.imageAlt}
               loading="lazy"

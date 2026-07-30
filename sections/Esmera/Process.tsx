@@ -1,5 +1,5 @@
+import Image from "apps/website/components/Image.tsx";
 import Arrow from "../../components/esmera/Arrow.tsx";
-import { responsiveSrcSet } from "../../components/esmera/image.ts";
 
 export interface ExperiencePillar {
   title: string;
@@ -80,14 +80,13 @@ export default function Process({
 
       {image && (
         <figure class="esv-experience-main">
-          <img
+          <Image
             src={image}
-            srcset={responsiveSrcSet(image, [960, 1440, 1800])}
             alt={imageAlt}
             loading="lazy"
             decoding="async"
-            width="1800"
-            height="760"
+            width={1800}
+            height={760}
             sizes="100vw"
           />
         </figure>
@@ -96,15 +95,14 @@ export default function Process({
       <div class="esv-shell esv-experience-pillars">
         {rituals.map((pillar, index) => (
           <article>
-            <img
+            <Image
               src={pillar.image}
-              srcset={responsiveSrcSet(pillar.image, [480, 720, 900, 1200])}
               alt={pillar.imageAlt}
               loading="lazy"
               decoding="async"
-              width="900"
-              height="675"
-              sizes="(max-width: 767px) calc(100vw - 40px), 32vw"
+              width={900}
+              height={675}
+              sizes="(max-width: 767px) calc(100vw - 36px), 32vw"
             />
             <small>0{index + 1}</small>
             <h3>{pillar.title}</h3>

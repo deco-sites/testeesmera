@@ -39,18 +39,36 @@ export default function Manifesto({
         <div class="esv-maison-copy">
           <p class="esv-kicker">{eyebrow}</p>
           <h2 id="esv-maison-title">{title}</h2>
-          <p class="esv-maison-text">{text}</p>
-          <a href={ctaHref} class="esv-text-link">
-            {ctaLabel} <Arrow size={13} />
-          </a>
+          {text && <p class="esv-maison-text">{text}</p>}
+          {ctaLabel && (
+            <a href={ctaHref} class="esv-text-link">
+              {ctaLabel} <Arrow size={13} />
+            </a>
+          )}
         </div>
 
         <div class="esv-maison-media" aria-label="Objeto e matéria Esméra">
           <figure class="esv-maison-main">
-            <img src={mainImage} alt={mainImageAlt} loading="lazy" decoding="async" width="936" height="730" />
+            <img
+              src={mainImage}
+              alt={mainImageAlt}
+              loading="lazy"
+              decoding="async"
+              width="936"
+              height="1170"
+              sizes="(max-width: 767px) 85vw, (max-width: 1023px) 48vw, 42vw"
+            />
           </figure>
           <figure class="esv-maison-secondary">
-            <img src={secondaryImage} alt={secondaryImageAlt} loading="lazy" decoding="async" width="360" height="480" />
+            <img
+              src={secondaryImage}
+              alt={secondaryImageAlt}
+              loading="lazy"
+              decoding="async"
+              width="360"
+              height="480"
+              sizes="(max-width: 767px) 30vw, 16vw"
+            />
           </figure>
         </div>
       </div>

@@ -23,7 +23,7 @@ export default function Hero({
   ctaLabel = "Descobrir a seleção",
   ctaHref = "#selection",
   overlay = 20,
-  focalPoint = "center",
+  focalPoint = "right",
 }: Props) {
   return (
     <section

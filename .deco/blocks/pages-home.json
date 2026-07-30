@@ -21,6 +21,9 @@
       "__resolveType": "site/sections/Esmera/SignatureObject.tsx"
     },
     {
+      "__resolveType": "site/sections/Esmera/MatterInterlude.tsx"
+    },
+    {
       "__resolveType": "site/sections/Esmera/Provenance.tsx"
     },
     {

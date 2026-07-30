@@ -1,4 +1,5 @@
 import { selectedObjects, type EsmeraObject } from "../../components/esmera/data.ts";
+import { getAvailabilityMeta } from "../../components/esmera/availability.ts";
 import ProductActions from "../../islands/ProductActions.tsx";
 
 export interface Props {
@@ -11,11 +12,19 @@ export interface Props {
 
 export default function SignatureObject({
   product = selectedObjects[0],
-  eyebrow = "Objeto assinatura / peça única",
+  eyebrow = "05 — Peça assinatura",
   editorialText =
     "Uma peça recebe tempo editorial para que forma, matéria e construção possam ser percebidas antes da decisão de aquisição.",
-  dimensions = "Dimensões disponíveis na ficha da peça",
+  dimensions = "",
 }: Props) {
+  const availability = getAvailabilityMeta(product.availability);
+  const facts = [
+    product.material ? { label: "Matéria", value: product.material } : null,
+    dimensions ? { label: "Escala", value: dimensions } : null,
+    product.edition ? { label: "Edição", value: product.edition } : null,
+    { label: "Estado", value: availability.label },
+  ].filter((item): item is { label: string; value: string } => Boolean(item));
+
   return (
     <section
       id="signature"
@@ -31,41 +40,39 @@ export default function SignatureObject({
             loading="lazy"
             decoding="async"
             width="1400"
-            height="1750"
+            height="1050"
+            sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1023px) 62vw, 58vw"
           />
-          <img
-            class="esv-signature-image-detail"
-            src={product.detailImage}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            width="1400"
-            height="1750"
-          />
+          {product.detailImage && (
+            <img
+              class="esv-signature-image-detail"
+              src={product.detailImage}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              width="1400"
+              height="1050"
+              sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1023px) 62vw, 58vw"
+            />
+          )}
         </figure>
 
         <div class="esv-signature-copy">
           <p class="esv-kicker">{eyebrow}</p>
           <h2 id="esv-signature-title">{product.title}</h2>
-          <p class="esv-signature-subtitle">{product.subtitle}</p>
+          {product.subtitle && <p class="esv-signature-subtitle">{product.subtitle}</p>}
           <p class="esv-signature-text">{editorialText}</p>
 
           <dl class="esv-signature-facts">
-            <div>
-              <dt>Matéria</dt>
-              <dd>{product.material}</dd>
-            </div>
-            <div>
-              <dt>Escala</dt>
-              <dd>{dimensions}</dd>
-            </div>
-            <div>
-              <dt>Estado</dt>
-              <dd>{product.availability}</dd>
-            </div>
+            {facts.slice(0, 4).map((fact) => (
+              <div>
+                <dt>{fact.label}</dt>
+                <dd>{fact.value}</dd>
+              </div>
+            ))}
           </dl>
 
-          <div class="esv-signature-value">{product.price}</div>
+          {product.price && <div class="esv-signature-value">{product.price}</div>}
           <ProductActions
             productId={product.id}
             productTitle={product.title}

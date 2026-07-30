@@ -1,7 +1,7 @@
-import Image from "apps/website/components/Image.tsx";
 import ProductActions from "../../islands/ProductActions.tsx";
 import { getAvailabilityMeta } from "./availability.ts";
 import type { EsmeraObject } from "./data.ts";
+import { EsmeraImage } from "./ResponsiveMedia.tsx";
 
 export interface Props {
   item: EsmeraObject;
@@ -16,7 +16,7 @@ export default function ObjectCard({ item }: Props) {
   return (
     <article class="esv-product-card" role="listitem">
       <figure class="esv-product-media">
-        <Image
+        <EsmeraImage
           class="esv-product-image-primary"
           src={item.image}
           alt={item.alt}
@@ -27,7 +27,7 @@ export default function ObjectCard({ item }: Props) {
           sizes="(max-width: 767px) calc(100vw - 36px), (max-width: 1023px) 46vw, 24vw"
         />
         {item.detailImage && (
-          <Image
+          <EsmeraImage
             class="esv-product-image-detail"
             src={item.detailImage}
             alt=""

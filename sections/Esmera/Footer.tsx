@@ -11,7 +11,7 @@ export interface Props {
 
 export default function Footer({
   statement = "Natureza. Matéria. Permanência.",
-  contactLabel = "Consulta privada",
+  contactLabel = "contact@esmera.com",
   contactHref = "mailto:contact@esmera.com",
   privacyLabel = "Privacidade",
   privacyHref = "#contact",

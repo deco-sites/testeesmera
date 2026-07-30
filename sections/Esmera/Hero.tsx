@@ -5,9 +5,7 @@ export interface Props {
   desktopImage?: string;
   /** @format image-uri @description Recorte vertical do mesmo objeto para mobile */
   mobileImage?: string;
-  /** @description Nome da marca para leitores de tela */
-  title?: string;
-  /** @format textarea @description Uma única frase de 5 a 12 palavras */
+  /** @format textarea @description Declaração principal de até 70 caracteres */
   statement?: string;
   ctaLabel?: string;
   ctaHref?: string;
@@ -15,30 +13,22 @@ export interface Props {
   overlay?: 10 | 20 | 30;
   /** @description Ponto focal da fotografia */
   focalPoint?: "left" | "center" | "right";
-  /** @description Movimento de entrada da imagem */
-  motion?: "none" | "subtle";
 }
 
 export default function Hero({
   desktopImage =
     "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=2400&q=90",
   mobileImage,
-  title = "ESMÉRA",
   statement = "Matéria rara. Forma destinada a permanecer.",
-  ctaLabel = "Explorar objetos",
+  ctaLabel = "Descobrir a seleção",
   ctaHref = "#selection",
   overlay = 20,
   focalPoint = "center",
-  motion = "subtle",
 }: Props) {
   return (
     <section
       id="main-content"
-      class={`esv-hero esv-hero-${motion}`}
-      style={{
-        "--hero-overlay": overlay / 100,
-        "--hero-position": focalPoint,
-      }}
+      class={`esv-hero is-overlay-${overlay} is-focal-${focalPoint}`}
       aria-labelledby="esv-hero-title"
     >
       <picture class="esv-hero-picture">
@@ -53,16 +43,18 @@ export default function Hero({
           decoding="async"
           width="2400"
           height="1500"
+          sizes="100vw"
         />
       </picture>
-      <div class="esv-hero-overlay" />
+      <div class="esv-hero-overlay" aria-hidden="true" />
 
       <div class="esv-shell esv-hero-content">
-        <h1 id="esv-hero-title" class="esv-sr-only">{title}</h1>
-        <p class="esv-hero-statement">{statement}</p>
-        <a class="esv-hero-cta" href={ctaHref}>
-          {ctaLabel} <Arrow size={14} />
-        </a>
+        <h1 id="esv-hero-title" class="esv-hero-statement">{statement}</h1>
+        {ctaLabel && (
+          <a class="esv-hero-cta" href={ctaHref}>
+            {ctaLabel} <Arrow size={14} />
+          </a>
+        )}
       </div>
     </section>
   );

@@ -1,0 +1,75 @@
+name: Temporary restore PayloadHome validation
+
+on:
+  push:
+    branches:
+      - fix/restore-payload-home-manifest
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Regenerate Deco manifest
+        run: deno task gen
+
+      - name: Verify PayloadHome registration and preserved configuration
+        shell: bash
+        run: |
+          grep -F 'site/sections/Esmera/PayloadHome.tsx' manifest.gen.ts
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          home = json.loads(Path('.deco/blocks/pages-home.json').read_text())
+          sections = home.get('sections', [])
+          assert any(
+              section.get('__resolveType') == 'site/sections/Esmera/PayloadHome.tsx'
+              for section in sections
+          ), 'pages-home.json no longer resolves PayloadHome'
+
+          client = Path('lib/payload/client.ts').read_text()
+          assert 'DEFAULT_PAYLOAD_API_URL' in client
+          assert 'Deno.env.get("PAYLOAD_API_URL") || DEFAULT_PAYLOAD_API_URL' in client
+          PY
+
+      - name: Lint
+        run: deno lint
+
+      - name: Type-check entrypoints
+        run: deno check dev.ts main.ts
+
+      - name: Test
+        run: deno test -A
+
+      - name: Validate Deco project
+        run: deno task validate
+
+      - name: Build
+        run: deno task build
+
+      - name: Commit generated Deco files
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add manifest.gen.ts .deco/metadata
+          if git diff --cached --quiet; then
+            echo "Generated files already up to date."
+          else
+            git commit -m "fix: restore PayloadHome manifest registration"
+            git push origin HEAD:fix/restore-payload-home-manifest
+          fi

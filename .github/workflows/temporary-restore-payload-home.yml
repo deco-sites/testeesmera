@@ -42,7 +42,6 @@ jobs:
         timeout-minutes: 10
         run: |
           set -euo pipefail
-          cp manifest.gen.ts /tmp/manifest.gen.expected.ts
 
           # Recreate only the manifest regression inside the disposable runner.
           # This proves that the exact generation task restores PayloadHome.
@@ -62,17 +61,18 @@ jobs:
           path.write_text(content)
           PY
 
-          if cmp -s manifest.gen.ts /tmp/manifest.gen.expected.ts; then
+          if grep -Fq './sections/Esmera/PayloadHome.tsx' manifest.gen.ts; then
             echo "Failed to recreate the manifest regression before validation."
             exit 1
           fi
 
-          deno task gen > /tmp/deno-task-gen.log 2>&1 &
+          setsid deno task gen > /tmp/deno-task-gen.log 2>&1 &
           gen_pid=$!
           generated=false
 
           for _ in $(seq 1 240); do
-            if cmp -s manifest.gen.ts /tmp/manifest.gen.expected.ts; then
+            if grep -Fq 'import * as $$$$$$8 from "./sections/Esmera/PayloadHome.tsx";' manifest.gen.ts && \
+               grep -Fq '"site/sections/Esmera/PayloadHome.tsx": $$$$$$8,' manifest.gen.ts; then
               generated=true
               break
             fi
@@ -83,7 +83,7 @@ jobs:
               status=$?
               set -e
               cat /tmp/deno-task-gen.log
-              echo "deno task gen exited before restoring the generated manifest (status $status)."
+              echo "deno task gen exited before restoring PayloadHome (status $status)."
               exit 1
             fi
 
@@ -92,21 +92,21 @@ jobs:
 
           if [ "$generated" != "true" ]; then
             cat /tmp/deno-task-gen.log
-            echo "deno task gen did not restore manifest.gen.ts within the validation window."
-            kill -TERM "$gen_pid" 2>/dev/null || true
+            echo "deno task gen did not restore PayloadHome within the validation window."
+            kill -TERM -- "-$gen_pid" 2>/dev/null || true
             exit 1
           fi
 
-          # gen-only has regenerated the file but keeps the development process alive.
-          # Stop that persistent process after observing the generated output.
-          kill -TERM "$gen_pid" 2>/dev/null || true
+          # gen-only regenerates the file but may keep the development process alive.
+          # Stop the isolated process group after observing both generated entries.
+          kill -TERM -- "-$gen_pid" 2>/dev/null || true
           sleep 2
-          kill -KILL "$gen_pid" 2>/dev/null || true
+          kill -KILL -- "-$gen_pid" 2>/dev/null || true
           wait "$gen_pid" 2>/dev/null || true
           cat /tmp/deno-task-gen.log
 
-          cmp -s manifest.gen.ts /tmp/manifest.gen.expected.ts
-          grep -F 'site/sections/Esmera/PayloadHome.tsx' manifest.gen.ts
+          grep -F 'import * as $$$$$$8 from "./sections/Esmera/PayloadHome.tsx";' manifest.gen.ts
+          grep -F '"site/sections/Esmera/PayloadHome.tsx": $$$$$$8,' manifest.gen.ts
 
       - name: Confirm generated files are current
         run: git diff --exit-code -- manifest.gen.ts .deco/metadata

@@ -114,8 +114,42 @@ jobs:
         run: deno test -A
 
       - name: Validate Deco project
-        run: deno task validate
+        id: validate
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          deno task validate 2>&1 | tee /tmp/validate.log
+          status=${PIPESTATUS[0]}
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
 
       - name: Build
+        id: build
+        if: always()
+        continue-on-error: true
+        shell: bash
         timeout-minutes: 15
-        run: deno task build
+        run: |
+          set +e
+          deno task build 2>&1 | tee /tmp/build.log
+          status=${PIPESTATUS[0]}
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
+
+      - name: Upload command logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: requested-command-logs
+          path: |
+            /tmp/validate.log
+            /tmp/build.log
+          if-no-files-found: warn
+
+      - name: Enforce requested command results
+        if: always()
+        shell: bash
+        run: |
+          test "${{ steps.validate.outputs.status }}" = "0"
+          test "${{ steps.build.outputs.status }}" = "0"

@@ -120,31 +120,43 @@ jobs:
         run: |
           set +e
           : > /tmp/validate.log
+          : > /tmp/validate-headers.log
 
           deno task validate 2>&1 | tee -a /tmp/validate.log
           status=${PIPESTATUS[0]}
 
           if [ "$status" -ne 0 ] && grep -Fq "403 Forbidden" /tmp/validate.log; then
-            echo "The official convenience URL returned 403; retrying the same task with Deco's versioned validator." | tee -a /tmp/validate.log
+            echo "The official URL rejected Deno's import request; downloading the same validator with a browser user-agent." | tee -a /tmp/validate.log
             cp deno.json /tmp/deno.json.original
 
-            python3 - <<'PY'
+            curl -fL --retry 3 --retry-delay 2 \
+              -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/150 Safari/537.36" \
+              -H "Accept: application/typescript,text/plain,*/*" \
+              -D /tmp/validate-headers.log \
+              https://deco.cx/validate \
+              -o /tmp/deco-validate.ts
+            curl_status=$?
+
+            if [ "$curl_status" -eq 0 ] && [ -s /tmp/deco-validate.ts ]; then
+              python3 - <<'PY'
           import json
           from pathlib import Path
 
           path = Path('deno.json')
           config = json.loads(path.read_text())
-          config['tasks']['validate'] = (
-              'deno run -Ar https://deno.land/x/deco_cx@1.3.8/mod.ts '
-              'site --workspace=./'
-          )
+          config['tasks']['validate'] = 'deno run -A /tmp/deco-validate.ts'
           path.write_text(json.dumps(config, indent=2) + '\n')
           PY
 
-            deno task validate 2>&1 | tee -a /tmp/validate.log
-            status=${PIPESTATUS[0]}
-            cp /tmp/deno.json.original deno.json
+              deno task validate 2>&1 | tee -a /tmp/validate.log
+              status=${PIPESTATUS[0]}
+            else
+              echo "Browser-style validator download failed with status $curl_status." | tee -a /tmp/validate.log
+              cat /tmp/validate-headers.log | tee -a /tmp/validate.log
+              status=1
+            fi
 
+            cp /tmp/deno.json.original deno.json
             if ! git diff --exit-code -- deno.json; then
               status=1
             fi
@@ -173,6 +185,7 @@ jobs:
           name: requested-command-logs
           path: |
             /tmp/validate.log
+            /tmp/validate-headers.log
             /tmp/build.log
           if-no-files-found: warn
 

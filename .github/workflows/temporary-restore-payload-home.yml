@@ -45,9 +45,8 @@ jobs:
           cp dev.ts /tmp/dev.ts.original
           trap 'cp /tmp/dev.ts.original dev.ts' EXIT
 
-          # Tailwind's full dependency graph is unrelated to manifest generation
-          # and can remain alive for several minutes in CI. Skip only that call
-          # in this disposable checkout, then run the requested task unchanged.
+          # Tailwind's full dependency graph is unrelated to manifest generation.
+          # Skip only that call in this disposable checkout.
           python3 - <<'PY'
           from pathlib import Path
 
@@ -75,7 +74,45 @@ jobs:
             exit 1
           fi
 
-          deno task gen
+          setsid deno task gen > /tmp/deno-task-gen.log 2>&1 &
+          gen_pid=$!
+          generated=false
+
+          for attempt in $(seq 1 180); do
+            if grep -Fq 'import * as $$$$$$8 from "./sections/Esmera/PayloadHome.tsx";' manifest.gen.ts && \
+               grep -Fq '"site/sections/Esmera/PayloadHome.tsx": $$$$$$8,' manifest.gen.ts; then
+              generated=true
+              break
+            fi
+
+            if ! kill -0 "$gen_pid" 2>/dev/null; then
+              set +e
+              wait "$gen_pid"
+              status=$?
+              set -e
+              cat /tmp/deno-task-gen.log
+              echo "deno task gen exited before restoring PayloadHome (status $status)."
+              exit 1
+            fi
+
+            if (( attempt % 5 == 0 )); then
+              touch sections/Esmera/PayloadHome.tsx
+            fi
+            sleep 1
+          done
+
+          if [ "$generated" != "true" ]; then
+            cat /tmp/deno-task-gen.log
+            echo "deno task gen did not restore PayloadHome within the validation window."
+            kill -TERM -- "-$gen_pid" 2>/dev/null || true
+            exit 1
+          fi
+
+          kill -TERM -- "-$gen_pid" 2>/dev/null || true
+          sleep 2
+          kill -KILL -- "-$gen_pid" 2>/dev/null || true
+          wait "$gen_pid" 2>/dev/null || true
+          cat /tmp/deno-task-gen.log
 
           cp /tmp/dev.ts.original dev.ts
           trap - EXIT

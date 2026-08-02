@@ -70,7 +70,7 @@ jobs:
           gen_pid=$!
           generated=false
 
-          for _ in $(seq 1 240); do
+          for attempt in $(seq 1 240); do
             if grep -Fq 'import * as $$$$$$8 from "./sections/Esmera/PayloadHome.tsx";' manifest.gen.ts && \
                grep -Fq '"site/sections/Esmera/PayloadHome.tsx": $$$$$$8,' manifest.gen.ts; then
               generated=true
@@ -85,6 +85,11 @@ jobs:
               cat /tmp/deno-task-gen.log
               echo "deno task gen exited before restoring PayloadHome (status $status)."
               exit 1
+            fi
+
+            # Trigger the same section watcher used during development once it is ready.
+            if (( attempt % 5 == 0 )); then
+              touch sections/Esmera/PayloadHome.tsx
             fi
 
             sleep 1

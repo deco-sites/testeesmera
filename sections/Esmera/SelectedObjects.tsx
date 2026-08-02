@@ -1,27 +1,14 @@
 import Arrow from "../../components/esmera/Arrow.tsx";
 import ObjectCard from "../../components/esmera/ObjectCard.tsx";
-import {
-  type EsmeraObject,
-  selectedObjects,
-} from "../../components/esmera/data.ts";
-
-/**
- * Optional CMS override for one of the four curated objects.
- * Technical identifiers and fallback content remain owned by the catalogue,
- * so editors can change only the fields they actually need.
- */
-export type SelectedObjectOverride = Partial<EsmeraObject>;
+import type { EsmeraObject } from "../../lib/payload/types.ts";
 
 export interface Props {
   eyebrow?: string;
   title?: string;
   /** @format textarea */
   text?: string;
-  /**
-   * @description Optional overrides for the four curated objects. Leave empty to use the catalogue defaults.
-   * @maxItems 4
-   */
-  products?: SelectedObjectOverride[];
+  /** @maxItems 4 */
+  products?: EsmeraObject[];
   collectionLabel?: string;
   collectionHref?: string;
 }
@@ -35,10 +22,11 @@ export default function SelectedObjects({
   collectionLabel = "Ver coleção",
   collectionHref = "#territory",
 }: Props) {
-  const curatedProducts = selectedObjects.slice(0, 4).map((fallback, index) => ({
-    ...fallback,
-    ...(products[index] ?? {}),
-  }));
+  const curatedProducts = products.filter((product) =>
+    Boolean(product.id && product.slug && product.title && product.image)
+  ).slice(0, 4);
+
+  if (curatedProducts.length === 0) return null;
 
   return (
     <section
@@ -59,7 +47,7 @@ export default function SelectedObjects({
 
       <div id="objects" class="esv-shell esv-product-shelf" role="list">
         {curatedProducts.map((item, index) => (
-          <ObjectCard item={item} motionOrder={index} />
+          <ObjectCard key={item.id} item={item} motionOrder={index} />
         ))}
       </div>
 

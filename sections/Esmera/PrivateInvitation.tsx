@@ -15,8 +15,9 @@ export default function PrivateInvitation({
   text =
     "Converse com a Esméra para uma seleção orientada, disponibilidade, encomendas ou apresentação privada de peças.",
   ctaLabel = "Iniciar uma consulta",
-  ctaHref = "mailto:contact@esmera.com?subject=Consulta%20privada%20%E2%80%94%20Esm%C3%A9ra",
+  ctaHref = "",
 }: Props) {
+  if (!ctaHref) return null;
   return (
     <section
       id="private"
@@ -31,7 +32,11 @@ export default function PrivateInvitation({
         >
           {eyebrow}
         </p>
-        <div class="esv-private-copy" data-motion="reveal" data-motion-order="1">
+        <div
+          class="esv-private-copy"
+          data-motion="reveal"
+          data-motion-order="1"
+        >
           <h2 id="esv-private-title">{title}</h2>
           {text && <p>{text}</p>}
           {ctaLabel && (

@@ -14,15 +14,16 @@ export interface Props {
 }
 
 export default function MatterInterlude({
-  image =
-    "https://images.unsplash.com/photo-1767433200326-f554d1f745eb?auto=format&fit=crop&w=2400&q=92",
+  image = "",
   mobileImage,
-  imageAlt = "Macro de superfície mineral revelando textura, densidade e irregularidade",
+  imageAlt =
+    "Macro de superfície mineral revelando textura, densidade e irregularidade",
   material = "Matéria mineral",
   location = "",
   title = "Formada lentamente.\nTransformada uma vez.",
   focalPoint = "center",
 }: Props) {
+  if (!image) return null;
   const meta = ["06 — Matéria", material, location].filter(Boolean).join(" · ");
 
   return (

@@ -1,4 +1,4 @@
-import type { AvailabilityStatus } from "./data.ts";
+import type { AvailabilityStatus } from "../../lib/payload/types.ts";
 
 export interface AvailabilityMeta {
   label: string;

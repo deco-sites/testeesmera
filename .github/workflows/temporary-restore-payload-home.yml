@@ -38,8 +38,75 @@ jobs:
         run: deno cache dev.ts main.ts
 
       - name: Regenerate Deco manifest
-        run: deno task gen
+        shell: bash
         timeout-minutes: 10
+        run: |
+          set -euo pipefail
+          cp manifest.gen.ts /tmp/manifest.gen.expected.ts
+
+          # Recreate only the manifest regression inside the disposable runner.
+          # This proves that the exact generation task restores PayloadHome.
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('manifest.gen.ts')
+          content = path.read_text()
+          content = content.replace(
+              'import * as $$$$$$8 from "./sections/Esmera/PayloadHome.tsx";\n',
+              '',
+          )
+          content = content.replace(
+              '    "site/sections/Esmera/PayloadHome.tsx": $$$$$$8,\n',
+              '',
+          )
+          path.write_text(content)
+          PY
+
+          if cmp -s manifest.gen.ts /tmp/manifest.gen.expected.ts; then
+            echo "Failed to recreate the manifest regression before validation."
+            exit 1
+          fi
+
+          deno task gen > /tmp/deno-task-gen.log 2>&1 &
+          gen_pid=$!
+          generated=false
+
+          for _ in $(seq 1 240); do
+            if cmp -s manifest.gen.ts /tmp/manifest.gen.expected.ts; then
+              generated=true
+              break
+            fi
+
+            if ! kill -0 "$gen_pid" 2>/dev/null; then
+              set +e
+              wait "$gen_pid"
+              status=$?
+              set -e
+              cat /tmp/deno-task-gen.log
+              echo "deno task gen exited before restoring the generated manifest (status $status)."
+              exit 1
+            fi
+
+            sleep 1
+          done
+
+          if [ "$generated" != "true" ]; then
+            cat /tmp/deno-task-gen.log
+            echo "deno task gen did not restore manifest.gen.ts within the validation window."
+            kill -TERM "$gen_pid" 2>/dev/null || true
+            exit 1
+          fi
+
+          # gen-only has regenerated the file but keeps the development process alive.
+          # Stop that persistent process after observing the generated output.
+          kill -TERM "$gen_pid" 2>/dev/null || true
+          sleep 2
+          kill -KILL "$gen_pid" 2>/dev/null || true
+          wait "$gen_pid" 2>/dev/null || true
+          cat /tmp/deno-task-gen.log
+
+          cmp -s manifest.gen.ts /tmp/manifest.gen.expected.ts
+          grep -F 'site/sections/Esmera/PayloadHome.tsx' manifest.gen.ts
 
       - name: Confirm generated files are current
         run: git diff --exit-code -- manifest.gen.ts .deco/metadata

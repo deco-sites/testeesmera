@@ -1,33 +1,83 @@
 import Arrow from "../../components/esmera/Arrow.tsx";
 import { EsmeraPicture } from "../../components/esmera/ResponsiveMedia.tsx";
+import HeroCarousel from "../../islands/HeroCarousel.tsx";
+
+export interface HeroSlide {
+  desktopImage: string;
+  mobileImage?: string;
+  alt: string;
+  statement: string;
+  cta?: { label: string; href: string; external?: boolean } | null;
+}
 
 export interface Props {
-  /** @format image-uri @description Objeto Esméra acabado, protagonista do hero */
-  desktopImage?: string;
-  /** @format image-uri @description Recorte vertical do mesmo objeto para mobile */
-  mobileImage?: string;
-  /** @format textarea @description Declaração principal de até 70 caracteres */
-  statement?: string;
-  ctaLabel?: string;
-  ctaHref?: string;
-  /** @description Intensidade do overlay para legibilidade */
+  mode?: "single" | "carousel";
+  slides?: HeroSlide[];
+  autoplay?: boolean;
+  autoplaySeconds?: number;
   overlay?: 10 | 20 | 30;
-  /** @description Ponto focal da fotografia */
   focalPoint?: "left" | "center" | "right";
 }
 
-export default function Hero({
-  desktopImage =
-    "https://images.unsplash.com/photo-1777810831386-4a46314e5ece?auto=format&fit=crop&w=2400&q=90",
-  mobileImage,
-  statement = "Matéria rara. Forma destinada a permanecer.",
-  ctaLabel = "Descobrir a seleção",
-  ctaHref = "#selection",
-  overlay = 20,
-  focalPoint = "right",
-}: Props) {
-  const statementLines = statement.split(/\n+/).filter(Boolean);
+function Slide(
+  { slide, priority = false }: { slide: HeroSlide; priority?: boolean },
+) {
+  return (
+    <>
+      <EsmeraPicture
+        class="esv-hero-picture"
+        desktopSrc={slide.desktopImage}
+        mobileSrc={slide.mobileImage}
+        alt={slide.alt}
+        desktopWidth={1920}
+        desktopHeight={1200}
+        mobileWidth={900}
+        mobileHeight={1200}
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        preload={priority}
+        fetchPriority={priority ? "high" : "low"}
+      />
+      <div class="esv-hero-overlay" aria-hidden="true" />
+      <div class="esv-shell esv-hero-content">
+        <h1 id="esv-hero-title" class="esv-hero-statement">
+          {slide.statement.split(/\n+/).filter(Boolean).map((line) => (
+            <span class="esv-hero-line">{line}</span>
+          ))}
+        </h1>
+        {slide.cta && (
+          <a class="esv-hero-cta" href={slide.cta.href}>
+            {slide.cta.label} <Arrow size={14} />
+          </a>
+        )}
+      </div>
+    </>
+  );
+}
 
+export default function Hero(
+  {
+    mode = "single",
+    slides = [],
+    autoplay = false,
+    autoplaySeconds = 6,
+    overlay = 20,
+    focalPoint = "right",
+  }: Props,
+) {
+  const activeSlides = slides.slice(0, 5);
+  if (activeSlides.length === 0) return null;
+  if (mode === "carousel" && activeSlides.length > 1) {
+    return (
+      <HeroCarousel
+        slides={activeSlides}
+        autoplay={autoplay}
+        autoplaySeconds={autoplaySeconds}
+        overlay={overlay}
+        focalPoint={focalPoint}
+      />
+    );
+  }
   return (
     <section
       id="main-content"
@@ -35,39 +85,7 @@ export default function Hero({
       aria-labelledby="esv-hero-title"
       data-motion-scene="hero"
     >
-      <EsmeraPicture
-        class="esv-hero-picture"
-        desktopSrc={desktopImage}
-        mobileSrc={mobileImage}
-        alt="Objeto escultórico Esméra apresentado sobre fundo mineral escuro"
-        desktopWidth={1920}
-        desktopHeight={1200}
-        mobileWidth={900}
-        mobileHeight={1200}
-        loading="eager"
-        decoding="async"
-        preload
-        fetchPriority="high"
-      />
-      <div class="esv-hero-overlay" aria-hidden="true" />
-
-      <div class="esv-shell esv-hero-content">
-        <h1 id="esv-hero-title" class="esv-hero-statement">
-          {statementLines.map((line, index) => (
-            <span
-              class="esv-hero-line"
-              style={{ animationDelay: `${index * 55}ms` }}
-            >
-              {line}
-            </span>
-          ))}
-        </h1>
-        {ctaLabel && (
-          <a class="esv-hero-cta" href={ctaHref}>
-            {ctaLabel} <Arrow size={14} />
-          </a>
-        )}
-      </div>
+      <Slide slide={activeSlides[0]} priority />
     </section>
   );
 }

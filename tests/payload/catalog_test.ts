@@ -1,0 +1,45 @@
+import { assertEquals } from "@std/assert";
+import {
+  buildCatalogQuery,
+  normalizeVisibleFilters,
+} from "../../lib/payload/catalog.ts";
+
+Deno.test("applies only CMS-enabled catalogue filters", () => {
+  const visible = normalizeVisibleFilters([
+    "categories",
+    { value: "material" },
+    { value: "availability" },
+    { value: "sort" },
+    { value: "unknown" },
+  ]);
+  assertEquals(visible, ["category", "material", "availability", "sort"]);
+  const query = buildCatalogQuery(
+    new URL(
+      "https://store.example/colecao?category=mesas&material=pedra&availability=available&sort=-basePriceCents&page=2",
+    ),
+    visible,
+    [{ id: "cat-1", title: "Mesas", slug: "mesas" }],
+  );
+  assertEquals(query.page, 2);
+  assertEquals(query.sort, "-basePriceCents");
+  assertEquals(query.where, {
+    and: [
+      { categories: { contains: "cat-1" } },
+      { material: { contains: "pedra" } },
+      { availability: { equals: "available" } },
+    ],
+  });
+});
+
+Deno.test("ignores unsupported query values", () => {
+  const query = buildCatalogQuery(
+    new URL(
+      "https://store.example/colecao?category=private&availability=invalid&sort=unsafe&page=-4",
+    ),
+    ["category", "availability", "sort"],
+    [],
+  );
+  assertEquals(query.page, 1);
+  assertEquals(query.sort, "title");
+  assertEquals(query.where, undefined);
+});

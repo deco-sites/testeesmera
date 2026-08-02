@@ -1,5 +1,5 @@
 import Arrow from "../components/esmera/Arrow.tsx";
-import type { EsmeraObject } from "../components/esmera/data.ts";
+import type { EsmeraObject } from "../lib/payload/types.ts";
 
 export interface Props {
   productId: string;
@@ -10,7 +10,8 @@ export interface Props {
 }
 
 export default function ProductActions(
-  { productId, productTitle, product, compact = false, emphasized = false }: Props,
+  { productId, productTitle, product, compact = false, emphasized = false }:
+    Props,
 ) {
   const findSourceImage = (trigger: HTMLElement) => {
     const scope = trigger.closest(".esv-product-card, .esv-signature");
@@ -33,9 +34,10 @@ export default function ProductActions(
     // Product cards already display a responsive/optimized image. Reuse that decoded
     // browser resource for the modal instead of requesting the original CMS PNG again.
     // The modal opens immediately; the heavier detail image can continue loading after.
-    const eventProduct = name === "esmera:view-object" && product && cachedSource
-      ? { ...product, image: cachedSource }
-      : product;
+    const eventProduct =
+      name === "esmera:view-object" && product && cachedSource
+        ? { ...product, image: cachedSource }
+        : product;
 
     globalThis.dispatchEvent(
       new CustomEvent(name, {

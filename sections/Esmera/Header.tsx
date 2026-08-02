@@ -1,18 +1,26 @@
 import { asset, Head } from "$fresh/runtime.ts";
+import type { NavigationLink } from "../../lib/payload/types.ts";
 import EsmeraHeader from "../../islands/EsmeraHeader.tsx";
 import EsmeraMotion from "../../islands/EsmeraMotion.tsx";
 import EsmeraScrollScenes from "../../islands/EsmeraScrollScenes.tsx";
 
 export interface Props {
   logo?: string;
-  /** @description Backwards-compatible field; rendered as the cart label. */
   enquiryLabel?: string;
+  navigation?: NavigationLink[];
+  categories?: NavigationLink[];
+  whatsappHref?: string;
 }
 
-export default function Header({
-  logo = "ESMÉRA",
-  enquiryLabel = "Carrinho",
-}: Props) {
+export default function Header(
+  {
+    logo = "",
+    enquiryLabel = "Carrinho",
+    navigation = [],
+    categories = [],
+    whatsappHref = "",
+  }: Props,
+) {
   return (
     <>
       <Head>
@@ -31,12 +39,20 @@ export default function Header({
         <link rel="stylesheet" href={asset("/esmera-motion-v2.css")} />
         <link rel="stylesheet" href={asset("/esmera-structure-guard.css")} />
         <link rel="stylesheet" href={asset("/esmera-commerce-refine.css")} />
-        <link rel="stylesheet" href={asset("/esmera-hotfix-product-modal.css")} />
+        <link
+          rel="stylesheet"
+          href={asset("/esmera-hotfix-product-modal.css")}
+        />
         <meta name="theme-color" content="#111210" />
       </Head>
-
       <a class="esv-skip" href="#main-content">Pular para o conteúdo</a>
-      <EsmeraHeader logo={logo} enquiryLabel={enquiryLabel} />
+      <EsmeraHeader
+        logo={logo}
+        enquiryLabel={enquiryLabel}
+        navigation={navigation}
+        categories={categories}
+        whatsappHref={whatsappHref}
+      />
       <EsmeraMotion />
       <EsmeraScrollScenes />
     </>

@@ -13,10 +13,11 @@ export default function Context({
   title = "Presença em escala real.",
   text =
     "O ambiente existe para tornar escala, luz e proporção legíveis. A peça permanece o foco; o espaço apenas revela como ela ocupa o mundo.",
-  image =
-    "https://images.unsplash.com/photo-1771862956454-ad43adc3c19e?auto=format&fit=crop&w=2200&q=90",
-  imageAlt = "Objetos escultóricos apresentados em contexto espacial sob luz natural",
+  image = "",
+  imageAlt =
+    "Objetos escultóricos apresentados em contexto espacial sob luz natural",
 }: Props) {
+  if (!image) return null;
   return (
     <section
       id="context"

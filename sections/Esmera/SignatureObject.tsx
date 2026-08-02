@@ -1,5 +1,5 @@
 import { getAvailabilityMeta } from "../../components/esmera/availability.ts";
-import { selectedObjects, type EsmeraObject } from "../../components/esmera/data.ts";
+import type { EsmeraObject } from "../../lib/payload/types.ts";
 import { EsmeraImage } from "../../components/esmera/ResponsiveMedia.tsx";
 import ProductActions from "../../islands/ProductActions.tsx";
 
@@ -9,15 +9,18 @@ export interface Props {
   /** @format textarea */
   editorialText?: string;
   dimensions?: string;
+  showFullDetails?: boolean;
 }
 
 export default function SignatureObject({
-  product = selectedObjects[0],
+  product,
   eyebrow = "05 — Peça assinatura",
   editorialText =
     "Uma peça recebe tempo editorial para que forma, matéria e construção possam ser percebidas antes da decisão de aquisição.",
   dimensions = "",
+  showFullDetails = false,
 }: Props) {
+  if (!product) return null;
   const availability = getAvailabilityMeta(product.availability);
   const facts = [
     product.material ? { label: "Matéria", value: product.material } : null,
@@ -25,6 +28,9 @@ export default function SignatureObject({
     product.edition ? { label: "Edição", value: product.edition } : null,
     { label: "Estado", value: availability.label },
   ].filter((item): item is { label: string; value: string } => Boolean(item));
+  const additionalGallery = product.gallery.filter((item) =>
+    item.url !== product.image && item.url !== product.detailImage
+  );
 
   return (
     <section
@@ -34,7 +40,9 @@ export default function SignatureObject({
     >
       <div class="esv-shell esv-signature-grid">
         <figure
-          class={`esv-signature-media${product.detailImage ? " has-detail" : ""}`}
+          class={`esv-signature-media${
+            product.detailImage ? " has-detail" : ""
+          }`}
           data-motion="media-reveal"
           data-motion-order="0"
         >
@@ -69,7 +77,9 @@ export default function SignatureObject({
         >
           <p class="esv-kicker">{eyebrow}</p>
           <h2 id="esv-signature-title">{product.title}</h2>
-          {product.subtitle && <p class="esv-signature-subtitle">{product.subtitle}</p>}
+          {product.subtitle && (
+            <p class="esv-signature-subtitle">{product.subtitle}</p>
+          )}
           <p class="esv-signature-text">{editorialText}</p>
 
           <dl class="esv-signature-facts">
@@ -81,7 +91,9 @@ export default function SignatureObject({
             ))}
           </dl>
 
-          {product.price && <div class="esv-signature-value">{product.price}</div>}
+          {product.price && (
+            <div class="esv-signature-value">{product.price}</div>
+          )}
           <ProductActions
             productId={product.id}
             productTitle={product.title}
@@ -90,6 +102,36 @@ export default function SignatureObject({
           />
         </div>
       </div>
+      {showFullDetails && additionalGallery.length > 0 && (
+        <div class="esv-shell esv-product-shelf" role="list">
+          {additionalGallery.map((item) => (
+            <figure key={`${item.key}-${item.url}`} role="listitem">
+              <EsmeraImage
+                src={item.url}
+                alt={item.alt}
+                loading="lazy"
+                decoding="async"
+                width={1200}
+                height={1200}
+                sizes="(max-width: 767px) 100vw, 50vw"
+              />
+            </figure>
+          ))}
+        </div>
+      )}
+      {showFullDetails && product.attributes.length > 0 && (
+        <div class="esv-shell esv-section">
+          <h2>Detalhes do objeto</h2>
+          <dl class="esv-signature-facts">
+            {product.attributes.map((attribute) => (
+              <div key={`${attribute.label}-${attribute.value}`}>
+                <dt>{attribute.label}</dt>
+                <dd>{attribute.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
     </section>
   );
 }

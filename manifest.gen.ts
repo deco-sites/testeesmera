@@ -25,13 +25,14 @@ import * as $$$$$$4 from "./sections/Esmera/Hero.tsx";
 import * as $$$$$$5 from "./sections/Esmera/Manifesto.tsx";
 import * as $$$$$$6 from "./sections/Esmera/Matter.tsx";
 import * as $$$$$$7 from "./sections/Esmera/MatterInterlude.tsx";
-import * as $$$$$$8 from "./sections/Esmera/PrivateInvitation.tsx";
-import * as $$$$$$9 from "./sections/Esmera/Provenance.tsx";
-import * as $$$$$$10 from "./sections/Esmera/SelectedObjects.tsx";
-import * as $$$$$$11 from "./sections/Esmera/SignatureObject.tsx";
-import * as $$$$$$12 from "./sections/Footer.tsx";
-import * as $$$$$$13 from "./sections/ItWorks.tsx";
-import * as $$$$$$14 from "./sections/Theme/Theme.tsx";
+import * as $$$$$$8 from "./sections/Esmera/PayloadHome.tsx";
+import * as $$$$$$9 from "./sections/Esmera/PrivateInvitation.tsx";
+import * as $$$$$$10 from "./sections/Esmera/Provenance.tsx";
+import * as $$$$$$11 from "./sections/Esmera/SelectedObjects.tsx";
+import * as $$$$$$12 from "./sections/Esmera/SignatureObject.tsx";
+import * as $$$$$$13 from "./sections/Footer.tsx";
+import * as $$$$$$14 from "./sections/ItWorks.tsx";
+import * as $$$$$$15 from "./sections/Theme/Theme.tsx";
 
 const manifest = {
   "loaders": {
@@ -58,13 +59,14 @@ const manifest = {
     "site/sections/Esmera/Manifesto.tsx": $$$$$$5,
     "site/sections/Esmera/Matter.tsx": $$$$$$6,
     "site/sections/Esmera/MatterInterlude.tsx": $$$$$$7,
-    "site/sections/Esmera/PrivateInvitation.tsx": $$$$$$8,
-    "site/sections/Esmera/Provenance.tsx": $$$$$$9,
-    "site/sections/Esmera/SelectedObjects.tsx": $$$$$$10,
-    "site/sections/Esmera/SignatureObject.tsx": $$$$$$11,
-    "site/sections/Footer.tsx": $$$$$$12,
-    "site/sections/ItWorks.tsx": $$$$$$13,
-    "site/sections/Theme/Theme.tsx": $$$$$$14,
+    "site/sections/Esmera/PayloadHome.tsx": $$$$$$8,
+    "site/sections/Esmera/PrivateInvitation.tsx": $$$$$$9,
+    "site/sections/Esmera/Provenance.tsx": $$$$$$10,
+    "site/sections/Esmera/SelectedObjects.tsx": $$$$$$11,
+    "site/sections/Esmera/SignatureObject.tsx": $$$$$$12,
+    "site/sections/Footer.tsx": $$$$$$13,
+    "site/sections/ItWorks.tsx": $$$$$$14,
+    "site/sections/Theme/Theme.tsx": $$$$$$15,
   },
   "apps": {
     "site/apps/deco/htmx.ts": $$$$$$$$$$$0,

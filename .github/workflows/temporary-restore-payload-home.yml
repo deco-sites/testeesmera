@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: payload-home-validation-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -22,10 +26,20 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v2
         with:
-          deno-version: v2.x
+          deno-version: v2.9.3
+
+      - name: Cache Deno dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/deno
+          key: deno-${{ runner.os }}-${{ hashFiles('deno.json') }}
+
+      - name: Pre-cache entrypoint dependencies
+        run: deno cache dev.ts main.ts
 
       - name: Regenerate Deco manifest
         run: deno task gen
+        timeout-minutes: 10
 
       - name: Confirm generated files are current
         run: git diff --exit-code -- manifest.gen.ts .deco/metadata

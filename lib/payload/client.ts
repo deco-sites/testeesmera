@@ -1,6 +1,8 @@
 import { PayloadAPIError } from "./errors.ts";
 import { buildPayloadQuery, type QueryOptions } from "./query.ts";
 
+const DEFAULT_PAYLOAD_API_URL = "https://esmeracms-green.vercel.app";
+
 export interface PayloadClientOptions extends QueryOptions {
   baseURL?: string;
   timeoutMs?: number;
@@ -35,14 +37,9 @@ export function normalizePayloadBaseURL(value: string): string {
 }
 
 export function getPayloadBaseURL(): string {
-  const value = Deno.env.get("PAYLOAD_API_URL");
-  if (!value) {
-    throw new PayloadAPIError(
-      "configuration",
-      "PAYLOAD_API_URL não configurada no ambiente server-side da Deco.",
-    );
-  }
-  return normalizePayloadBaseURL(value);
+  return normalizePayloadBaseURL(
+    Deno.env.get("PAYLOAD_API_URL") || DEFAULT_PAYLOAD_API_URL,
+  );
 }
 
 export async function payloadGet<T>(

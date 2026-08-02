@@ -1,5 +1,6 @@
 import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import {
+  getPayloadBaseURL,
   normalizePayloadBaseURL,
   payloadGet,
 } from "../../lib/payload/client.ts";
@@ -14,6 +15,23 @@ Deno.test("normalizes the Payload base URL without /api", () => {
     () => normalizePayloadBaseURL("https://cms.example.com/api"),
     PayloadAPIError,
   );
+});
+
+Deno.test("uses the public Payload URL when the environment variable is absent", () => {
+  const previous = Deno.env.get("PAYLOAD_API_URL");
+  try {
+    Deno.env.delete("PAYLOAD_API_URL");
+    assertEquals(
+      getPayloadBaseURL(),
+      "https://esmeracms-green.vercel.app",
+    );
+  } finally {
+    if (previous === undefined) {
+      Deno.env.delete("PAYLOAD_API_URL");
+    } else {
+      Deno.env.set("PAYLOAD_API_URL", previous);
+    }
+  }
 });
 
 Deno.test("builds GET requests and parses JSON", async () => {

@@ -69,6 +69,11 @@ server/
 import_map.local.json
 deno.lock
 
+# Local environment files
+.env
+.env.*
+!.env.example
+
 # db files
 .config.json
 # Fresh build directory

@@ -17,6 +17,20 @@ Deno.test("normalizes the Payload base URL without /api", () => {
   );
 });
 
+Deno.test("prefers PAYLOAD_API_URL from the server environment", () => {
+  const previous = Deno.env.get("PAYLOAD_API_URL");
+  try {
+    Deno.env.set("PAYLOAD_API_URL", "https://cms.example.com/");
+    assertEquals(getPayloadBaseURL(), "https://cms.example.com");
+  } finally {
+    if (previous === undefined) {
+      Deno.env.delete("PAYLOAD_API_URL");
+    } else {
+      Deno.env.set("PAYLOAD_API_URL", previous);
+    }
+  }
+});
+
 Deno.test("uses the public Payload URL when the environment variable is absent", () => {
   const previous = Deno.env.get("PAYLOAD_API_URL");
   try {

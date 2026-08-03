@@ -14,30 +14,13 @@
       "__resolveType": "site/sections/Esmera/Manifesto.tsx"
     },
     {
-      "__resolveType": "site/sections/Esmera/SelectedObjects.tsx",
-      "products": [
-        {
-          "availability": "unique",
-          "gallery": [],
-          "attributes": [],
-          "priceMode": "fixed",
-          "variants": [],
-          "seo": {},
-          "id": "yufuvgh",
-          "slug": "hjvjh",
-          "code": "hjv",
-          "title": "hjv",
-          "image": "https://decoims.com/testeesmera/e44933a3-11a4-46a4-b073-0a84955b8826/032d4d9a-a299-4829-add7-6a9d953b6921.png",
-          "alt": "s"
-        }
-      ]
+      "__resolveType": "site/sections/Esmera/SelectedObjects.tsx"
     },
     {
       "__resolveType": "site/sections/Esmera/Matter.tsx"
     },
     {
-      "__resolveType": "site/sections/Esmera/SignatureObject.tsx",
-      "product": {}
+      "__resolveType": "site/sections/Esmera/SignatureObject.tsx"
     },
     {
       "__resolveType": "site/sections/Esmera/MatterInterlude.tsx"

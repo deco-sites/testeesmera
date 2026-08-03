@@ -3,6 +3,7 @@
 // This file is automatically updated during development when running `dev.ts`.
 
 import * as $_app from "./routes/_app.tsx";
+import * as $api_esmera_renderability from "./routes/api/esmera-renderability.ts";
 import * as $api_esmera_search from "./routes/api/esmera-search.ts";
 import * as $colecao_slug_ from "./routes/colecao/[slug].tsx";
 import * as $colecao_index from "./routes/colecao/index.tsx";
@@ -20,6 +21,7 @@ import type { Manifest } from "$fresh/server.ts";
 const manifest = {
   routes: {
     "./routes/_app.tsx": $_app,
+    "./routes/api/esmera-renderability.ts": $api_esmera_renderability,
     "./routes/api/esmera-search.ts": $api_esmera_search,
     "./routes/colecao/[slug].tsx": $colecao_slug_,
     "./routes/colecao/index.tsx": $colecao_index,

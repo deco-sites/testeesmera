@@ -1,8 +1,14 @@
+import {
+  isSupportedStorefrontContractVersion,
+  STOREFRONT_CONTRACT_HEADER,
+  STOREFRONT_CONTRACT_VERSION,
+} from "./contract/version.ts";
 import { PayloadAPIError } from "./errors.ts";
 import { buildPayloadQuery, type QueryOptions } from "./query.ts";
 
 const DEFAULT_PAYLOAD_API_URL = "https://esmeracms-green.vercel.app";
 const DEFAULT_TIMEOUT_MS = 8_000;
+const MAX_TRANSIENT_RETRIES = 1;
 
 const inFlightRequests = new Map<string, Promise<unknown>>();
 const fetcherIDs = new WeakMap<object, number>();
@@ -99,8 +105,34 @@ function requestKey(
     url.href,
     `cache=${options.cache ?? "default"}`,
     `timeout=${options.timeoutMs ?? DEFAULT_TIMEOUT_MS}`,
+    `contract=${STOREFRONT_CONTRACT_VERSION}`,
     `fetcher=${getFetcherID(fetcher)}`,
   ].join("|");
+}
+
+function transientStatus(status: number): boolean {
+  return status === 408 || status === 425 || status === 429 || status === 500 ||
+    status === 502 || status === 503 || status === 504;
+}
+
+function retryDelay(attempt: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 180 * (attempt + 1)));
+}
+
+function logRetry(
+  endpoint: string,
+  attempt: number,
+  reason: "network" | "timeout" | "http",
+  status?: number,
+) {
+  console.warn(JSON.stringify({
+    event: "payload_get_retry",
+    endpoint,
+    attempt: attempt + 1,
+    reason,
+    status: status ?? null,
+    contractVersion: STOREFRONT_CONTRACT_VERSION,
+  }));
 }
 
 async function executePayloadGet<T>(
@@ -119,64 +151,95 @@ async function executePayloadGet<T>(
     );
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  let response: Response;
-  try {
-    response = await fetcher(url, {
-      method: "GET",
-      headers: { accept: "application/json" },
-      signal: controller.signal,
-      cache: options.cache,
-    });
-  } catch {
-    if (controller.signal.aborted) {
+  for (let attempt = 0; attempt <= MAX_TRANSIENT_RETRIES; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    let response: Response;
+
+    try {
+      response = await fetcher(url, {
+        method: "GET",
+        headers: {
+          accept: "application/json",
+          [STOREFRONT_CONTRACT_HEADER]: STOREFRONT_CONTRACT_VERSION,
+        },
+        signal: controller.signal,
+        cache: options.cache,
+      });
+    } catch {
+      const timedOut = controller.signal.aborted;
+      clearTimeout(timeout);
+      if (attempt < MAX_TRANSIENT_RETRIES) {
+        logRetry(endpoint, attempt, timedOut ? "timeout" : "network");
+        await retryDelay(attempt);
+        continue;
+      }
       throw new PayloadAPIError(
-        "timeout",
-        `A API de conteúdo excedeu o tempo limite em ${endpoint}.`,
+        timedOut ? "timeout" : "network",
+        timedOut
+          ? `A API de conteúdo excedeu o tempo limite em ${endpoint}.`
+          : `Não foi possível alcançar a API de conteúdo em ${endpoint}.`,
         undefined,
         endpoint,
       );
     }
-    throw new PayloadAPIError(
-      "network",
-      `Não foi possível alcançar a API de conteúdo em ${endpoint}.`,
-      undefined,
-      endpoint,
-    );
-  } finally {
+
     clearTimeout(timeout);
+    if (!response.ok) {
+      if (attempt < MAX_TRANSIENT_RETRIES && transientStatus(response.status)) {
+        logRetry(endpoint, attempt, "http", response.status);
+        await retryDelay(attempt);
+        continue;
+      }
+      throw new PayloadAPIError(
+        "http",
+        `A API de conteúdo respondeu HTTP ${response.status} em ${endpoint}.`,
+        response.status,
+        endpoint,
+      );
+    }
+
+    const responseVersion = response.headers.get(STOREFRONT_CONTRACT_HEADER);
+    if (
+      responseVersion &&
+      !isSupportedStorefrontContractVersion(responseVersion)
+    ) {
+      throw new PayloadAPIError(
+        "invalid-response",
+        `A API respondeu com contrato incompatível em ${endpoint}.`,
+        response.status,
+        endpoint,
+      );
+    }
+
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.toLowerCase().includes("application/json")) {
+      throw new PayloadAPIError(
+        "invalid-response",
+        `A API de conteúdo não retornou JSON em ${endpoint}.`,
+        response.status,
+        endpoint,
+      );
+    }
+
+    try {
+      return await response.json() as T;
+    } catch {
+      throw new PayloadAPIError(
+        "invalid-response",
+        `A API de conteúdo retornou JSON inválido em ${endpoint}.`,
+        response.status,
+        endpoint,
+      );
+    }
   }
 
-  if (!response.ok) {
-    throw new PayloadAPIError(
-      "http",
-      `A API de conteúdo respondeu HTTP ${response.status} em ${endpoint}.`,
-      response.status,
-      endpoint,
-    );
-  }
-
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.toLowerCase().includes("application/json")) {
-    throw new PayloadAPIError(
-      "invalid-response",
-      `A API de conteúdo não retornou JSON em ${endpoint}.`,
-      response.status,
-      endpoint,
-    );
-  }
-
-  try {
-    return await response.json() as T;
-  } catch {
-    throw new PayloadAPIError(
-      "invalid-response",
-      `A API de conteúdo retornou JSON inválido em ${endpoint}.`,
-      response.status,
-      endpoint,
-    );
-  }
+  throw new PayloadAPIError(
+    "network",
+    `Não foi possível alcançar a API de conteúdo em ${endpoint}.`,
+    undefined,
+    endpoint,
+  );
 }
 
 export async function payloadGet<T>(

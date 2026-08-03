@@ -119,6 +119,7 @@ export default function ProductModal() {
     EsmeraVariant | undefined
   >();
   const [zoomIndex, setZoomIndex] = useState<number | null>(null);
+  const zoomIndexRef = useRef<number | null>(null);
   const modalRef = useRef<HTMLElement>(null);
   const zoomRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -136,8 +137,13 @@ export default function ProductModal() {
     [product],
   );
 
+  const updateZoomIndex = (next: number | null) => {
+    zoomIndexRef.current = next;
+    setZoomIndex(next);
+  };
+
   const closeModal = () => {
-    setZoomIndex(null);
+    updateZoomIndex(null);
     setProduct(null);
   };
 
@@ -150,7 +156,7 @@ export default function ProductModal() {
       setSelectedVariant(
         detail.product.variants.find((variant) => !variant.disabled),
       );
-      setZoomIndex(null);
+      updateZoomIndex(null);
     };
 
     globalThis.addEventListener("esmera:open-product", open);
@@ -163,6 +169,8 @@ export default function ProductModal() {
     const root = document.documentElement;
     const scrollY = globalThis.scrollY || 0;
     const previous = {
+      rootOverflow: root.style.overflow,
+      rootScrollbarGutter: root.style.getPropertyValue("scrollbar-gutter"),
       position: body.style.position,
       top: body.style.top,
       left: body.style.left,
@@ -173,6 +181,8 @@ export default function ProductModal() {
 
     root.classList.add("esv-product-modal-active");
     body.classList.add("esv-product-modal-open");
+    root.style.overflow = "hidden";
+    root.style.setProperty("scrollbar-gutter", "auto");
     body.style.position = "fixed";
     body.style.top = `-${scrollY}px`;
     body.style.left = "0";
@@ -183,6 +193,15 @@ export default function ProductModal() {
     return () => {
       root.classList.remove("esv-product-modal-active");
       body.classList.remove("esv-product-modal-open");
+      root.style.overflow = previous.rootOverflow;
+      if (previous.rootScrollbarGutter) {
+        root.style.setProperty(
+          "scrollbar-gutter",
+          previous.rootScrollbarGutter,
+        );
+      } else {
+        root.style.removeProperty("scrollbar-gutter");
+      }
       body.style.position = previous.position;
       body.style.top = previous.top;
       body.style.left = previous.left;
@@ -199,24 +218,39 @@ export default function ProductModal() {
     const dialog = zoomIndex === null ? modalRef.current : zoomRef.current;
     if (!dialog) return;
 
-    const focusables = () =>
-      Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
-        .filter((element) => element.offsetParent !== null);
-
     const frame = requestAnimationFrame(() => {
+      const focusables = Array.from(
+        dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter((element) => element.offsetParent !== null);
       const preferred = dialog.querySelector<HTMLElement>("[data-autofocus]");
-      (preferred ?? focusables()[0])?.focus();
+      (preferred ?? focusables[0])?.focus();
     });
 
+    return () => cancelAnimationFrame(frame);
+  }, [product, zoomIndex]);
+
+  useEffect(() => {
+    if (!product) return;
+
     const onKeyDown = (event: KeyboardEvent) => {
+      const dialog = zoomIndexRef.current === null
+        ? modalRef.current
+        : zoomRef.current;
+      if (!dialog) return;
+
       if (event.key === "Escape") {
         event.preventDefault();
-        if (zoomIndex !== null) setZoomIndex(null);
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        if (zoomIndexRef.current !== null) updateZoomIndex(null);
         else closeModal();
         return;
       }
+
       if (event.key !== "Tab") return;
-      const items = focusables();
+      const items = Array.from(
+        dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter((element) => element.offsetParent !== null);
       if (items.length === 0) {
         event.preventDefault();
         return;
@@ -233,11 +267,8 @@ export default function ProductModal() {
     };
 
     globalThis.addEventListener("keydown", onKeyDown);
-    return () => {
-      cancelAnimationFrame(frame);
-      globalThis.removeEventListener("keydown", onKeyDown);
-    };
-  }, [product, zoomIndex]);
+    return () => globalThis.removeEventListener("keydown", onKeyDown);
+  }, [product]);
 
   if (!product || images.length === 0) return null;
 
@@ -302,7 +333,7 @@ export default function ProductModal() {
                 class="esv-product-modal-image"
                 type="button"
                 aria-label={`Ampliar imagem ${index + 1} de ${product.title}`}
-                onClick={() => setZoomIndex(index)}
+                onClick={() => updateZoomIndex(index)}
               >
                 <img
                   src={image.src}
@@ -383,7 +414,7 @@ export default function ProductModal() {
         <div
           class="esv-product-zoom"
           role="presentation"
-          onClick={() => setZoomIndex(null)}
+          onClick={() => updateZoomIndex(null)}
         >
           <section
             ref={zoomRef}
@@ -397,7 +428,7 @@ export default function ProductModal() {
               class="esv-product-zoom-close"
               type="button"
               aria-label="Fechar imagem ampliada"
-              onClick={() => setZoomIndex(null)}
+              onClick={() => updateZoomIndex(null)}
               data-autofocus="true"
             >
               <CloseIcon />
@@ -413,7 +444,7 @@ export default function ProductModal() {
                   type="button"
                   aria-label="Imagem anterior"
                   onClick={() =>
-                    setZoomIndex(
+                    updateZoomIndex(
                       (zoomIndex - 1 + images.length) % images.length,
                     )}
                 >
@@ -423,7 +454,8 @@ export default function ProductModal() {
                 <button
                   type="button"
                   aria-label="Próxima imagem"
-                  onClick={() => setZoomIndex((zoomIndex + 1) % images.length)}
+                  onClick={() =>
+                    updateZoomIndex((zoomIndex + 1) % images.length)}
                 >
                   <ArrowIcon direction="next" />
                 </button>

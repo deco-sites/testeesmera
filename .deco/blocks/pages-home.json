@@ -7,10 +7,8 @@
     },
     {
       "__resolveType": "site/sections/Esmera/Hero.tsx",
-      "slides": [
-        {},
-        {}
-      ]
+      "autoplay": false,
+      "mode": "single"
     },
     {
       "__resolveType": "site/sections/Esmera/Manifesto.tsx"
@@ -38,7 +36,8 @@
       "__resolveType": "site/sections/Esmera/Matter.tsx"
     },
     {
-      "__resolveType": "site/sections/Esmera/SignatureObject.tsx"
+      "__resolveType": "site/sections/Esmera/SignatureObject.tsx",
+      "product": {}
     },
     {
       "__resolveType": "site/sections/Esmera/MatterInterlude.tsx"

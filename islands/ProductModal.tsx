@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getAvailabilityMeta } from "../components/esmera/availability.ts";
-import type {
-  EsmeraObject,
-  EsmeraVariant,
-} from "../lib/payload/types.ts";
+import type { EsmeraObject, EsmeraVariant } from "../lib/payload/types.ts";
 
 interface ProductModalImage {
   src: string;
@@ -99,8 +96,9 @@ function CloseIcon() {
 }
 
 function ArrowIcon({ direction }: { direction: "previous" | "next" }) {
-  const path = direction === "previous" ? "M19 12H5m6-6-6 6 6 6" :
-    "M5 12h14m-6-6 6 6-6 6";
+  const path = direction === "previous"
+    ? "M19 12H5m6-6-6 6 6 6"
+    : "M5 12h14m-6-6 6 6-6 6";
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22">
       <path
@@ -415,7 +413,9 @@ export default function ProductModal() {
                   type="button"
                   aria-label="Imagem anterior"
                   onClick={() =>
-                    setZoomIndex((zoomIndex - 1 + images.length) % images.length)}
+                    setZoomIndex(
+                      (zoomIndex - 1 + images.length) % images.length,
+                    )}
                 >
                   <ArrowIcon direction="previous" />
                 </button>

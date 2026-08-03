@@ -1,5 +1,7 @@
+import { ImageWidget } from "apps/admin/widgets.ts";
 import Arrow from "../../components/esmera/Arrow.tsx";
 import { EsmeraImage } from "../../components/esmera/ResponsiveMedia.tsx";
+import { mergeDefined } from "../../lib/esmera/editorialProps.ts";
 import {
   loadResolvedHome,
   type ResolvedHome,
@@ -11,9 +13,9 @@ export interface Props {
   text?: string;
   ctaLabel?: string;
   ctaHref?: string;
-  mainImage?: string;
+  mainImage?: ImageWidget;
   mainImageAlt?: string;
-  secondaryImage?: string;
+  secondaryImage?: ImageWidget;
   secondaryImageAlt?: string;
 }
 
@@ -26,7 +28,8 @@ export default function Manifesto(
   props: Props & { resolvedHome?: ResolvedHome },
 ) {
   if (props.resolvedHome?.manifesto === null) return null;
-  const source = props.resolvedHome?.manifesto ?? props;
+  const { resolvedHome, ...editorialProps } = props;
+  const source = mergeDefined<Props>(resolvedHome?.manifesto, editorialProps);
   if (!source.title || !source.mainImage) return null;
   return (
     <section

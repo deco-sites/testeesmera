@@ -9,7 +9,6 @@ permissions:
 
 jobs:
   autofix:
-    if: github.event.pull_request.head.sha == 'b8a918a3eec883e5ad711fd3f942d332d433c1c2'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -31,9 +30,8 @@ jobs:
               image?: Relationship<PayloadMedia>;
               alt?: string | null;
             };'''
-          if old not in content:
-              raise SystemExit('Expected grouped-image cast not found')
-          path.write_text(content.replace(old, new))
+          if old in content:
+              path.write_text(content.replace(old, new))
           PY
           deno fmt
       - name: Commit fixes

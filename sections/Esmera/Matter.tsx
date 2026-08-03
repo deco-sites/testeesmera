@@ -1,4 +1,8 @@
 import { EsmeraImage } from "../../components/esmera/ResponsiveMedia.tsx";
+import {
+  loadResolvedHome,
+  type ResolvedHome,
+} from "../../lib/esmera/homeData.ts";
 import type { NavigationLink } from "../../lib/payload/types.ts";
 
 export interface TerritoryPanel {
@@ -15,7 +19,17 @@ export interface Props {
   panels?: TerritoryPanel[];
 }
 
-export default function Matter({ panels = [] }: Props) {
+export const loader = async (props: Props) => ({
+  ...props,
+  resolvedHome: await loadResolvedHome(),
+});
+
+export default function Matter(
+  props: Props & { resolvedHome?: ResolvedHome },
+) {
+  if (props.resolvedHome?.matter === null) return null;
+  const source = props.resolvedHome?.matter ?? props;
+  const panels = source.panels ?? [];
   if (panels.length === 0) return null;
   return (
     <section

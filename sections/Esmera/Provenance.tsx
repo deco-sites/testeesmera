@@ -1,4 +1,8 @@
 import { EsmeraImage } from "../../components/esmera/ResponsiveMedia.tsx";
+import {
+  loadResolvedHome,
+  type ResolvedHome,
+} from "../../lib/esmera/homeData.ts";
 import type { NavigationLink } from "../../lib/payload/types.ts";
 
 export interface ProvenanceStage {
@@ -20,8 +24,17 @@ export interface Props {
   cta?: NavigationLink | null;
 }
 
+export const loader = async (props: Props) => ({
+  ...props,
+  resolvedHome: await loadResolvedHome(),
+});
+
 export default function Provenance(
-  {
+  props: Props & { resolvedHome?: ResolvedHome },
+) {
+  if (props.resolvedHome?.provenance === null) return null;
+  const source = props.resolvedHome?.provenance ?? props;
+  const {
     eyebrow = "",
     title = "",
     text = "",
@@ -29,8 +42,7 @@ export default function Provenance(
     imageAlt = "",
     stages = [],
     cta,
-  }: Props,
-) {
+  } = source;
   const visibleStages = stages.slice(0, 6);
   if (!title && !text && !image && visibleStages.length === 0) return null;
   return (

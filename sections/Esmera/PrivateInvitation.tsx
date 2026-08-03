@@ -1,4 +1,8 @@
 import Arrow from "../../components/esmera/Arrow.tsx";
+import {
+  loadResolvedHome,
+  type ResolvedHome,
+} from "../../lib/esmera/homeData.ts";
 
 export interface Props {
   eyebrow?: string;
@@ -9,14 +13,24 @@ export interface Props {
   ctaHref?: string;
 }
 
-export default function PrivateInvitation({
-  eyebrow = "08 — Private Client",
-  title = "Encontrar a peça certa é parte da curadoria.",
-  text =
-    "Converse com a Esméra para uma seleção orientada, disponibilidade, encomendas ou apresentação privada de peças.",
-  ctaLabel = "Iniciar uma consulta",
-  ctaHref = "",
-}: Props) {
+export const loader = async (props: Props) => ({
+  ...props,
+  resolvedHome: await loadResolvedHome(),
+});
+
+export default function PrivateInvitation(
+  props: Props & { resolvedHome?: ResolvedHome },
+) {
+  if (props.resolvedHome?.privateInvitation === null) return null;
+  const source = props.resolvedHome?.privateInvitation ?? props;
+  const {
+    eyebrow = "08 — Private Client",
+    title = "Encontrar a peça certa é parte da curadoria.",
+    text =
+      "Converse com a Esméra para uma seleção orientada, disponibilidade, encomendas ou apresentação privada de peças.",
+    ctaLabel = "Iniciar uma consulta",
+    ctaHref = "",
+  } = source;
   if (!ctaHref) return null;
   return (
     <section

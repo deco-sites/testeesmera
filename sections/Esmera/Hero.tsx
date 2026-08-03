@@ -1,5 +1,9 @@
 import Arrow from "../../components/esmera/Arrow.tsx";
 import { EsmeraPicture } from "../../components/esmera/ResponsiveMedia.tsx";
+import {
+  loadResolvedHome,
+  type ResolvedHome,
+} from "../../lib/esmera/homeData.ts";
 import HeroCarousel from "../../islands/HeroCarousel.tsx";
 
 export interface HeroSlide {
@@ -18,6 +22,11 @@ export interface Props {
   overlay?: 10 | 20 | 30;
   focalPoint?: "left" | "center" | "right";
 }
+
+export const loader = async (props: Props) => ({
+  ...props,
+  resolvedHome: await loadResolvedHome(),
+});
 
 function Slide(
   { slide, priority = false }: { slide: HeroSlide; priority?: boolean },
@@ -56,15 +65,18 @@ function Slide(
 }
 
 export default function Hero(
-  {
+  props: Props & { resolvedHome?: ResolvedHome },
+) {
+  if (props.resolvedHome?.hero === null) return null;
+  const source = props.resolvedHome?.hero ?? props;
+  const {
     mode = "single",
     slides = [],
     autoplay = false,
     autoplaySeconds = 6,
     overlay = 20,
     focalPoint = "right",
-  }: Props,
-) {
+  } = source;
   const activeSlides = slides.slice(0, 5);
   if (activeSlides.length === 0) return null;
   if (mode === "carousel" && activeSlides.length > 1) {

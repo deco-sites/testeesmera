@@ -9,6 +9,7 @@ import type {
   PayloadCategory,
   PayloadCTA,
   PayloadHome,
+  PayloadMedia,
   PayloadNavigation,
   PayloadProduct,
   PayloadSEO,
@@ -19,6 +20,52 @@ import type {
 
 function objectRelationship<T>(value: Relationship<T> | undefined): T | null {
   return value && typeof value === "object" ? value : null;
+}
+
+type PayloadImageField =
+  | Relationship<PayloadMedia>
+  | {
+    image?: Relationship<PayloadMedia>;
+    alt?: string | null;
+    caption?: string | null;
+  }
+  | undefined;
+
+function imageField(value: unknown): {
+  relationship: Relationship<PayloadMedia> | undefined;
+  alt?: string | null;
+} {
+  if (!value || typeof value !== "object") {
+    return { relationship: value as Relationship<PayloadMedia> | undefined };
+  }
+  if ("image" in value) {
+    const group = value as {
+      image?: Relationship<PayloadMedia>;
+      alt?: string | null;
+    };
+    return { relationship: group.image, alt: group.alt };
+  }
+  return { relationship: value as PayloadMedia };
+}
+
+function resolveImageField(
+  value: unknown,
+  baseURL: string,
+  preferred: "thumb" | "card" | "wide" | "original" = "original",
+  fallbackAlt?: string | null,
+) {
+  const field = imageField(value);
+  return resolvePayloadMedia(
+    field.relationship,
+    baseURL,
+    preferred,
+    field.alt || fallbackAlt,
+  );
+}
+
+function cleanText(value?: string | null): string | undefined {
+  const normalized = value?.trim();
+  return normalized || undefined;
 }
 
 export function sanitizePublicHref(value?: string | null): string {
@@ -204,14 +251,15 @@ export function toHero(home: PayloadHome, baseURL = getPayloadBaseURL()) {
   const slides = (home.heroSlides ?? []).filter((slide) =>
     slide.active !== false
   ).flatMap((slide) => {
-    const desktop = resolvePayloadMedia(slide.desktopImage, baseURL, "wide");
-    if (!desktop || !slide.statement) return [];
-    const mobile = resolvePayloadMedia(slide.mobileImage, baseURL, "card");
+    const desktop = resolveImageField(slide.desktopImage, baseURL, "wide");
+    const statement = cleanText(slide.statement);
+    if (!desktop || !statement) return [];
+    const mobile = resolveImageField(slide.mobileImage, baseURL, "card");
     return [{
       desktopImage: desktop.url,
       mobileImage: mobile?.url,
       alt: desktop.alt,
-      statement: slide.statement,
+      statement,
       cta: resolveCallToAction(slide.callToAction),
     }];
   });
@@ -224,22 +272,26 @@ export function toHero(home: PayloadHome, baseURL = getPayloadBaseURL()) {
 }
 
 export function toManifesto(home: PayloadHome, baseURL = getPayloadBaseURL()) {
-  const main = resolvePayloadMedia(home.manifestoPrimaryImage, baseURL, "wide");
-  const secondary = resolvePayloadMedia(
+  const main = resolveImageField(
+    home.manifestoPrimaryImage,
+    baseURL,
+    "wide",
+  );
+  const secondary = resolveImageField(
     home.manifestoSecondaryImage,
     baseURL,
     "card",
   );
-  if (!home.manifestoTitle || !main) return null;
-  return {
-    eyebrow: home.manifestoEyebrow ?? "",
-    title: home.manifestoTitle,
-    text: lexicalToText(home.manifestoCopy),
-    mainImage: main.url,
-    mainImageAlt: main.alt,
+  const result = {
+    eyebrow: cleanText(home.manifestoEyebrow),
+    title: cleanText(home.manifestoTitle),
+    text: lexicalToText(home.manifestoCopy) || undefined,
+    mainImage: main?.url,
+    mainImageAlt: main?.alt,
     secondaryImage: secondary?.url,
     secondaryImageAlt: secondary?.alt,
   };
+  return Object.values(result).some(Boolean) ? result : null;
 }
 
 export function toSelectedObjects(
@@ -257,16 +309,15 @@ export function toMatterPanels(
   home: PayloadHome,
   baseURL = getPayloadBaseURL(),
 ) {
-  return (home.matterPanels ?? []).flatMap((panel) => {
-    const image = resolvePayloadMedia(panel.image, baseURL, "wide");
-    if (!image || !panel.headline) return [];
+  return (home.matterPanels ?? []).map((panel) => {
+    const image = resolveImageField(panel.image, baseURL, "wide");
     const category = objectRelationship(panel.category);
-    return [{
-      image: image.url,
-      alt: image.alt,
-      eyebrow: panel.eyebrow ?? "",
-      title: panel.headline,
-      text: panel.copy ?? "",
+    return {
+      image: image?.url,
+      alt: image?.alt,
+      eyebrow: cleanText(panel.eyebrow),
+      title: cleanText(panel.headline),
+      text: cleanText(panel.copy),
       cta: resolveCallToAction(panel.callToAction),
       category: category
         ? {
@@ -275,7 +326,7 @@ export function toMatterPanels(
           external: false,
         }
         : null,
-    }];
+    };
   }).slice(0, 3);
 }
 
@@ -289,35 +340,38 @@ export function toSignatureSlides(
     return adapted
       ? [{
         product: adapted,
-        eyebrow: slide.eyebrow ?? "",
-        headline: slide.headline ?? adapted.title,
-        editorialText: slide.copy ?? adapted.description ?? "",
+        eyebrow: cleanText(slide.eyebrow),
+        headline: cleanText(slide.headline) ?? adapted.title,
+        editorialText: cleanText(slide.copy) ?? adapted.description ?? "",
       }]
       : [];
   }).slice(0, 6);
 }
 
 export function toProvenance(home: PayloadHome, baseURL = getPayloadBaseURL()) {
-  const overview = resolvePayloadMedia(home.provenanceImage, baseURL, "wide");
-  const stages = (home.provenanceSteps ?? []).flatMap((stage) => {
-    const image = resolvePayloadMedia(stage.image, baseURL, "wide", stage.alt);
-    return stage.title && stage.copy && image
-      ? [{
-        title: stage.title,
-        text: stage.copy,
-        image: image.url,
-        alt: image.alt,
-      }]
-      : [];
+  const overview = resolveImageField(home.provenanceImage, baseURL, "wide");
+  const stages = (home.provenanceSteps ?? []).map((stage) => {
+    const image = resolveImageField(stage.image, baseURL, "wide", stage.alt);
+    return {
+      title: cleanText(stage.title),
+      text: cleanText(stage.copy),
+      image: image?.url,
+      alt: image?.alt || cleanText(stage.alt),
+    };
   });
-  return {
-    title: home.provenanceTitle ?? "",
-    text: lexicalToText(home.provenanceCopy),
+  const result = {
+    title: cleanText(home.provenanceTitle),
+    text: lexicalToText(home.provenanceCopy) || undefined,
     image: overview?.url,
     imageAlt: overview?.alt,
     stages,
     cta: resolveCallToAction(home.provenanceCallToAction),
   };
+  return Object.values(result).some((value) =>
+      Array.isArray(value) ? value.length > 0 : Boolean(value)
+    )
+    ? result
+    : null;
 }
 
 export function toSEO(

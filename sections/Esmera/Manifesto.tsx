@@ -1,5 +1,9 @@
 import Arrow from "../../components/esmera/Arrow.tsx";
 import { EsmeraImage } from "../../components/esmera/ResponsiveMedia.tsx";
+import {
+  loadResolvedHome,
+  type ResolvedHome,
+} from "../../lib/esmera/homeData.ts";
 
 export interface Props {
   eyebrow?: string;
@@ -13,8 +17,17 @@ export interface Props {
   secondaryImageAlt?: string;
 }
 
-export default function Manifesto(props: Props) {
-  if (!props.title || !props.mainImage) return null;
+export const loader = async (props: Props) => ({
+  ...props,
+  resolvedHome: await loadResolvedHome(),
+});
+
+export default function Manifesto(
+  props: Props & { resolvedHome?: ResolvedHome },
+) {
+  if (props.resolvedHome?.manifesto === null) return null;
+  const source = props.resolvedHome?.manifesto ?? props;
+  if (!source.title || !source.mainImage) return null;
   return (
     <section
       id="about"
@@ -24,31 +37,31 @@ export default function Manifesto(props: Props) {
     >
       <div class="esv-shell esv-maison-grid">
         <div class="esv-maison-copy" data-motion="reveal">
-          {props.eyebrow && <p class="esv-kicker">{props.eyebrow}</p>}
-          <h2 id="esv-maison-title">{props.title}</h2>
-          {props.text && <p class="esv-maison-text">{props.text}</p>}
-          {props.ctaLabel && props.ctaHref && (
-            <a href={props.ctaHref} class="esv-text-link">
-              {props.ctaLabel} <Arrow size={13} />
+          {source.eyebrow && <p class="esv-kicker">{source.eyebrow}</p>}
+          <h2 id="esv-maison-title">{source.title}</h2>
+          {source.text && <p class="esv-maison-text">{source.text}</p>}
+          {source.ctaLabel && source.ctaHref && (
+            <a href={source.ctaHref} class="esv-text-link">
+              {source.ctaLabel} <Arrow size={13} />
             </a>
           )}
         </div>
         <div class="esv-maison-media">
           <figure class="esv-maison-main">
             <EsmeraImage
-              src={props.mainImage}
-              alt={props.mainImageAlt ?? ""}
+              src={source.mainImage}
+              alt={source.mainImageAlt ?? ""}
               loading="lazy"
               decoding="async"
               width={1200}
               height={1500}
             />
           </figure>
-          {props.secondaryImage && (
+          {source.secondaryImage && (
             <figure class="esv-maison-secondary">
               <EsmeraImage
-                src={props.secondaryImage}
-                alt={props.secondaryImageAlt ?? ""}
+                src={source.secondaryImage}
+                alt={source.secondaryImageAlt ?? ""}
                 loading="lazy"
                 decoding="async"
                 width={480}

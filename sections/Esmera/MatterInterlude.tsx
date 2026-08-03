@@ -1,4 +1,8 @@
 import { EsmeraPicture } from "../../components/esmera/ResponsiveMedia.tsx";
+import {
+  loadResolvedHome,
+  type ResolvedHome,
+} from "../../lib/esmera/homeData.ts";
 
 export interface Props {
   /** @format image-uri */
@@ -13,16 +17,26 @@ export interface Props {
   focalPoint?: "left" | "center" | "right";
 }
 
-export default function MatterInterlude({
-  image = "",
-  mobileImage,
-  imageAlt =
-    "Macro de superfície mineral revelando textura, densidade e irregularidade",
-  material = "Matéria mineral",
-  location = "",
-  title = "Formada lentamente.\nTransformada uma vez.",
-  focalPoint = "center",
-}: Props) {
+export const loader = async (props: Props) => ({
+  ...props,
+  resolvedHome: await loadResolvedHome(),
+});
+
+export default function MatterInterlude(
+  props: Props & { resolvedHome?: ResolvedHome },
+) {
+  if (props.resolvedHome?.matterInterlude === null) return null;
+  const source = props.resolvedHome?.matterInterlude ?? props;
+  const {
+    image = "",
+    mobileImage,
+    imageAlt =
+      "Macro de superfície mineral revelando textura, densidade e irregularidade",
+    material = "Matéria mineral",
+    location = "",
+    title = "Formada lentamente.\nTransformada uma vez.",
+    focalPoint = "center",
+  } = source;
   if (!image) return null;
   const meta = ["06 — Matéria", material, location].filter(Boolean).join(" · ");
 

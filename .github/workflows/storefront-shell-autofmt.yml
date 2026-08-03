@@ -1,0 +1,33 @@
+name: Storefront shell autofmt
+
+on:
+  push:
+    branches:
+      - fix/storefront-shell-recovery
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/storefront-shell-recovery
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: deno fmt islands/EsmeraHeader.tsx static/esmera-commerce-refine.css tests/shell/storefront_shell_test.tsx
+      - name: Commit formatting
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add islands/EsmeraHeader.tsx static/esmera-commerce-refine.css tests/shell/storefront_shell_test.tsx
+          git commit -m "style: apply deno fmt to storefront shell"
+          git push origin HEAD:fix/storefront-shell-recovery

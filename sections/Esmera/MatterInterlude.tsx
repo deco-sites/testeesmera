@@ -1,14 +1,14 @@
+import { ImageWidget } from "apps/admin/widgets.ts";
 import { EsmeraPicture } from "../../components/esmera/ResponsiveMedia.tsx";
+import { mergeDefined } from "../../lib/esmera/editorialProps.ts";
 import {
   loadResolvedHome,
   type ResolvedHome,
 } from "../../lib/esmera/homeData.ts";
 
 export interface Props {
-  /** @format image-uri */
-  image?: string;
-  /** @format image-uri */
-  mobileImage?: string;
+  image?: ImageWidget;
+  mobileImage?: ImageWidget;
   imageAlt?: string;
   material?: string;
   location?: string;
@@ -26,7 +26,11 @@ export default function MatterInterlude(
   props: Props & { resolvedHome?: ResolvedHome },
 ) {
   if (props.resolvedHome?.matterInterlude === null) return null;
-  const source = props.resolvedHome?.matterInterlude ?? props;
+  const { resolvedHome, ...editorialProps } = props;
+  const source = mergeDefined<Props>(
+    resolvedHome?.matterInterlude,
+    editorialProps,
+  );
   const {
     image = "",
     mobileImage,

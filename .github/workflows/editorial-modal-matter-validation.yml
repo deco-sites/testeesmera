@@ -1,0 +1,171 @@
+name: Editorial media, product modal and Matter validation
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PAYLOAD_API_URL: https://esmeracms-green.vercel.app
+      PORT: "8000"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Format changed files
+        run: >-
+          deno fmt --check
+          components/esmera/ObjectCard.tsx
+          islands/ProductActions.tsx
+          islands/ProductModal.tsx
+          lib/esmera/editorialProps.ts
+          sections/Esmera/Header.tsx
+          sections/Esmera/Hero.tsx
+          sections/Esmera/Manifesto.tsx
+          sections/Esmera/Matter.tsx
+          sections/Esmera/MatterInterlude.tsx
+          sections/Esmera/Provenance.tsx
+          static/esmera-matter-interaction.css
+          static/esmera-product-modal-v2.css
+          tests/editorial/home_editability_test.ts
+          tests/product/product_modal_contract_test.ts
+
+      - name: Generate Deco metadata
+        run: deno task gen
+
+      - name: Verify generated Deco metadata
+        shell: bash
+        run: |
+          if ! git diff --quiet -- .deco/blocks/esmera.json manifest.gen.ts; then
+            echo "Generated Deco metadata is not committed."
+            git diff -- .deco/blocks/esmera.json manifest.gen.ts
+            exit 1
+          fi
+
+      - name: Lint
+        run: deno lint
+
+      - name: Typecheck
+        run: deno check dev.ts main.ts
+
+      - name: Tests
+        run: deno test -A
+
+      - name: Build
+        run: deno task build
+
+      - name: Start preview
+        shell: bash
+        run: |
+          deno task preview > /tmp/esmera-preview.log 2>&1 &
+          for attempt in $(seq 1 90); do
+            if curl --silent --fail http://127.0.0.1:8000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/esmera-preview.log
+          exit 1
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.54.2
+          npx playwright install --with-deps chromium
+
+      - name: Smoke test desktop and mobile
+        shell: bash
+        run: |
+          cat > /tmp/storefront-smoke.mjs <<'JS'
+          import { chromium } from "playwright";
+
+          const browser = await chromium.launch({ headless: true });
+
+          async function validateMatter(page) {
+            await page.waitForSelector(".esv-territory-panel.is-clickable");
+            const geometry = await page.locator(".esv-territory-panel.is-clickable").first().evaluate((panel) => {
+              const copy = panel.querySelector(".esv-territory-copy");
+              if (!(copy instanceof HTMLElement)) throw new Error("Matter copy missing");
+              const panelRect = panel.getBoundingClientRect();
+              const copyRect = copy.getBoundingClientRect();
+              return {
+                tag: panel.tagName,
+                panelTop: panelRect.top,
+                panelBottom: panelRect.bottom,
+                copyTop: copyRect.top,
+                copyBottom: copyRect.bottom,
+              };
+            });
+            if (geometry.tag !== "A") throw new Error(`Matter panel is not a link: ${JSON.stringify(geometry)}`);
+            if (geometry.copyTop < geometry.panelTop - 1 || geometry.copyBottom > geometry.panelBottom + 1) {
+              throw new Error(`Matter overlay escaped panel: ${JSON.stringify(geometry)}`);
+            }
+          }
+
+          const desktop = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+          await desktop.goto("http://127.0.0.1:8000/", { waitUntil: "networkidle", timeout: 120000 });
+          await desktop.waitForSelector(".esv-product-modal-trigger-media");
+          const initialUrl = desktop.url();
+          const mediaTrigger = desktop.locator(".esv-product-modal-trigger-media").first();
+          await mediaTrigger.scrollIntoViewIfNeeded();
+          await mediaTrigger.click();
+          await desktop.waitForSelector(".esv-product-modal", { state: "visible" });
+          if (desktop.url() !== initialUrl) throw new Error(`Product click navigated: ${desktop.url()}`);
+
+          const modal = await desktop.locator(".esv-product-modal").evaluate((element) => ({
+            columns: getComputedStyle(element).gridTemplateColumns,
+            width: element.getBoundingClientRect().width,
+          }));
+          if (modal.columns.split(" ").length < 2) throw new Error(`Desktop modal is not gallery + buybox: ${JSON.stringify(modal)}`);
+          await desktop.waitForSelector(".esv-product-modal-buybox", { state: "visible" });
+          const gallery = desktop.locator(".esv-product-modal-gallery");
+          const galleryClass = await gallery.getAttribute("class");
+          if (!galleryClass?.includes("is-single") && !galleryClass?.includes("is-double")) {
+            throw new Error(`Adaptive gallery class missing: ${galleryClass}`);
+          }
+
+          await desktop.locator(".esv-product-modal-image").first().click();
+          await desktop.waitForSelector(".esv-product-zoom", { state: "visible" });
+          await desktop.keyboard.press("Escape");
+          await desktop.waitForSelector(".esv-product-zoom", { state: "detached" });
+          await desktop.waitForSelector(".esv-product-modal", { state: "visible" });
+          await desktop.keyboard.press("Escape");
+          await desktop.waitForSelector(".esv-product-modal", { state: "detached" });
+
+          const cta = desktop.locator(".esv-product-actions.is-compact button").first();
+          await cta.scrollIntoViewIfNeeded();
+          await cta.click();
+          await desktop.waitForSelector(".esv-product-modal", { state: "visible" });
+          await desktop.keyboard.press("Escape");
+          await validateMatter(desktop);
+
+          const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
+          await mobile.goto("http://127.0.0.1:8000/", { waitUntil: "networkidle", timeout: 120000 });
+          await validateMatter(mobile);
+          const mobileTrigger = mobile.locator(".esv-product-modal-trigger-media").first();
+          await mobileTrigger.scrollIntoViewIfNeeded();
+          await mobileTrigger.click();
+          await mobile.waitForSelector(".esv-product-modal", { state: "visible" });
+          const mobileModal = await mobile.locator(".esv-product-modal").evaluate((element) => ({
+            width: element.getBoundingClientRect().width,
+            viewport: window.innerWidth,
+            display: getComputedStyle(element).display,
+          }));
+          if (Math.abs(mobileModal.width - mobileModal.viewport) > 2) {
+            throw new Error(`Mobile modal is not full width: ${JSON.stringify(mobileModal)}`);
+          }
+
+          console.log(JSON.stringify({ desktopModal: modal, mobileModal, status: "passed" }));
+          await browser.close();
+          JS
+          node /tmp/storefront-smoke.mjs

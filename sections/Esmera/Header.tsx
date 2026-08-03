@@ -7,6 +7,7 @@ import {
 import EsmeraHeader from "../../islands/EsmeraHeader.tsx";
 import EsmeraMotion from "../../islands/EsmeraMotion.tsx";
 import EsmeraScrollScenes from "../../islands/EsmeraScrollScenes.tsx";
+import ProductModal from "../../islands/ProductModal.tsx";
 
 export interface Props {
   logo?: string;
@@ -55,6 +56,14 @@ export default function Header(
           rel="stylesheet"
           href={asset("/esmera-hotfix-product-modal.css")}
         />
+        <link
+          rel="stylesheet"
+          href={asset("/esmera-product-modal-v2.css")}
+        />
+        <link
+          rel="stylesheet"
+          href={asset("/esmera-matter-interaction.css")}
+        />
         <meta name="theme-color" content="#111210" />
       </Head>
       <a class="esv-skip" href="#main-content">Pular para o conteúdo</a>
@@ -65,6 +74,7 @@ export default function Header(
         categories={categories}
         whatsappHref={whatsappHref}
       />
+      <ProductModal />
       <EsmeraMotion />
       <EsmeraScrollScenes />
     </>

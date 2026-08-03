@@ -7,11 +7,18 @@ export interface Props {
   product?: EsmeraObject;
   compact?: boolean;
   emphasized?: boolean;
+  presentation?: "actions" | "media" | "title";
 }
 
 export default function ProductActions(
-  { productId, productTitle, product, compact = false, emphasized = false }:
-    Props,
+  {
+    productId,
+    productTitle,
+    product,
+    compact = false,
+    emphasized = false,
+    presentation = "actions",
+  }: Props,
 ) {
   const findSourceImage = (trigger: HTMLElement) => {
     const scope = trigger.closest(".esv-product-card, .esv-signature");
@@ -31,11 +38,8 @@ export default function ProductActions(
     const sourceImage = findSourceImage(trigger);
     const cachedSource = sourceImage?.currentSrc || sourceImage?.src;
 
-    // Product cards already display a responsive/optimized image. Reuse that decoded
-    // browser resource for the modal instead of requesting the original CMS PNG again.
-    // The modal opens immediately; the heavier detail image can continue loading after.
     const eventProduct =
-      name === "esmera:view-object" && product && cachedSource
+      name === "esmera:open-product" && product && cachedSource
         ? { ...product, image: cachedSource }
         : product;
 
@@ -45,9 +49,6 @@ export default function ProductActions(
           productId,
           product: eventProduct,
           trigger,
-          // Do not gate modal opening behind the View Transition snapshot cycle.
-          // The cached source above provides the visual continuity without delaying UI.
-          sourceImage: null,
         },
       }),
     );
@@ -58,6 +59,34 @@ export default function ProductActions(
     onFocus: warmDetailImage,
   };
 
+  if (presentation === "media") {
+    return (
+      <button
+        class="esv-product-modal-trigger esv-product-modal-trigger-media"
+        type="button"
+        aria-label={`Conhecer a peça ${productTitle}`}
+        {...commonWarmup}
+        onClick={(event) =>
+          dispatch("esmera:open-product", event.currentTarget)}
+      />
+    );
+  }
+
+  if (presentation === "title") {
+    return (
+      <button
+        class="esv-product-modal-trigger esv-product-modal-trigger-title"
+        type="button"
+        aria-label={`Conhecer a peça ${productTitle}`}
+        {...commonWarmup}
+        onClick={(event) =>
+          dispatch("esmera:open-product", event.currentTarget)}
+      >
+        {productTitle}
+      </button>
+    );
+  }
+
   if (compact) {
     return (
       <div class="esv-product-actions is-compact">
@@ -66,7 +95,7 @@ export default function ProductActions(
           aria-label={`Conhecer a peça ${productTitle}`}
           {...commonWarmup}
           onClick={(event) =>
-            dispatch("esmera:view-object", event.currentTarget)}
+            dispatch("esmera:open-product", event.currentTarget)}
           style={emphasized
             ? {
               width: "100%",
@@ -91,7 +120,8 @@ export default function ProductActions(
         type="button"
         aria-label={`Conhecer a peça ${productTitle}`}
         {...commonWarmup}
-        onClick={(event) => dispatch("esmera:view-object", event.currentTarget)}
+        onClick={(event) =>
+          dispatch("esmera:open-product", event.currentTarget)}
       >
         Conhecer a peça <Arrow size={13} />
       </button>

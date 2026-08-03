@@ -1,5 +1,7 @@
+import { ImageWidget } from "apps/admin/widgets.ts";
 import Arrow from "../../components/esmera/Arrow.tsx";
 import { EsmeraPicture } from "../../components/esmera/ResponsiveMedia.tsx";
+import { mergeDefined } from "../../lib/esmera/editorialProps.ts";
 import {
   loadResolvedHome,
   type ResolvedHome,
@@ -7,8 +9,8 @@ import {
 import HeroCarousel from "../../islands/HeroCarousel.tsx";
 
 export interface HeroSlide {
-  desktopImage: string;
-  mobileImage?: string;
+  desktopImage: ImageWidget;
+  mobileImage?: ImageWidget;
   alt: string;
   statement: string;
   cta?: { label: string; href: string; external?: boolean } | null;
@@ -68,7 +70,8 @@ export default function Hero(
   props: Props & { resolvedHome?: ResolvedHome },
 ) {
   if (props.resolvedHome?.hero === null) return null;
-  const source = props.resolvedHome?.hero ?? props;
+  const { resolvedHome, ...editorialProps } = props;
+  const source = mergeDefined<Props>(resolvedHome?.hero, editorialProps);
   const {
     mode = "single",
     slides = [],

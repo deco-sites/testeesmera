@@ -1,4 +1,6 @@
+import { ImageWidget } from "apps/admin/widgets.ts";
 import { EsmeraImage } from "../../components/esmera/ResponsiveMedia.tsx";
+import { mergeDefined } from "../../lib/esmera/editorialProps.ts";
 import {
   loadResolvedHome,
   type ResolvedHome,
@@ -8,7 +10,7 @@ import type { NavigationLink } from "../../lib/payload/types.ts";
 export interface ProvenanceStage {
   title: string;
   text: string;
-  image: string;
+  image: ImageWidget;
   alt: string;
   linkLabel?: string;
   linkHref?: string;
@@ -18,7 +20,7 @@ export interface Props {
   eyebrow?: string;
   title?: string;
   text?: string;
-  image?: string;
+  image?: ImageWidget;
   imageAlt?: string;
   stages?: ProvenanceStage[];
   cta?: NavigationLink | null;
@@ -33,7 +35,8 @@ export default function Provenance(
   props: Props & { resolvedHome?: ResolvedHome },
 ) {
   if (props.resolvedHome?.provenance === null) return null;
-  const source = props.resolvedHome?.provenance ?? props;
+  const { resolvedHome, ...editorialProps } = props;
+  const source = mergeDefined<Props>(resolvedHome?.provenance, editorialProps);
   const {
     eyebrow = "",
     title = "",
@@ -82,6 +85,7 @@ export default function Provenance(
       <div class="esv-shell esv-provenance-stages">
         {visibleStages.map((stage, index) => (
           <article
+            key={`${stage.title}-${index}`}
             class={`esv-provenance-stage esv-provenance-stage-${
               index === 0 ? "origin" : index === 1 ? "transform" : "register"
             }`}

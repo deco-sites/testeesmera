@@ -1,4 +1,6 @@
+import { ImageWidget } from "apps/admin/widgets.ts";
 import { EsmeraImage } from "../../components/esmera/ResponsiveMedia.tsx";
+import { mergeDefined } from "../../lib/esmera/editorialProps.ts";
 import {
   loadResolvedHome,
   type ResolvedHome,
@@ -6,7 +8,7 @@ import {
 import type { NavigationLink } from "../../lib/payload/types.ts";
 
 export interface TerritoryPanel {
-  image: string;
+  image: ImageWidget;
   alt: string;
   eyebrow: string;
   title: string;
@@ -24,11 +26,46 @@ export const loader = async (props: Props) => ({
   resolvedHome: await loadResolvedHome(),
 });
 
+function PanelContent(
+  { panel, destination }: {
+    panel: TerritoryPanel;
+    destination?: NavigationLink | null;
+  },
+) {
+  return (
+    <>
+      <figure class="esv-territory-media">
+        <EsmeraImage
+          src={panel.image}
+          alt={panel.alt}
+          loading="lazy"
+          decoding="async"
+          width={1200}
+          height={1500}
+          sizes="(max-width: 767px) 100vw, 33vw"
+        />
+      </figure>
+      <div class="esv-territory-shade" aria-hidden="true" />
+      <div class="esv-territory-copy">
+        <span class="esv-kicker esv-kicker-light">{panel.eyebrow}</span>
+        <h2>{panel.title}</h2>
+        {panel.text && <p>{panel.text}</p>}
+        {destination && (
+          <span class="esv-territory-link" aria-hidden="true">
+            {destination.label}
+          </span>
+        )}
+      </div>
+    </>
+  );
+}
+
 export default function Matter(
   props: Props & { resolvedHome?: ResolvedHome },
 ) {
   if (props.resolvedHome?.matter === null) return null;
-  const source = props.resolvedHome?.matter ?? props;
+  const { resolvedHome, ...editorialProps } = props;
+  const source = mergeDefined<Props>(resolvedHome?.matter, editorialProps);
   const panels = source.panels ?? [];
   if (panels.length === 0) return null;
   return (
@@ -39,37 +76,29 @@ export default function Matter(
       data-motion-scene="territory-stack"
     >
       <div class="esv-territory-track">
-        {panels.slice(0, 3).map((panel) => (
-          <article class="esv-territory-panel">
-            <figure class="esv-territory-media">
-              <EsmeraImage
-                src={panel.image}
-                alt={panel.alt}
-                loading="lazy"
-                decoding="async"
-                width={1200}
-                height={1500}
-                sizes="(max-width: 767px) 100vw, 33vw"
-              />
-            </figure>
-            <div class="esv-territory-shade" aria-hidden="true" />
-            <div class="esv-territory-copy">
-              <span class="esv-kicker esv-kicker-light">{panel.eyebrow}</span>
-              <h2>{panel.title}</h2>
-              {panel.text && <p>{panel.text}</p>}
-              {panel.category && (
-                <a class="esv-text-link" href={panel.category.href}>
-                  {panel.category.label}
-                </a>
-              )}
-              {panel.cta && (
-                <a class="esv-text-link" href={panel.cta.href}>
-                  {panel.cta.label}
-                </a>
-              )}
-            </div>
-          </article>
-        ))}
+        {panels.slice(0, 3).map((panel, index) => {
+          const destination = panel.category ?? panel.cta;
+          const key = `${panel.title}-${index}`;
+
+          return destination
+            ? (
+              <a
+                key={key}
+                class="esv-territory-panel is-clickable"
+                href={destination.href}
+                target={destination.external ? "_blank" : undefined}
+                rel={destination.external ? "noopener noreferrer" : undefined}
+                aria-label={`${destination.label}: ${panel.title}`}
+              >
+                <PanelContent panel={panel} destination={destination} />
+              </a>
+            )
+            : (
+              <article key={key} class="esv-territory-panel">
+                <PanelContent panel={panel} />
+              </article>
+            );
+        })}
       </div>
     </section>
   );

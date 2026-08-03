@@ -1,7 +1,7 @@
 import ProductActions from "../../islands/ProductActions.tsx";
-import { getAvailabilityMeta } from "./availability.ts";
 import type { EsmeraObject } from "../../lib/payload/types.ts";
 import { EsmeraImage } from "./ResponsiveMedia.tsx";
+import { getAvailabilityMeta } from "./availability.ts";
 
 export interface Props {
   item: EsmeraObject;
@@ -20,7 +20,7 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
       role="listitem"
       data-product-id={item.id}
     >
-      <a href={`/produto/${item.slug}`} aria-label={`Ver ${item.title}`}>
+      <div class="esv-product-media-wrap">
         <figure
           class="esv-product-media"
           data-motion="media-reveal"
@@ -51,7 +51,13 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
             />
           )}
         </figure>
-      </a>
+        <ProductActions
+          productId={item.id}
+          productTitle={item.title}
+          product={item}
+          presentation="media"
+        />
+      </div>
 
       <div
         class="esv-product-card-copy"
@@ -61,7 +67,14 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
         <p class="esv-product-meta-line" style={{ minHeight: "2.7em" }}>
           {meta}
         </p>
-        <h3>{item.title}</h3>
+        <h3>
+          <ProductActions
+            productId={item.id}
+            productTitle={item.title}
+            product={item}
+            presentation="title"
+          />
+        </h3>
         {item.subtitle && (
           <p class="esv-product-subtitle" style={{ marginBottom: "6px" }}>
             {item.subtitle}

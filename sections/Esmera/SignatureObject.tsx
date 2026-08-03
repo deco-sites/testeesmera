@@ -1,6 +1,10 @@
 import { getAvailabilityMeta } from "../../components/esmera/availability.ts";
-import type { EsmeraObject } from "../../lib/payload/types.ts";
 import { EsmeraImage } from "../../components/esmera/ResponsiveMedia.tsx";
+import {
+  loadResolvedHome,
+  type ResolvedHome,
+} from "../../lib/esmera/homeData.ts";
+import type { EsmeraObject } from "../../lib/payload/types.ts";
 import ProductActions from "../../islands/ProductActions.tsx";
 
 export interface Props {
@@ -12,7 +16,12 @@ export interface Props {
   showFullDetails?: boolean;
 }
 
-export default function SignatureObject({
+export const loader = async (props: Props) => ({
+  ...props,
+  resolvedHome: await loadResolvedHome(),
+});
+
+function SignatureObjectView({
   product,
   eyebrow = "05 — Peça assinatura",
   editorialText =
@@ -134,4 +143,24 @@ export default function SignatureObject({
       )}
     </section>
   );
+}
+
+export default function SignatureObject(
+  props: Props & { resolvedHome?: ResolvedHome },
+) {
+  if (props.resolvedHome) {
+    const slides = props.resolvedHome.signature;
+    if (!slides || slides.length === 0) return null;
+    return (
+      <>
+        {slides.map((slide, index) => (
+          <SignatureObjectView
+            key={`${slide.product?.id ?? "signature"}-${index}`}
+            {...slide}
+          />
+        ))}
+      </>
+    );
+  }
+  return <SignatureObjectView {...props} />;
 }

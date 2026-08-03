@@ -1,7 +1,4 @@
-import {
-  assertEquals,
-  assertStringIncludes,
-} from "@std/assert";
+import { assertEquals, assertStringIncludes } from "@std/assert";
 import { mergeDefined } from "../../lib/esmera/editorialProps.ts";
 
 Deno.test("defined Deco props override the resolved baseline without erasing it", () => {

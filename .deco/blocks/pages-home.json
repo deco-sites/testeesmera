@@ -1,6 +1,16 @@
 {
   "name": "Home",
   "path": "/",
-  "sections": [],
+  "sections": [
+    {
+      "__resolveType": "site/sections/Esmera/PayloadHome.tsx"
+    },
+    {
+      "__resolveType": "website/sections/Rendering/Lazy.tsx",
+      "section": {
+        "__resolveType": "website/sections/Seo/Seo.tsx"
+      }
+    }
+  ],
   "__resolveType": "website/pages/Page.tsx"
 }

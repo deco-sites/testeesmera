@@ -58,6 +58,10 @@ export interface ResolvedHome {
   footer: FooterProps;
 }
 
+type HomeWithDisabledSections = PayloadHome & {
+  disabledSections?: string[] | null;
+};
+
 function present<T>(value: T | null | undefined, fallback: T): T {
   if (typeof value === "string" && value.trim() === "") return fallback;
   return value ?? fallback;
@@ -132,7 +136,9 @@ export function resolveHome({
   categories = [],
 }: ResolveHomeInput): ResolvedHome {
   const publishedHome = home?._status === "draft" ? null : home;
-  const disabled = new Set(publishedHome?.disabledSections ?? []);
+  const disabled = new Set(
+    (publishedHome as HomeWithDisabledSections | null)?.disabledSections ?? [],
+  );
   const footer = mergeFooter(siteSettings);
 
   const cmsNavigation = navigation ? toNavigation(navigation) : [];

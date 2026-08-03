@@ -15,11 +15,11 @@ jobs:
       PAYLOAD_API_URL: https://esmeracms-green.vercel.app
       PORT: "8000"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
 
@@ -86,7 +86,8 @@ jobs:
       - name: Smoke test desktop and mobile
         shell: bash
         run: |
-          cat > /tmp/storefront-smoke.mjs <<'JS'
+          trap 'rm -f ./.storefront-smoke.mjs' EXIT
+          cat > ./.storefront-smoke.mjs <<'JS'
           import { chromium } from "playwright";
 
           const browser = await chromium.launch({ headless: true });
@@ -168,4 +169,4 @@ jobs:
           console.log(JSON.stringify({ desktopModal: modal, mobileModal, status: "passed" }));
           await browser.close();
           JS
-          node /tmp/storefront-smoke.mjs
+          node ./.storefront-smoke.mjs

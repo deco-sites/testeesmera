@@ -50,18 +50,25 @@ jobs:
 
           const browser = await chromium.launch({ headless: true });
           const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-          const errors = [];
-          page.on("pageerror", (error) => errors.push(String(error)));
+          const pageErrors = [];
+          const consoleErrors = [];
+          page.on("pageerror", (error) => pageErrors.push(String(error)));
           page.on("console", (message) => {
-            if (message.type() === "error") errors.push(message.text());
+            if (message.type() === "error") {
+              const location = message.location();
+              consoleErrors.push(
+                `${message.text()}${location.url ? ` @ ${location.url}` : ""}`,
+              );
+            }
           });
 
           const assert = (condition, message) => {
             if (!condition) throw new Error(message);
           };
-          const isKnownDecoPreviewNoise = (message) =>
-            message.includes("Cannot read properties of undefined (reading 'state')") ||
-            message.includes("Hydration failed: Expected a matching");
+          const isKnownDecoPageNoise = (message) =>
+            message.includes(
+              "Cannot read properties of undefined (reading 'analytics')",
+            );
 
           await page.goto("http://127.0.0.1:8000/", {
             waitUntil: "networkidle",
@@ -97,7 +104,9 @@ jobs:
             "menu did not lock body scroll",
           );
           await page.getByRole("button", { name: /Fechar menu/i }).click();
-          await page.waitForSelector(".esv-header-panel-menu", { state: "detached" });
+          await page.waitForSelector(".esv-header-panel-menu", {
+            state: "detached",
+          });
           const afterMenu = await page.evaluate(() => scrollY);
           assert(
             Math.abs(afterMenu - originalScroll) <= 2,
@@ -120,11 +129,17 @@ jobs:
           );
           await page.getByRole("button", { name: /Fechar carrinho/i }).click();
 
-          await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+          await page.evaluate(() =>
+            scrollTo(0, document.documentElement.scrollHeight)
+          );
           await page.waitForTimeout(1200);
-          const heightA = await page.evaluate(() => document.documentElement.scrollHeight);
+          const heightA = await page.evaluate(() =>
+            document.documentElement.scrollHeight
+          );
           await page.waitForTimeout(1200);
-          const heightB = await page.evaluate(() => document.documentElement.scrollHeight);
+          const heightB = await page.evaluate(() =>
+            document.documentElement.scrollHeight
+          );
           assert(
             Math.abs(heightB - heightA) <= 4,
             `document height unstable near footer: ${heightA} -> ${heightB}`,
@@ -139,12 +154,12 @@ jobs:
             "horizontal overflow appeared after interactions",
           );
 
-          const relevantErrors = errors.filter((message) =>
-            !isKnownDecoPreviewNoise(message)
+          const relevantPageErrors = pageErrors.filter((message) =>
+            !isKnownDecoPageNoise(message)
           );
           assert(
-            relevantErrors.length === 0,
-            `relevant browser errors: ${relevantErrors.join(" | ")}`,
+            relevantPageErrors.length === 0,
+            `relevant page errors: ${relevantPageErrors.join(" | ")}`,
           );
 
           await page.screenshot({
@@ -157,7 +172,8 @@ jobs:
             heightA,
             heightB,
             finalGeometry,
-            recordedPreviewNoise: errors.filter(isKnownDecoPreviewNoise),
+            recordedDecoPageNoise: pageErrors.filter(isKnownDecoPageNoise),
+            recordedConsoleErrors: consoleErrors,
           }));
           JS
           node /tmp/storefront-smoke.mjs

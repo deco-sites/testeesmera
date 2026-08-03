@@ -1,5 +1,9 @@
 import { asset, Head } from "$fresh/runtime.ts";
 import type { NavigationLink } from "../../lib/payload/types.ts";
+import {
+  loadResolvedHome,
+  type ResolvedHome,
+} from "../../lib/esmera/homeData.ts";
 import EsmeraHeader from "../../islands/EsmeraHeader.tsx";
 import EsmeraMotion from "../../islands/EsmeraMotion.tsx";
 import EsmeraScrollScenes from "../../islands/EsmeraScrollScenes.tsx";
@@ -12,15 +16,23 @@ export interface Props {
   whatsappHref?: string;
 }
 
+export const loader = async (props: Props) => ({
+  ...props,
+  resolvedHome: await loadResolvedHome(),
+});
+
 export default function Header(
-  {
-    logo = "",
+  props: Props & { resolvedHome?: ResolvedHome },
+) {
+  const source = props.resolvedHome?.header ?? props;
+  const {
+    logo = "ESMÉRA",
     enquiryLabel = "Carrinho",
     navigation = [],
     categories = [],
     whatsappHref = "",
-  }: Props,
-) {
+  } = source;
+
   return (
     <>
       <Head>

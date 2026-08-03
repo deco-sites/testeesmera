@@ -1,9 +1,8 @@
 name: Storefront shell browser smoke
 
 on:
-  push:
-    branches:
-      - fix/storefront-shell-recovery
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read

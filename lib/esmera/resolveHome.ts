@@ -10,6 +10,10 @@ import {
   toSignatureSlides,
 } from "../payload/adapters.ts";
 import type {
+  StorefrontDataSource,
+  StorefrontDiagnostic,
+} from "../payload/contract/diagnostics.ts";
+import type {
   NavigationLink,
   PayloadHome,
   PayloadNavigation,
@@ -38,12 +42,35 @@ export interface PublicCategoryLink {
   slug: string;
 }
 
+export type HomeSourceInput = {
+  home?: StorefrontDataSource;
+  navigation?: StorefrontDataSource;
+  siteSettings?: StorefrontDataSource;
+  categories?: StorefrontDataSource;
+};
+
 export interface ResolveHomeInput {
   home?: PayloadHome | null;
   navigation?: PayloadNavigation | null;
   siteSettings?: PayloadSiteSettings | null;
   categories?: PublicCategoryLink[];
+  sources?: HomeSourceInput;
+  diagnostics?: StorefrontDiagnostic[];
+  stale?: boolean;
 }
+
+export type HomeSectionSourceMap = {
+  header: StorefrontDataSource;
+  hero: StorefrontDataSource;
+  manifesto: StorefrontDataSource;
+  selectedObjects: StorefrontDataSource;
+  matter: StorefrontDataSource;
+  signature: StorefrontDataSource;
+  matterInterlude: StorefrontDataSource;
+  provenance: StorefrontDataSource;
+  privateInvitation: StorefrontDataSource;
+  footer: StorefrontDataSource;
+};
 
 export interface ResolvedHome {
   header: HeaderProps;
@@ -56,6 +83,9 @@ export interface ResolvedHome {
   provenance: ProvenanceProps | null;
   privateInvitation: PrivateInvitationProps | null;
   footer: FooterProps;
+  sources: HomeSectionSourceMap;
+  diagnostics: StorefrontDiagnostic[];
+  stale: boolean;
 }
 
 type HomeWithDisabledSections = PayloadHome & {
@@ -129,15 +159,57 @@ function mergeProvenanceStage(
   };
 }
 
+function normalizedSource(
+  source: StorefrontDataSource | undefined,
+  hasPayloadData: boolean,
+): StorefrontDataSource {
+  if (hasPayloadData) {
+    return source === "stale_payload" ? "stale_payload" : "payload_override";
+  }
+  return source === "unavailable" ? "unavailable" : "deco_baseline";
+}
+
+function sectionSource(
+  disabled: boolean,
+  hasOverride: boolean,
+  homeSource: StorefrontDataSource,
+): StorefrontDataSource {
+  if (disabled) return "disabled";
+  if (hasOverride) {
+    return homeSource === "stale_payload" ? "stale_payload" : "payload_override";
+  }
+  return "deco_baseline";
+}
+
+function hasText(value: unknown): boolean {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
 export function resolveHome({
   home,
   navigation,
   siteSettings,
   categories = [],
+  sources = {},
+  diagnostics = [],
+  stale = false,
 }: ResolveHomeInput): ResolvedHome {
   const publishedHome = home?._status === "draft" ? null : home;
   const disabled = new Set(
     (publishedHome as HomeWithDisabledSections | null)?.disabledSections ?? [],
+  );
+  const homeSource = normalizedSource(sources.home, Boolean(publishedHome));
+  const navigationSource = normalizedSource(
+    sources.navigation,
+    Boolean(navigation),
+  );
+  const settingsSource = normalizedSource(
+    sources.siteSettings,
+    Boolean(siteSettings),
+  );
+  const categoriesSource = normalizedSource(
+    sources.categories,
+    categories.length > 0,
   );
   const footer = mergeFooter(siteSettings);
 
@@ -162,9 +234,10 @@ export function resolveHome({
   };
 
   const cmsHero = publishedHome ? toHero(publishedHome) : null;
+  const hasHeroOverride = Boolean(cmsHero && cmsHero.slides.length > 0);
   const hero: HeroProps | null = disabled.has("hero")
     ? null
-    : cmsHero && cmsHero.slides.length > 0
+    : hasHeroOverride && cmsHero
     ? {
       ...defaultHome.hero,
       ...cmsHero,
@@ -174,6 +247,14 @@ export function resolveHome({
     : { ...defaultHome.hero };
 
   const cmsManifesto = publishedHome ? toManifesto(publishedHome) : null;
+  const hasManifestoOverride = Boolean(
+    publishedHome &&
+      (hasText(publishedHome.manifestoEyebrow) ||
+        hasText(publishedHome.manifestoTitle) ||
+        publishedHome.manifestoCopy ||
+        publishedHome.manifestoPrimaryImage ||
+        publishedHome.manifestoSecondaryImage),
+  );
   const manifesto: ManifestoProps | null = disabled.has("manifesto") ? null : {
     ...defaultHome.manifesto,
     eyebrow: present(
@@ -200,16 +281,23 @@ export function resolveHome({
     ),
   };
 
+  const cmsSelectedObjects = publishedHome
+    ? toSelectedObjects(publishedHome)
+    : [];
+  const hasSelectedObjectsOverride = cmsSelectedObjects.length > 0;
   const selectedObjects: SelectedObjectsProps | null = disabled.has(
       "selectedObjects",
     )
     ? null
     : {
       ...defaultHome.selectedObjects,
-      products: publishedHome ? toSelectedObjects(publishedHome) : [],
+      products: hasSelectedObjectsOverride
+        ? cmsSelectedObjects
+        : defaultHome.selectedObjects.products ?? [],
     };
 
   const cmsMatter = publishedHome ? toMatterPanels(publishedHome) : [];
+  const hasMatterOverride = cmsMatter.length > 0;
   const baselinePanels = defaultHome.matter.panels ?? [];
   const matter: MatterProps | null = disabled.has("matter") ? null : {
     panels: baselinePanels.map((panel, index) =>
@@ -217,16 +305,18 @@ export function resolveHome({
     ),
   };
 
+  const cmsSignature = publishedHome ? toSignatureSlides(publishedHome) : [];
+  const hasSignatureOverride = cmsSignature.length > 0;
   const signature: SignatureObjectProps[] | null = disabled.has("signature")
     ? null
-    : (publishedHome ? toSignatureSlides(publishedHome) : []).map((slide) => ({
+    : (hasSignatureOverride ? cmsSignature.map((slide) => ({
       product: slide.product,
       eyebrow: present(slide.eyebrow, "05 — Peça assinatura"),
       editorialText: present(
         slide.editorialText,
         slide.product.description ?? "",
       ),
-    }));
+    })) : [...defaultHome.signature]);
 
   const matterInterlude: MatterInterludeProps | null = disabled.has(
       "matterInterlude",
@@ -235,6 +325,13 @@ export function resolveHome({
     : { ...defaultHome.matterInterlude };
 
   const cmsProvenance = publishedHome ? toProvenance(publishedHome) : null;
+  const hasProvenanceOverride = Boolean(
+    publishedHome &&
+      (hasText(publishedHome.provenanceTitle) ||
+        publishedHome.provenanceCopy ||
+        publishedHome.provenanceImage ||
+        (publishedHome.provenanceSteps?.length ?? 0) > 0),
+  );
   const baselineStages = defaultHome.provenance.stages ?? [];
   const cmsStages = cmsProvenance?.stages ?? [];
   const stageCount = Math.max(baselineStages.length, cmsStages.length);
@@ -277,6 +374,14 @@ export function resolveHome({
         defaultHome.privateInvitation.ctaHref,
     };
 
+  const headerUsesPayload = cmsNavigation.length > 0 || categoryLinks.length > 0 ||
+    Boolean(siteSettings);
+  const headerSource = headerUsesPayload
+    ? [navigationSource, settingsSource, categoriesSource].includes("stale_payload")
+      ? "stale_payload"
+      : "payload_override"
+    : "deco_baseline";
+
   return {
     header,
     hero,
@@ -288,5 +393,43 @@ export function resolveHome({
     provenance,
     privateInvitation,
     footer,
+    sources: {
+      header: headerSource,
+      hero: sectionSource(disabled.has("hero"), hasHeroOverride, homeSource),
+      manifesto: sectionSource(
+        disabled.has("manifesto"),
+        hasManifestoOverride,
+        homeSource,
+      ),
+      selectedObjects: sectionSource(
+        disabled.has("selectedObjects"),
+        hasSelectedObjectsOverride,
+        homeSource,
+      ),
+      matter: sectionSource(
+        disabled.has("matter"),
+        hasMatterOverride,
+        homeSource,
+      ),
+      signature: sectionSource(
+        disabled.has("signature"),
+        hasSignatureOverride,
+        homeSource,
+      ),
+      matterInterlude: disabled.has("matterInterlude")
+        ? "disabled"
+        : "deco_baseline",
+      provenance: sectionSource(
+        disabled.has("provenance"),
+        hasProvenanceOverride,
+        homeSource,
+      ),
+      privateInvitation: disabled.has("privateInvitation")
+        ? "disabled"
+        : "deco_baseline",
+      footer: siteSettings ? settingsSource : "deco_baseline",
+    },
+    diagnostics,
+    stale,
   };
 }

@@ -199,8 +199,7 @@ export async function payloadGet<T>(
   url.search = buildPayloadQuery(options).toString();
   const fetcher = options.fetcher ?? fetch;
 
-  const execute = () =>
-    executePayloadGet<T>(url, endpoint, options, fetcher);
+  const execute = () => executePayloadGet<T>(url, endpoint, options, fetcher);
   if (options.dedupe === false) return await execute();
 
   const key = requestKey(url, options, fetcher);

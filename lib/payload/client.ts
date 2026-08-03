@@ -206,12 +206,13 @@ export async function payloadGet<T>(
   const existing = inFlightRequests.get(key) as Promise<T> | undefined;
   if (existing) return await existing;
 
-  let request!: Promise<T>;
-  request = execute().finally(() => {
-    if (inFlightRequests.get(key) === request) inFlightRequests.delete(key);
-  });
+  const request = execute();
   inFlightRequests.set(key, request);
-  return await request;
+  try {
+    return await request;
+  } finally {
+    if (inFlightRequests.get(key) === request) inFlightRequests.delete(key);
+  }
 }
 
 export function createPayloadClient(

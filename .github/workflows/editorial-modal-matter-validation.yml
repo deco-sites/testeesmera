@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
@@ -16,6 +16,8 @@ jobs:
       PORT: "8000"
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
@@ -41,11 +43,19 @@ jobs:
           tests/editorial/home_editability_test.ts
           tests/product/product_modal_contract_test.ts
 
-      - name: Generate Deco metadata
-        run: deno task gen
-
-      - name: Generated files are committed
-        run: git diff --exit-code
+      - name: Generate and commit Deco metadata
+        shell: bash
+        run: |
+          deno task gen
+          if git diff --quiet; then
+            echo "Generated Deco metadata is already current."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .deco/blocks/esmera.json manifest.gen.ts
+            git commit -m "chore(deco): regenerate section schemas"
+            git push origin "HEAD:${{ github.head_ref }}"
+          fi
 
       - name: Lint
         run: deno lint

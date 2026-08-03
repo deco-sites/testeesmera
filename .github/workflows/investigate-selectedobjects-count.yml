@@ -1,0 +1,83 @@
+name: Investigate Selected Objects count
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Inspect production Home selection
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import urllib.request
+
+          BASE = "https://esmeracms-green.vercel.app"
+
+          def get(path):
+              req = urllib.request.Request(
+                  BASE + path,
+                  headers={"Accept": "application/json", "User-Agent": "EsmeraSelectedObjectsDiagnostic/1.0"},
+              )
+              with urllib.request.urlopen(req, timeout=20) as response:
+                  return json.load(response)
+
+          products_payload = get("/api/products?limit=100&depth=2")
+          home = get("/api/globals/home?depth=2")
+          products = products_payload.get("docs", [])
+          selected = home.get("selectedProducts") or []
+
+          print("PRODUCTS_TOTAL", products_payload.get("totalDocs"), "DOCS_RETURNED", len(products))
+          print("HOME_STATUS", home.get("_status"))
+          print("SELECTED_COUNT", len(selected))
+
+          def product_summary(product):
+              if not isinstance(product, dict):
+                  return {"relationship": product, "validObject": False}
+              gallery = product.get("gallery") or []
+              valid_images = []
+              for item in gallery:
+                  image = (item or {}).get("image")
+                  if isinstance(image, dict):
+                      valid_images.append({
+                          "role": (item or {}).get("role"),
+                          "url": image.get("url"),
+                          "status": image.get("_status"),
+                      })
+              valid = (
+                  product.get("_status") == "published"
+                  and product.get("catalogStatus") == "active"
+                  and any(image.get("url") for image in valid_images)
+              )
+              return {
+                  "id": product.get("id"),
+                  "title": product.get("title"),
+                  "slug": product.get("slug"),
+                  "status": product.get("_status"),
+                  "catalogStatus": product.get("catalogStatus"),
+                  "galleryCount": len(gallery),
+                  "images": valid_images,
+                  "passesAdapter": valid,
+              }
+
+          print("ALL_PRODUCTS")
+          for product in products:
+              print(json.dumps(product_summary(product), ensure_ascii=False))
+
+          print("HOME_SELECTED_PRODUCTS")
+          adapted_count = 0
+          for index, product in enumerate(selected):
+              summary = product_summary(product)
+              if summary.get("passesAdapter"):
+                  adapted_count += 1
+              print(index, json.dumps(summary, ensure_ascii=False))
+
+          print("ADAPTED_SELECTED_COUNT", min(adapted_count, 4))
+          PY

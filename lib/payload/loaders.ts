@@ -1,4 +1,15 @@
 import { payloadGet } from "./client.ts";
+import {
+  emitStorefrontDiagnostic,
+  storefrontResult,
+  type StorefrontDiagnostic,
+  type StorefrontResult,
+} from "./contract/diagnostics.ts";
+import {
+  type StorefrontContractKind,
+  validatePayloadContract,
+} from "./contract/validate.ts";
+import { STOREFRONT_CONTRACT_VERSION } from "./contract/version.ts";
 import { toCategory, toEsmeraObject } from "./adapters.ts";
 import { whereAnd, whereContains, whereEquals, whereOr } from "./query.ts";
 import type {
@@ -14,19 +25,128 @@ import type {
   PayloadSiteSettings,
 } from "./types.ts";
 
-export async function getPublishedGlobal<T extends { _status?: string | null }>(
+function unavailableDiagnostic(
+  kind: string,
+  error: unknown,
+): StorefrontDiagnostic {
+  return {
+    id: `${kind}.payload_unavailable`,
+    severity: "blocker",
+    kind,
+    message: "A fonte editorial está temporariamente indisponível.",
+    suggestion: "Usar conteúdo baseline ou o último snapshot válido.",
+    source: "integration",
+    meta: {
+      errorType: error instanceof Error ? error.name : "unknown",
+    },
+  };
+}
+
+export async function getPublishedGlobalResult<
+  T extends { _status?: string | null },
+>(
+  slug: string,
+  kind: StorefrontContractKind,
+  depth = 1,
+): Promise<StorefrontResult<T>> {
+  try {
+    const result = await payloadGet<T>(`globals/${slug}`, { depth });
+    if (result._status === "draft") {
+      const diagnostic: StorefrontDiagnostic = {
+        id: `${kind}.draft_ignored`,
+        severity: "warning",
+        kind,
+        path: "_status",
+        message: "O rascunho foi ignorado no storefront público.",
+        suggestion: "Publicar o documento para substituir o baseline da Deco.",
+        source: "payload",
+      };
+      return storefrontResult(null, {
+        source: "deco_baseline",
+        diagnostics: [diagnostic],
+        contractVersion: STOREFRONT_CONTRACT_VERSION,
+        stale: false,
+      });
+    }
+
+    const validation = validatePayloadContract(kind, result);
+    if (!validation.compatible) {
+      emitStorefrontDiagnostic("payload_contract_rejected", validation.diagnostics, {
+        kind,
+        slug,
+        contractVersion: STOREFRONT_CONTRACT_VERSION,
+      });
+      return storefrontResult(null, {
+        source: "deco_baseline",
+        diagnostics: validation.diagnostics,
+        contractVersion: STOREFRONT_CONTRACT_VERSION,
+        stale: false,
+      });
+    }
+
+    if (validation.diagnostics.length) {
+      emitStorefrontDiagnostic("payload_contract_warning", validation.diagnostics, {
+        kind,
+        slug,
+        contractVersion: STOREFRONT_CONTRACT_VERSION,
+      });
+    }
+    return storefrontResult(result, {
+      source: "payload_override",
+      diagnostics: validation.diagnostics,
+      contractVersion: STOREFRONT_CONTRACT_VERSION,
+      stale: false,
+    });
+  } catch (error) {
+    const diagnostic = unavailableDiagnostic(kind, error);
+    emitStorefrontDiagnostic("payload_global_unavailable", diagnostic, {
+      kind,
+      slug,
+      contractVersion: STOREFRONT_CONTRACT_VERSION,
+    });
+    return storefrontResult(null, {
+      source: "unavailable",
+      diagnostics: [diagnostic],
+      contractVersion: STOREFRONT_CONTRACT_VERSION,
+      stale: false,
+    });
+  }
+}
+
+export async function getPublishedGlobal<
+  T extends { _status?: string | null },
+>(
   slug: string,
   depth = 1,
 ) {
-  const result = await payloadGet<T>(`globals/${slug}`, { depth });
-  return result._status === "published" ? result : null;
+  const kind = slug === "home"
+    ? "home"
+    : slug === "navigation"
+    ? "navigation"
+    : "site-settings";
+  const result = await getPublishedGlobalResult<T>(slug, kind, depth);
+  return result.data;
 }
 
-export const getHome = () => getPublishedGlobal<PayloadHome>("home", 2);
-export const getNavigation = () =>
-  getPublishedGlobal<PayloadNavigation>("navigation", 2);
-export const getSiteSettings = () =>
-  getPublishedGlobal<PayloadSiteSettings>("site-settings", 1);
+export const getHomeResult = () =>
+  getPublishedGlobalResult<PayloadHome>("home", "home", 2);
+export const getNavigationResult = () =>
+  getPublishedGlobalResult<PayloadNavigation>(
+    "navigation",
+    "navigation",
+    2,
+  );
+export const getSiteSettingsResult = () =>
+  getPublishedGlobalResult<PayloadSiteSettings>(
+    "site-settings",
+    "site-settings",
+    1,
+  );
+
+export const getHome = async () => (await getHomeResult()).data;
+export const getNavigation = async () => (await getNavigationResult()).data;
+export const getSiteSettings = async () =>
+  (await getSiteSettingsResult()).data;
 export const getAbout = () => getPublishedGlobal<PayloadAbout>("about", 2);
 export const getContact = () =>
   getPublishedGlobal<PayloadContact>("contact", 2);
@@ -51,9 +171,24 @@ export async function listProducts(input: ProductListInput = {}) {
       where: input.where,
     },
   );
+
+  const diagnostics: StorefrontDiagnostic[] = [];
+  const compatibleProducts = response.docs.filter((product) => {
+    const validation = validatePayloadContract("product", product);
+    diagnostics.push(...validation.diagnostics);
+    return validation.compatible;
+  });
+  if (diagnostics.length) {
+    emitStorefrontDiagnostic("payload_product_filtered", diagnostics, {
+      received: response.docs.length,
+      compatible: compatibleProducts.length,
+      contractVersion: STOREFRONT_CONTRACT_VERSION,
+    });
+  }
+
   return {
     ...response,
-    docs: response.docs.map((product) => toEsmeraObject(product)).filter((
+    docs: compatibleProducts.map((product) => toEsmeraObject(product)).filter((
       item,
     ): item is EsmeraObject => Boolean(item)),
   };
@@ -68,19 +203,56 @@ export async function getProductBySlug(slug: string) {
   return result.docs[0] ?? null;
 }
 
+export async function listCategoriesResult(
+  limit = 100,
+): Promise<StorefrontResult<ReturnType<typeof toCategory>[]>> {
+  try {
+    const response = await payloadGet<PayloadPaginated<PayloadCategory>>(
+      "categories",
+      {
+        depth: 2,
+        limit: Math.min(100, Math.max(1, limit)),
+        page: 1,
+        sort: "order,title",
+      },
+    );
+    const diagnostics: StorefrontDiagnostic[] = [];
+    const data = response.docs.flatMap((category) => {
+      const validation = validatePayloadContract("category", category);
+      diagnostics.push(...validation.diagnostics);
+      if (!validation.compatible) return [];
+      const adapted = toCategory(category);
+      return adapted ? [adapted] : [];
+    });
+    if (diagnostics.length) {
+      emitStorefrontDiagnostic("payload_category_filtered", diagnostics, {
+        received: response.docs.length,
+        compatible: data.length,
+        contractVersion: STOREFRONT_CONTRACT_VERSION,
+      });
+    }
+    return storefrontResult(data, {
+      source: "payload_override",
+      diagnostics,
+      contractVersion: STOREFRONT_CONTRACT_VERSION,
+      stale: false,
+    });
+  } catch (error) {
+    const diagnostic = unavailableDiagnostic("category", error);
+    emitStorefrontDiagnostic("payload_categories_unavailable", diagnostic, {
+      contractVersion: STOREFRONT_CONTRACT_VERSION,
+    });
+    return storefrontResult(null, {
+      source: "unavailable",
+      diagnostics: [diagnostic],
+      contractVersion: STOREFRONT_CONTRACT_VERSION,
+      stale: false,
+    });
+  }
+}
+
 export async function listCategories(limit = 100) {
-  const response = await payloadGet<PayloadPaginated<PayloadCategory>>(
-    "categories",
-    {
-      depth: 2,
-      limit: Math.min(100, Math.max(1, limit)),
-      page: 1,
-      sort: "order,title",
-    },
-  );
-  return response.docs.map((category) => toCategory(category)).filter((
-    item,
-  ): item is NonNullable<ReturnType<typeof toCategory>> => Boolean(item));
+  return (await listCategoriesResult(limit)).data ?? [];
 }
 
 export async function getCategoryBySlug(slug: string) {
@@ -95,7 +267,17 @@ export async function getCategoryBySlug(slug: string) {
       where: whereEquals("slug", slug.trim()),
     },
   );
-  return response.docs[0] ? toCategory(response.docs[0]) : null;
+  const category = response.docs[0];
+  if (!category) return null;
+  const validation = validatePayloadContract("category", category);
+  if (!validation.compatible) {
+    emitStorefrontDiagnostic("payload_category_rejected", validation.diagnostics, {
+      slug,
+      contractVersion: STOREFRONT_CONTRACT_VERSION,
+    });
+    return null;
+  }
+  return toCategory(category);
 }
 
 export async function listProductsByCategory(

@@ -30,6 +30,7 @@ export default function HeroCarousel(
     <section
       id="main-content"
       class={`esv-hero is-overlay-${overlay} is-focal-${focalPoint}`}
+      style={{ display: "grid" }}
       aria-roledescription="carousel"
       aria-label="Destaques Esméra"
       onPointerEnter={() => setPaused(true)}

@@ -7,6 +7,7 @@ import {
 import EsmeraHeader from "../../islands/EsmeraHeader.tsx";
 import EsmeraMotion from "../../islands/EsmeraMotion.tsx";
 import EsmeraScrollScenes from "../../islands/EsmeraScrollScenes.tsx";
+import ProductModal from "../../islands/ProductModal.tsx";
 
 export interface Props {
   logo?: string;
@@ -65,6 +66,7 @@ export default function Header(
         categories={categories}
         whatsappHref={whatsappHref}
       />
+      <ProductModal />
       <EsmeraMotion />
       <EsmeraScrollScenes />
     </>

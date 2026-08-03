@@ -56,6 +56,10 @@ export default function Header(
           rel="stylesheet"
           href={asset("/esmera-hotfix-product-modal.css")}
         />
+        <link
+          rel="stylesheet"
+          href={asset("/esmera-product-modal-v2.css")}
+        />
         <meta name="theme-color" content="#111210" />
       </Head>
       <a class="esv-skip" href="#main-content">Pular para o conteúdo</a>

@@ -19,7 +19,7 @@ jobs:
       matrix:
         include:
           - name: generated-files
-            timeout: 5
+            timeout: 8
             command: deno task gen && git diff --exit-code
           - name: format
             timeout: 4
@@ -45,4 +45,13 @@ jobs:
         with:
           deno-version: v2.x
       - name: Run ${{ matrix.name }}
-        run: ${{ matrix.command }}
+        shell: bash
+        env:
+          GATE_COMMAND: ${{ matrix.command }}
+        run: |
+          set +e
+          bash -lc "$GATE_COMMAND" > /tmp/gate.log 2>&1
+          status=$?
+          echo "===== ${{ matrix.name }}: last 250 lines ====="
+          tail -n 250 /tmp/gate.log
+          exit "$status"

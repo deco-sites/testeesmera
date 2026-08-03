@@ -20,7 +20,7 @@ coverage
 # nyc test coverage
 .nyc_output
 
-# Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
+# Grunt intermediate storage (http://gruntjs.com/creating-plugins#the-gruntfile)
 .grunt
 
 # Bower dependency directory (https://bower.io/)
@@ -68,6 +68,11 @@ server/
 
 import_map.local.json
 deno.lock
+
+# Local environment files
+.env
+.env.*
+!.env.example
 
 # db files
 .config.json

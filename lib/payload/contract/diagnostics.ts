@@ -21,19 +21,34 @@ export type StorefrontDiagnostic = {
   meta?: Record<string, unknown>;
 };
 
-export type StorefrontResult<T> = {
-  data: T | null;
+type NormalizeStorefrontData<T> = T extends readonly (infer Item)[]
+  ? Exclude<Item, null | undefined>[]
+  : Exclude<T, undefined>;
+
+type StorefrontResultMeta = {
   source: StorefrontDataSource;
   diagnostics: StorefrontDiagnostic[];
   contractVersion: string;
   stale: boolean;
 };
 
+export type StorefrontResult<T> = StorefrontResultMeta & {
+  data: NormalizeStorefrontData<T> | null;
+};
+
+export function storefrontResult<T = never>(
+  data: null,
+  input: StorefrontResultMeta,
+): StorefrontResult<T>;
 export function storefrontResult<T>(
-  data: T | null,
-  input: Omit<StorefrontResult<T>, "data">,
-): StorefrontResult<T> {
-  return { data, ...input };
+  data: T,
+  input: StorefrontResultMeta,
+): StorefrontResult<T>;
+export function storefrontResult(
+  data: unknown,
+  input: StorefrontResultMeta,
+): StorefrontResult<unknown> {
+  return { data, ...input } as StorefrontResult<unknown>;
 }
 
 export function emitStorefrontDiagnostic(

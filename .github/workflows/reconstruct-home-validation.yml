@@ -18,29 +18,72 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: Run all gates
-        shell: bash
+
+      - id: gen
+        name: Generate Deco files
+        continue-on-error: true
+        timeout-minutes: 4
+        run: deno task gen
+      - id: generated_diff
+        name: Confirm generated files committed
+        continue-on-error: true
+        run: git diff --exit-code
+      - id: format
+        name: Check format
+        continue-on-error: true
+        timeout-minutes: 3
+        run: deno fmt --check
+      - id: lint
+        name: Lint
+        continue-on-error: true
+        timeout-minutes: 4
+        run: deno lint
+      - id: typecheck
+        name: Typecheck
+        continue-on-error: true
+        timeout-minutes: 5
+        run: deno check dev.ts main.ts
+      - id: tests
+        name: Tests
+        continue-on-error: true
+        timeout-minutes: 7
+        run: deno test -A
+      - id: validate
+        name: Validate
+        continue-on-error: true
+        timeout-minutes: 5
+        run: deno task validate
+      - id: build
+        name: Build
+        continue-on-error: true
+        timeout-minutes: 10
+        run: deno task build
+
+      - name: Report gate outcomes
+        env:
+          GEN: ${{ steps.gen.outcome }}
+          GENERATED_DIFF: ${{ steps.generated_diff.outcome }}
+          FORMAT: ${{ steps.format.outcome }}
+          LINT: ${{ steps.lint.outcome }}
+          TYPECHECK: ${{ steps.typecheck.outcome }}
+          TESTS: ${{ steps.tests.outcome }}
+          VALIDATE: ${{ steps.validate.outcome }}
+          BUILD: ${{ steps.build.outcome }}
         run: |
-          set +e
-          failed=0
-          gate() {
-            echo "::group::$*"
-            "$@"
-            code=$?
-            echo "::endgroup::"
-            if [ "$code" -ne 0 ]; then
-              echo "Gate failed ($code): $*"
-              failed=1
-            fi
-          }
-
-          gate deno task gen
-          gate git diff --exit-code
-          gate deno fmt --check
-          gate deno lint
-          gate deno check dev.ts main.ts
-          gate deno test -A
-          gate deno task validate
-          gate deno task build
-
-          exit "$failed"
+          printf '%-20s %s\n' \
+            gen "$GEN" \
+            generated_diff "$GENERATED_DIFF" \
+            format "$FORMAT" \
+            lint "$LINT" \
+            typecheck "$TYPECHECK" \
+            tests "$TESTS" \
+            validate "$VALIDATE" \
+            build "$BUILD"
+          test "$GEN" = success
+          test "$GENERATED_DIFF" = success
+          test "$FORMAT" = success
+          test "$LINT" = success
+          test "$TYPECHECK" = success
+          test "$TESTS" = success
+          test "$VALIDATE" = success
+          test "$BUILD" = success

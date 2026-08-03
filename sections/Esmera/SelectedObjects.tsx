@@ -1,5 +1,9 @@
 import Arrow from "../../components/esmera/Arrow.tsx";
 import ObjectCard from "../../components/esmera/ObjectCard.tsx";
+import {
+  loadResolvedHome,
+  type ResolvedHome,
+} from "../../lib/esmera/homeData.ts";
 import type { EsmeraObject } from "../../lib/payload/types.ts";
 
 export interface Props {
@@ -13,20 +17,28 @@ export interface Props {
   collectionHref?: string;
 }
 
-export default function SelectedObjects({
-  eyebrow = "03 — Seleção",
-  title = "Objetos de\npresença singular.",
-  text =
-    "Uma seleção curta de obras disponíveis, reunidas por matéria, presença e permanência.",
-  products = [],
-  collectionLabel = "Ver coleção",
-  collectionHref = "#territory",
-}: Props) {
+export const loader = async (props: Props) => ({
+  ...props,
+  resolvedHome: await loadResolvedHome(),
+});
+
+export default function SelectedObjects(
+  props: Props & { resolvedHome?: ResolvedHome },
+) {
+  if (props.resolvedHome?.selectedObjects === null) return null;
+  const source = props.resolvedHome?.selectedObjects ?? props;
+  const {
+    eyebrow = "03 — Seleção",
+    title = "Objetos de\npresença singular.",
+    text =
+      "Uma seleção curta de obras disponíveis, reunidas por matéria, presença e permanência.",
+    products = [],
+    collectionLabel = "Ver coleção",
+    collectionHref = "/colecao",
+  } = source;
   const curatedProducts = products.filter((product) =>
     Boolean(product.id && product.slug && product.title && product.image)
   ).slice(0, 4);
-
-  if (curatedProducts.length === 0) return null;
 
   return (
     <section
@@ -45,11 +57,19 @@ export default function SelectedObjects({
         {text && <p data-motion="reveal" data-motion-order="2">{text}</p>}
       </div>
 
-      <div id="objects" class="esv-shell esv-product-shelf" role="list">
-        {curatedProducts.map((item, index) => (
-          <ObjectCard key={item.id} item={item} motionOrder={index} />
-        ))}
-      </div>
+      {curatedProducts.length > 0
+        ? (
+          <div id="objects" class="esv-shell esv-product-shelf" role="list">
+            {curatedProducts.map((item, index) => (
+              <ObjectCard key={item.id} item={item} motionOrder={index} />
+            ))}
+          </div>
+        )
+        : (
+          <div class="esv-shell esv-section" role="status">
+            <p>Objetos temporariamente indisponíveis.</p>
+          </div>
+        )}
 
       {collectionLabel && collectionHref && (
         <div

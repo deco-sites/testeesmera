@@ -1,8 +1,4 @@
-import {
-  assertEquals,
-  assertFalse,
-  assertStringIncludes,
-} from "@std/assert";
+import { assertEquals, assertFalse, assertStringIncludes } from "@std/assert";
 import {
   getProductFacts,
   getProductModalImages,
@@ -99,7 +95,10 @@ Deno.test("cards and Conhecer a peça share the modal and never navigate", async
   assertStringIncludes(card, 'presentation="title"');
   assertStringIncludes(actions, 'dispatch("esmera:open-product"');
   assertStringIncludes(modal, 'class="esv-product-modal-buybox"');
-  assertStringIncludes(modal, 'images.length === 1 ? "is-single" : "is-double"');
+  assertStringIncludes(
+    modal,
+    'images.length === 1 ? "is-single" : "is-double"',
+  );
   assertStringIncludes(modal, 'class="esv-product-zoom"');
   assertStringIncludes(css, ".esv-product-modal-gallery.is-single");
   assertStringIncludes(css, ".esv-product-modal-gallery.is-double");

@@ -8,82 +8,41 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  gate:
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: ${{ matrix.timeout }}
     env:
       PAYLOAD_API_URL: https://esmeracms-green.vercel.app
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: generated-files
+            timeout: 5
+            command: deno task gen && git diff --exit-code
+          - name: format
+            timeout: 4
+            command: deno fmt --check
+          - name: lint
+            timeout: 5
+            command: deno lint
+          - name: typecheck
+            timeout: 6
+            command: deno check dev.ts main.ts
+          - name: tests
+            timeout: 8
+            command: deno test -A
+          - name: validate
+            timeout: 6
+            command: deno task validate
+          - name: build
+            timeout: 12
+            command: deno task build
     steps:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-
-      - id: gen
-        name: Generate Deco files
-        continue-on-error: true
-        timeout-minutes: 4
-        run: deno task gen
-      - id: generated_diff
-        name: Confirm generated files committed
-        continue-on-error: true
-        run: git diff --exit-code
-      - id: format
-        name: Check format
-        continue-on-error: true
-        timeout-minutes: 3
-        run: deno fmt --check
-      - id: lint
-        name: Lint
-        continue-on-error: true
-        timeout-minutes: 4
-        run: deno lint
-      - id: typecheck
-        name: Typecheck
-        continue-on-error: true
-        timeout-minutes: 5
-        run: deno check dev.ts main.ts
-      - id: tests
-        name: Tests
-        continue-on-error: true
-        timeout-minutes: 7
-        run: deno test -A
-      - id: validate
-        name: Validate
-        continue-on-error: true
-        timeout-minutes: 5
-        run: deno task validate
-      - id: build
-        name: Build
-        continue-on-error: true
-        timeout-minutes: 10
-        run: deno task build
-
-      - name: Report gate outcomes
-        env:
-          GEN: ${{ steps.gen.outcome }}
-          GENERATED_DIFF: ${{ steps.generated_diff.outcome }}
-          FORMAT: ${{ steps.format.outcome }}
-          LINT: ${{ steps.lint.outcome }}
-          TYPECHECK: ${{ steps.typecheck.outcome }}
-          TESTS: ${{ steps.tests.outcome }}
-          VALIDATE: ${{ steps.validate.outcome }}
-          BUILD: ${{ steps.build.outcome }}
-        run: |
-          printf '%-20s %s\n' \
-            gen "$GEN" \
-            generated_diff "$GENERATED_DIFF" \
-            format "$FORMAT" \
-            lint "$LINT" \
-            typecheck "$TYPECHECK" \
-            tests "$TESTS" \
-            validate "$VALIDATE" \
-            build "$BUILD"
-          test "$GEN" = success
-          test "$GENERATED_DIFF" = success
-          test "$FORMAT" = success
-          test "$LINT" = success
-          test "$TYPECHECK" = success
-          test "$TESTS" = success
-          test "$VALIDATE" = success
-          test "$BUILD" = success
+      - name: Run ${{ matrix.name }}
+        run: ${{ matrix.command }}

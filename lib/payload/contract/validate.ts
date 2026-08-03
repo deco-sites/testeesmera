@@ -95,6 +95,7 @@ function mediaDiagnostics(
 
 function productDiagnostics(product: PayloadProduct): StorefrontDiagnostic[] {
   const diagnostics: StorefrontDiagnostic[] = [];
+
   if (!text(product.title)) {
     diagnostics.push(diagnostic(
       "product",
@@ -190,6 +191,7 @@ function productDiagnostics(product: PayloadProduct): StorefrontDiagnostic[] {
       { path: "priceMode" },
     ));
   }
+
   return diagnostics;
 }
 
@@ -197,6 +199,7 @@ function categoryDiagnostics(
   category: PayloadCategory,
 ): StorefrontDiagnostic[] {
   const diagnostics: StorefrontDiagnostic[] = [];
+
   if (!text(category.title)) {
     diagnostics.push(diagnostic(
       "category",
@@ -228,11 +231,13 @@ function categoryDiagnostics(
       "image",
     ));
   }
+
   return diagnostics;
 }
 
 function homeDiagnostics(home: PayloadHome): StorefrontDiagnostic[] {
   const diagnostics: StorefrontDiagnostic[] = [];
+
   if (home._status === "draft") {
     diagnostics.push(diagnostic(
       "home",
@@ -258,6 +263,7 @@ function homeDiagnostics(home: PayloadHome): StorefrontDiagnostic[] {
       ));
     }
   });
+
   return diagnostics;
 }
 
@@ -266,31 +272,31 @@ export function validatePayloadContract<T>(
   value: T | null | undefined,
 ): StorefrontContractValidation<T> {
   if (!record(value)) {
-    const diagnostics = [diagnostic(
-      kind,
-      `${kind}.invalid_document`,
-      "A API retornou um documento em formato incompatível.",
-    )];
     return {
       contractVersion: STOREFRONT_CONTRACT_VERSION,
       compatible: false,
       data: null,
-      diagnostics,
+      diagnostics: [diagnostic(
+        kind,
+        `${kind}.invalid_document`,
+        "A API retornou um documento em formato incompatível.",
+      )],
     };
   }
 
+  const validatedValue = value as T;
   const diagnostics = kind === "product"
-    ? productDiagnostics(value as unknown as PayloadProduct)
+    ? productDiagnostics(validatedValue as unknown as PayloadProduct)
     : kind === "category"
-    ? categoryDiagnostics(value as unknown as PayloadCategory)
+    ? categoryDiagnostics(validatedValue as unknown as PayloadCategory)
     : kind === "home"
-    ? homeDiagnostics(value as unknown as PayloadHome)
+    ? homeDiagnostics(validatedValue as unknown as PayloadHome)
     : [];
 
   return {
     contractVersion: STOREFRONT_CONTRACT_VERSION,
     compatible: diagnostics.every((item) => item.severity !== "blocker"),
-    data: value,
+    data: validatedValue,
     diagnostics,
   };
 }

@@ -1,7 +1,4 @@
-import {
-  assertFalse,
-  assertStringIncludes,
-} from "@std/assert";
+import { assertFalse, assertStringIncludes } from "@std/assert";
 import { renderToString } from "preact-render-to-string";
 import EsmeraHeader from "../../islands/EsmeraHeader.tsx";
 

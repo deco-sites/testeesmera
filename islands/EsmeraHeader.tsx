@@ -96,7 +96,13 @@ function checkoutHref(base: string, message: string) {
 function MenuIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
-      <path d="M3 7.5h18M3 16.5h18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.4" />
+      <path
+        d="M3 7.5h18M3 16.5h18"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-width="1.4"
+      />
     </svg>
   );
 }
@@ -104,8 +110,21 @@ function MenuIcon() {
 function SearchIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19">
-      <circle cx="10.5" cy="10.5" r="5.75" fill="none" stroke="currentColor" stroke-width="1.4" />
-      <path d="m15 15 4.25 4.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.4" />
+      <circle
+        cx="10.5"
+        cy="10.5"
+        r="5.75"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.4"
+      />
+      <path
+        d="m15 15 4.25 4.25"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-width="1.4"
+      />
     </svg>
   );
 }
@@ -113,7 +132,13 @@ function SearchIcon() {
 function CloseIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
-      <path d="M5 5l14 14M19 5 5 19" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.35" />
+      <path
+        d="M5 5l14 14M19 5 5 19"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-width="1.35"
+      />
     </svg>
   );
 }
@@ -227,9 +252,11 @@ export default function EsmeraHeader(
     if (!dialog) return;
 
     const focusables = () =>
-      Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-        (element) => !element.hasAttribute("disabled") && element.offsetParent !== null,
-      );
+      Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
+        .filter(
+          (element) =>
+            !element.hasAttribute("disabled") && element.offsetParent !== null,
+        );
 
     const frame = requestAnimationFrame(() => {
       const preferred = dialog.querySelector<HTMLElement>("[data-autofocus]");
@@ -531,7 +558,9 @@ export default function EsmeraHeader(
                         <a
                           key={link.href}
                           href={link.href}
-                          rel={link.external ? "noopener noreferrer" : undefined}
+                          rel={link.external
+                            ? "noopener noreferrer"
+                            : undefined}
                           target={link.external ? "_blank" : undefined}
                           onClick={closeAll}
                         >
@@ -550,7 +579,11 @@ export default function EsmeraHeader(
                     Carrinho <span>{cartCount}</span>
                   </button>
                   {whatsappHref && (
-                    <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={whatsappHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Atendimento
                     </a>
                   )}
@@ -573,7 +606,8 @@ export default function EsmeraHeader(
                     ref={searchInput}
                     id="esv-search-input"
                     value={query}
-                    onInput={(event) => setQuery(event.currentTarget.value)}
+                    onInput={(event) =>
+                      setQuery(event.currentTarget.value)}
                     autocomplete="off"
                     inputmode="search"
                     placeholder="Nome, código ou material"
@@ -660,14 +694,19 @@ export default function EsmeraHeader(
                               </a>
                               <span class="esv-cart-item-copy">
                                 <strong>{item.product.title}</strong>
-                                {item.variant?.label && <small>{item.variant.label}</small>}
+                                {item.variant?.label && (
+                                  <small>{item.variant.label}</small>
+                                )}
                                 <em class="esv-cart-item-price">
                                   {item.variant?.formattedPrice ??
                                     item.product.formattedPrice}
                                 </em>
                               </span>
                               <div class="esv-cart-item-actions">
-                                <div class="esv-cart-quantity" aria-label="Quantidade">
+                                <div
+                                  class="esv-cart-quantity"
+                                  aria-label="Quantidade"
+                                >
                                   <button
                                     type="button"
                                     aria-label={`Diminuir quantidade de ${item.product.title}`}
@@ -678,7 +717,10 @@ export default function EsmeraHeader(
                                           cartItemKey(candidate) === key
                                             ? {
                                               ...candidate,
-                                              quantity: Math.max(1, candidate.quantity - 1),
+                                              quantity: Math.max(
+                                                1,
+                                                candidate.quantity - 1,
+                                              ),
                                             }
                                             : candidate
                                         )
@@ -730,7 +772,8 @@ export default function EsmeraHeader(
                           </div>
                         )}
                         <p>
-                          A disponibilidade e os detalhes finais são confirmados pela curadoria.
+                          A disponibilidade e os detalhes finais são confirmados
+                          pela curadoria.
                         </p>
                       </div>
                       {sendHref

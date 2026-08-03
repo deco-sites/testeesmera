@@ -1,5 +1,6 @@
 import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import {
+  createPayloadClient,
   getPayloadBaseURL,
   normalizePayloadBaseURL,
   payloadGet,
@@ -68,8 +69,28 @@ Deno.test("builds GET requests and parses JSON", async () => {
   );
 });
 
-Deno.test("classifies HTTP and invalid JSON responses", async () => {
-  await assertRejects(
+Deno.test("creates a client with reusable base URL and cache defaults", async () => {
+  let requested = "";
+  let cache: RequestCache | undefined;
+  const client = createPayloadClient({
+    baseURL: "https://cms.example.com",
+    cache: "force-cache",
+    dedupe: false,
+    fetcher: (input, init) => {
+      requested = String(input);
+      cache = init?.cache;
+      return Promise.resolve(Response.json({ docs: [] }));
+    },
+  });
+
+  await client.get("products", { limit: 1 });
+
+  assertEquals(requested, "https://cms.example.com/api/products?limit=1");
+  assertEquals(cache, "force-cache");
+});
+
+Deno.test("classifies HTTP errors with status and a safe endpoint", async () => {
+  const error = await assertRejects(
     () =>
       payloadGet("products", {
         baseURL: "https://cms.example.com",
@@ -77,6 +98,22 @@ Deno.test("classifies HTTP and invalid JSON responses", async () => {
       }),
     PayloadAPIError,
     "HTTP 500",
+  ) as PayloadAPIError;
+
+  assertEquals(error.status, 500);
+  assertEquals(error.endpoint, "/api/products");
+  assertEquals(error.message.includes("cms.example.com"), false);
+});
+
+Deno.test("rejects non-JSON and invalid JSON responses", async () => {
+  await assertRejects(
+    () =>
+      payloadGet("products", {
+        baseURL: "https://cms.example.com",
+        fetcher: () => Promise.resolve(new Response("not-json")),
+      }),
+    PayloadAPIError,
+    "não retornou JSON",
   );
   await assertRejects(
     () =>
@@ -94,8 +131,59 @@ Deno.test("classifies HTTP and invalid JSON responses", async () => {
   );
 });
 
+Deno.test("deduplicates identical in-flight GET requests", async () => {
+  let calls = 0;
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const fetcher: typeof fetch = async () => {
+    calls++;
+    await gate;
+    return Response.json({ ok: true });
+  };
+  const options = {
+    baseURL: "https://cms.example.com",
+    limit: 1,
+    fetcher,
+  };
+
+  const first = payloadGet<{ ok: boolean }>("products", options);
+  const second = payloadGet<{ ok: boolean }>("products", options);
+  await Promise.resolve();
+
+  assertEquals(calls, 1);
+  release();
+  const [firstResult, secondResult] = await Promise.all([first, second]);
+  assertEquals(firstResult.ok, true);
+  assertEquals(secondResult.ok, true);
+});
+
+Deno.test("allows in-flight deduplication to be disabled", async () => {
+  let calls = 0;
+  const fetcher: typeof fetch = () => {
+    calls++;
+    return Promise.resolve(Response.json({ ok: true }));
+  };
+
+  await Promise.all([
+    payloadGet("products", {
+      baseURL: "https://cms.example.com",
+      fetcher,
+      dedupe: false,
+    }),
+    payloadGet("products", {
+      baseURL: "https://cms.example.com",
+      fetcher,
+      dedupe: false,
+    }),
+  ]);
+
+  assertEquals(calls, 2);
+});
+
 Deno.test("aborts slow requests", async () => {
-  await assertRejects(
+  const error = await assertRejects(
     () =>
       payloadGet("products", {
         baseURL: "https://cms.example.com",
@@ -108,5 +196,7 @@ Deno.test("aborts slow requests", async () => {
       }),
     PayloadAPIError,
     "tempo limite",
-  );
+  ) as PayloadAPIError;
+
+  assertEquals(error.endpoint, "/api/products");
 });

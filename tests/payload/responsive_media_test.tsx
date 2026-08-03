@@ -4,7 +4,7 @@ import {
   assertFalse,
   assertStringIncludes,
 } from "@std/assert";
-import renderToString from "preact-render-to-string";
+import { render } from "preact-render-to-string";
 import {
   EsmeraImage,
   EsmeraPicture,
@@ -29,7 +29,7 @@ Deno.test("recognizes Payload media routes independently of the CMS host", () =>
 });
 
 Deno.test("renders Payload card images without a Deco optimized srcset", () => {
-  const html = renderToString(
+  const html = render(
     <EsmeraImage
       src={payloadDesktop}
       alt="Produto Esméra"
@@ -46,7 +46,7 @@ Deno.test("renders Payload card images without a Deco optimized srcset", () => {
 });
 
 Deno.test("renders Payload picture sources directly for mobile and desktop", () => {
-  const html = renderToString(
+  const html = render(
     <EsmeraPicture
       desktopSrc={payloadDesktop}
       mobileSrc={payloadMobile}
@@ -66,7 +66,7 @@ Deno.test("renders Payload picture sources directly for mobile and desktop", () 
 
 Deno.test("keeps Deco optimization for native Deco assets", () => {
   const decoAsset = "https://decoims.com/testeesmera/catalog/product.jpg";
-  const html = renderToString(
+  const html = render(
     <EsmeraImage
       src={decoAsset}
       alt="Asset Deco"

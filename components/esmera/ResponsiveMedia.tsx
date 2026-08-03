@@ -1,5 +1,23 @@
+import { Head } from "$fresh/runtime.ts";
 import Image from "apps/website/components/Image.tsx";
 import { Picture, Source } from "apps/website/components/Picture.tsx";
+
+const PAYLOAD_MEDIA_PATH_PREFIX = "/api/media/file/";
+
+/**
+ * Payload serves uploads through /api/media/file/*, including custom domains.
+ * These URLs must stay direct because decoims.com cannot fetch this upstream
+ * and otherwise replaces the working source with a broken optimized srcset.
+ */
+export function isPayloadMediaURL(src: string): boolean {
+  try {
+    const url = new URL(src);
+    return (url.protocol === "https:" || url.protocol === "http:") &&
+      url.pathname.startsWith(PAYLOAD_MEDIA_PATH_PREFIX);
+  } catch {
+    return false;
+  }
+}
 
 export interface EsmeraImageProps {
   src: string;
@@ -24,6 +42,21 @@ export function EsmeraImage(
     decoding = "async",
   }: EsmeraImageProps,
 ) {
+  if (isPayloadMediaURL(src)) {
+    return (
+      <img
+        class={className}
+        src={src}
+        alt={alt}
+        loading={loading}
+        decoding={decoding}
+        width={width}
+        height={height}
+        sizes={sizes}
+      />
+    );
+  }
+
   return (
     <Image
       class={className}
@@ -68,6 +101,61 @@ export function EsmeraPicture({
   fetchPriority = "auto",
 }: EsmeraPictureProps) {
   const mobileAsset = mobileSrc ?? desktopSrc;
+  const usesPayloadMedia = isPayloadMediaURL(desktopSrc) ||
+    isPayloadMediaURL(mobileAsset);
+
+  if (usesPayloadMedia) {
+    return (
+      <>
+        {preload && (
+          <Head>
+            <link
+              rel="preload"
+              as="image"
+              href={mobileAsset}
+              media="(max-width: 767px)"
+              {...{ fetchPriority }}
+            />
+            <link
+              rel="preload"
+              as="image"
+              href={desktopSrc}
+              media="(min-width: 768px)"
+              {...{ fetchPriority }}
+            />
+          </Head>
+        )}
+        <picture class={className}>
+          <source
+            media="(max-width: 767px)"
+            srcSet={mobileAsset}
+            width={mobileWidth}
+            height={mobileHeight}
+            sizes="100vw"
+            {...{ fetchPriority }}
+          />
+          <source
+            media="(min-width: 768px)"
+            srcSet={desktopSrc}
+            width={desktopWidth}
+            height={desktopHeight}
+            sizes="100vw"
+            {...{ fetchPriority }}
+          />
+          <img
+            {...{ fetchPriority }}
+            src={desktopSrc}
+            alt={alt}
+            loading={loading}
+            decoding={decoding}
+            width={desktopWidth}
+            height={desktopHeight}
+          />
+        </picture>
+      </>
+    );
+  }
+
   return (
     <Picture class={className} preload={preload}>
       <Source

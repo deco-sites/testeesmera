@@ -21,6 +21,39 @@ export interface Props {
   panels?: TerritoryPanel[];
 }
 
+const baselineCategoryLinks: Record<string, NavigationLink> = {
+  esculturas: {
+    label: "Explorar esculturas",
+    href: "/colecao/esculturas",
+    external: false,
+  },
+  vasos: {
+    label: "Explorar vasos",
+    href: "/colecao/vasos",
+    external: false,
+  },
+  bandejas: {
+    label: "Explorar bandejas",
+    href: "/colecao/bandejas",
+    external: false,
+  },
+};
+
+function normalizeCategoryKey(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function getPanelDestination(
+  panel: TerritoryPanel,
+): NavigationLink | null {
+  return panel.category ?? panel.cta ??
+    baselineCategoryLinks[normalizeCategoryKey(panel.eyebrow)] ?? null;
+}
+
 export const loader = async (props: Props) => ({
   ...props,
   resolvedHome: await loadResolvedHome(),
@@ -77,7 +110,7 @@ export default function Matter(
     >
       <div class="esv-territory-track">
         {panels.slice(0, 3).map((panel, index) => {
-          const destination = panel.category ?? panel.cta;
+          const destination = getPanelDestination(panel);
           const key = `${panel.title}-${index}`;
 
           return destination

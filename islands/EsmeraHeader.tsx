@@ -41,6 +41,15 @@ export interface Props {
 }
 
 const CART_STORAGE_KEY = "esmera-cart-v2";
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
+
 const emptyProduct = (item: StoredCartItem): EsmeraObject => ({
   id: item.id,
   slug: item.slug,
@@ -70,6 +79,9 @@ const formatBRL = (cents: number) =>
     cents / 100,
   );
 
+const cartItemKey = (item: CartItem) =>
+  `${item.product.id}:${item.variant?.sku ?? "base"}`;
+
 function checkoutHref(base: string, message: string) {
   if (!base) return "";
   try {
@@ -79,6 +91,31 @@ function checkoutHref(base: string, message: string) {
   } catch {
     return "";
   }
+}
+
+function MenuIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
+      <path d="M3 7.5h18M3 16.5h18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.4" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19">
+      <circle cx="10.5" cy="10.5" r="5.75" fill="none" stroke="currentColor" stroke-width="1.4" />
+      <path d="m15 15 4.25 4.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.4" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
+      <path d="M5 5l14 14M19 5 5 19" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.35" />
+    </svg>
+  );
 }
 
 export default function EsmeraHeader(
@@ -96,8 +133,144 @@ export default function EsmeraHeader(
   const [searchState, setSearchState] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
+  const [isScrolled, setIsScrolled] = useState(false);
   const searchInput = useRef<HTMLInputElement>(null);
   const requestRef = useRef<AbortController | null>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const modalRef = useRef<HTMLElement>(null);
+  const lastTriggerRef = useRef<HTMLElement | null>(null);
+  const modalOpen = overlay !== null || selected !== null;
+
+  const closeAll = () => {
+    setOverlay(null);
+    setSelected(null);
+  };
+
+  const openOverlay = (next: Exclude<Overlay, null>, trigger?: HTMLElement) => {
+    if (trigger) lastTriggerRef.current = trigger;
+    setSelected(null);
+    setOverlay(next);
+  };
+
+  const addToCart = (product: EsmeraObject, variant?: EsmeraVariant) => {
+    const key = `${product.id}:${variant?.sku ?? "base"}`;
+    setCart((current) => {
+      const existing = current.find((item) => cartItemKey(item) === key);
+      if (!existing) return [...current, { product, variant, quantity: 1 }];
+      return current.map((item) =>
+        cartItemKey(item) === key
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      );
+    });
+  };
+
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      setIsScrolled((globalThis.scrollY || 0) > 14);
+    };
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    globalThis.addEventListener("scroll", schedule, { passive: true });
+    globalThis.addEventListener("resize", schedule, { passive: true });
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      globalThis.removeEventListener("scroll", schedule);
+      globalThis.removeEventListener("resize", schedule);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!modalOpen) return;
+    const body = document.body;
+    const root = document.documentElement;
+    const scrollY = globalThis.scrollY || 0;
+    const previous = {
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      width: body.style.width,
+      overflow: body.style.overflow,
+    };
+
+    root.classList.add("esv-overlay-active");
+    body.classList.add("esv-overlay-open");
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+    body.style.overflow = "hidden";
+
+    return () => {
+      root.classList.remove("esv-overlay-active");
+      body.classList.remove("esv-overlay-open");
+      body.style.position = previous.position;
+      body.style.top = previous.top;
+      body.style.left = previous.left;
+      body.style.right = previous.right;
+      body.style.width = previous.width;
+      body.style.overflow = previous.overflow;
+      globalThis.scrollTo({ top: scrollY, left: 0, behavior: "auto" });
+      globalThis.setTimeout(() => lastTriggerRef.current?.focus(), 0);
+    };
+  }, [modalOpen]);
+
+  useEffect(() => {
+    if (!modalOpen) return;
+    const dialog = overlay ? panelRef.current : modalRef.current;
+    if (!dialog) return;
+
+    const focusables = () =>
+      Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+        (element) => !element.hasAttribute("disabled") && element.offsetParent !== null,
+      );
+
+    const frame = requestAnimationFrame(() => {
+      const preferred = dialog.querySelector<HTMLElement>("[data-autofocus]");
+      (preferred ?? focusables()[0])?.focus();
+    });
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeAll();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const items = focusables();
+      if (items.length === 0) {
+        event.preventDefault();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    globalThis.addEventListener("keydown", onKeyDown);
+    return () => {
+      cancelAnimationFrame(frame);
+      globalThis.removeEventListener("keydown", onKeyDown);
+    };
+  }, [overlay, selected]);
+
+  useEffect(() => {
+    if (overlay !== "search") return;
+    const frame = requestAnimationFrame(() => searchInput.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [overlay]);
 
   useEffect(() => {
     try {
@@ -162,8 +335,9 @@ export default function EsmeraHeader(
   }, [cart, cartReady]);
 
   useEffect(() => {
-    const normalized = query.trim();
     requestRef.current?.abort();
+    if (overlay !== "search") return;
+    const normalized = query.trim();
     if (normalized.length < 2) {
       setResults([]);
       setSearchState("idle");
@@ -188,18 +362,19 @@ export default function EsmeraHeader(
       } catch {
         if (!controller.signal.aborted) setSearchState("error");
       }
-    }, 250);
+    }, 220);
     return () => {
       globalThis.clearTimeout(timer);
       controller.abort();
     };
-  }, [query]);
+  }, [query, overlay]);
 
   useEffect(() => {
     const view = (event: Event) => {
       const product = (event as CustomEvent<{ product?: EsmeraObject }>).detail
         ?.product;
       if (!product) return;
+      setOverlay(null);
       setSelected(product);
       setSelectedVariant(product.variants.find((variant) => !variant.disabled));
     };
@@ -208,6 +383,7 @@ export default function EsmeraHeader(
         ?.product;
       if (!product) return;
       addToCart(product, product.variants.find((variant) => !variant.disabled));
+      setSelected(null);
       setOverlay("enquiry");
     };
     globalThis.addEventListener("esmera:view-object", view);
@@ -218,31 +394,6 @@ export default function EsmeraHeader(
     };
   }, []);
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setSelected(null);
-        setOverlay(null);
-      }
-    };
-    globalThis.addEventListener("keydown", onKey);
-    return () => globalThis.removeEventListener("keydown", onKey);
-  }, []);
-
-  const addToCart = (product: EsmeraObject, variant?: EsmeraVariant) => {
-    const key = `${product.id}:${variant?.sku ?? "base"}`;
-    setCart((current) => {
-      const existing = current.find((item) =>
-        `${item.product.id}:${item.variant?.sku ?? "base"}` === key
-      );
-      if (!existing) return [...current, { product, variant, quantity: 1 }];
-      return current.map((item) =>
-        `${item.product.id}:${item.variant?.sku ?? "base"}` === key
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      );
-    });
-  };
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
   const subtotal = cart.reduce(
     (total, item) =>
@@ -265,23 +416,32 @@ export default function EsmeraHeader(
     hasInquiry ? "Itens sob consulta serão confirmados pela curadoria." : "",
   ].filter(Boolean).join("\n");
   const sendHref = checkoutHref(whatsappHref, message);
+  const headerSolid = isScrolled || overlay !== null;
+  const overlayTitle = overlay === "menu"
+    ? "Menu"
+    : overlay === "search"
+    ? "Busca"
+    : "Carrinho";
 
   return (
     <>
-      <header class="esv-header">
+      <header class={`esv-header${headerSolid ? " is-scrolled" : ""}`}>
         <button
           class="esv-header-menu esv-header-icon"
           type="button"
           aria-label="Abrir menu"
-          onClick={() => setOverlay("menu")}
+          aria-expanded={overlay === "menu"}
+          onClick={(event) => openOverlay("menu", event.currentTarget)}
         >
-          ☰
+          <MenuIcon />
         </button>
         <nav class="esv-header-nav" aria-label="Navegação principal">
           {navigation.slice(0, 3).map((link) => (
             <a
+              key={link.href}
               href={link.href}
               rel={link.external ? "noopener noreferrer" : undefined}
+              target={link.external ? "_blank" : undefined}
             >
               {link.label}
             </a>
@@ -292,24 +452,23 @@ export default function EsmeraHeader(
         </a>
         <div class="esv-header-actions">
           <button
-            class="esv-header-icon"
+            class="esv-header-icon esv-search-trigger"
             type="button"
             aria-label="Buscar objetos"
-            onClick={() => {
-              setOverlay("search");
-              globalThis.setTimeout(() => searchInput.current?.focus(), 30);
-            }}
+            aria-expanded={overlay === "search"}
+            onClick={(event) => openOverlay("search", event.currentTarget)}
           >
-            ⌕
+            <SearchIcon />
           </button>
           <button
             class="esv-enquiry-link esv-cart-link"
             type="button"
             aria-label={`${enquiryLabel}, ${cartCount} itens`}
-            onClick={() => setOverlay("enquiry")}
+            aria-expanded={overlay === "enquiry"}
+            onClick={(event) => openOverlay("enquiry", event.currentTarget)}
           >
-            {enquiryLabel}
-            {cartCount > 0 && <sup>{cartCount}</sup>}
+            <span>{enquiryLabel}</span>
+            <sup aria-live="polite">{cartCount}</sup>
           </button>
         </div>
       </header>
@@ -318,61 +477,131 @@ export default function EsmeraHeader(
         <div
           class={`esv-header-overlay esv-header-overlay-${overlay}`}
           role="presentation"
-          onClick={() => setOverlay(null)}
+          onClick={closeAll}
         >
           <aside
+            ref={panelRef}
             class={`esv-header-panel esv-header-panel-${overlay}`}
             role="dialog"
             aria-modal="true"
-            aria-label={overlay}
+            aria-labelledby="esv-overlay-title"
             onClick={(event) => event.stopPropagation()}
           >
-            <button
-              class="esv-panel-close"
-              type="button"
-              aria-label="Fechar"
-              onClick={() => setOverlay(null)}
-            >
-              ×
-            </button>
+            <div class="esv-panel-header">
+              <a class="esv-panel-wordmark" href="/" onClick={closeAll}>
+                {logo}
+              </a>
+              <span id="esv-overlay-title" class="esv-sr-only">
+                {overlayTitle}
+              </span>
+              <button
+                class="esv-panel-close"
+                type="button"
+                aria-label={`Fechar ${overlayTitle.toLowerCase()}`}
+                onClick={closeAll}
+                data-autofocus={overlay === "menu" ? "true" : undefined}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
             {overlay === "menu" && (
               <nav class="esv-header-menu-panel esv-menu-v2" aria-label="Menu">
-                <small>Menu</small>
+                <p class="esv-menu-label">Navegação</p>
                 <div class="esv-menu-primary-links">
                   {navigation.map((link, index) => (
-                    <a href={link.href}>
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      rel={link.external ? "noopener noreferrer" : undefined}
+                      target={link.external ? "_blank" : undefined}
+                      onClick={closeAll}
+                    >
                       <span>{link.label}</span>
                       <sup>{String(index + 1).padStart(2, "0")}</sup>
                     </a>
                   ))}
                 </div>
-                <div class="esv-menu-subnav">
-                  {categories.map((link) => (
-                    <a href={link.href}>{link.label}</a>
-                  ))}
+
+                {categories.length > 0 && (
+                  <div class="esv-menu-collection">
+                    <p class="esv-menu-label">Objetos</p>
+                    <div class="esv-menu-subnav">
+                      {categories.map((link) => (
+                        <a
+                          key={link.href}
+                          href={link.href}
+                          rel={link.external ? "noopener noreferrer" : undefined}
+                          target={link.external ? "_blank" : undefined}
+                          onClick={closeAll}
+                        >
+                          {link.label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div class="esv-menu-footer">
+                  <button type="button" onClick={() => setOverlay("search")}>
+                    Buscar objetos
+                  </button>
+                  <button type="button" onClick={() => setOverlay("enquiry")}>
+                    Carrinho <span>{cartCount}</span>
+                  </button>
+                  {whatsappHref && (
+                    <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+                      Atendimento
+                    </a>
+                  )}
                 </div>
               </nav>
             )}
+
             {overlay === "search" && (
-              <div class="esv-header-search">
-                <p class="esv-kicker">Buscar objetos</p>
+              <div class="esv-header-search" role="search">
+                <div class="esv-panel-intro">
+                  <p class="esv-kicker">Busca</p>
+                  <h2>Encontrar um objeto</h2>
+                </div>
                 <label class="esv-sr-only" for="esv-search-input">
                   Buscar por nome, código ou material
                 </label>
-                <input
-                  ref={searchInput}
-                  id="esv-search-input"
-                  value={query}
-                  onInput={(event) => setQuery(event.currentTarget.value)}
-                  autocomplete="off"
-                />
-                {searchState === "loading" && <p role="status">Buscando…</p>}
-                {searchState === "error" && (
-                  <p role="alert">Não foi possível buscar agora.</p>
-                )}
+                <div class="esv-search-field">
+                  <SearchIcon />
+                  <input
+                    ref={searchInput}
+                    id="esv-search-input"
+                    value={query}
+                    onInput={(event) => setQuery(event.currentTarget.value)}
+                    autocomplete="off"
+                    inputmode="search"
+                    placeholder="Nome, código ou material"
+                    data-autofocus="true"
+                  />
+                  {query && (
+                    <button
+                      type="button"
+                      aria-label="Limpar busca"
+                      onClick={() => setQuery("")}
+                    >
+                      Limpar
+                    </button>
+                  )}
+                </div>
+                <div class="esv-search-status" aria-live="polite">
+                  {searchState === "loading" && <p>Buscando…</p>}
+                  {searchState === "error" && (
+                    <p role="alert">Não foi possível buscar agora.</p>
+                  )}
+                  {searchState === "idle" && (
+                    <p>Digite ao menos dois caracteres.</p>
+                  )}
+                </div>
                 <div class="esv-search-results">
                   {results.map((item) => (
                     <button
+                      key={item.id}
                       type="button"
                       onClick={() => {
                         setSelected(item);
@@ -384,110 +613,143 @@ export default function EsmeraHeader(
                     >
                       <img src={item.image} alt="" width="72" height="88" />
                       <span>
-                        <small>{item.material}</small>
+                        <small>{item.material || item.code}</small>
                         <strong>{item.title}</strong>
+                        <em>{item.formattedPrice}</em>
                       </span>
                     </button>
                   ))}
                   {searchState === "ready" && results.length === 0 && (
-                    <p>Nenhum objeto encontrado.</p>
+                    <p class="esv-search-empty">Nenhum objeto encontrado.</p>
                   )}
                 </div>
               </div>
             )}
+
             {overlay === "enquiry" && (
               <div class="esv-enquiry-panel esv-cart-panel">
-                <p class="esv-kicker">Carrinho</p>
-                <h2>Seu carrinho</h2>
+                <div class="esv-panel-intro">
+                  <p class="esv-kicker">Carrinho</p>
+                  <h2>Seleção atual</h2>
+                </div>
                 {cart.length === 0
-                  ? <p class="esv-enquiry-empty">Seu carrinho está vazio.</p>
+                  ? (
+                    <div class="esv-cart-empty">
+                      <p>Seu carrinho está vazio.</p>
+                      <a href="/colecao" onClick={closeAll}>Explorar objetos</a>
+                    </div>
+                  )
                   : (
                     <>
                       <div class="esv-enquiry-list esv-cart-list">
-                        {cart.map((item) => (
-                          <div class="esv-cart-item">
-                            <img
-                              src={item.product.image}
-                              alt=""
-                              width="74"
-                              height="90"
-                            />
-                            <span>
-                              <strong>{item.product.title}</strong>
-                              <small>{item.variant?.label}</small>
-                              <em>
-                                {item.variant?.formattedPrice ??
-                                  item.product.formattedPrice}
-                              </em>
-                            </span>
-                            <div class="esv-cart-item-actions">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setCart((current) =>
-                                    current.map((candidate) =>
-                                      candidate === item
-                                        ? {
-                                          ...candidate,
-                                          quantity: Math.max(
-                                            1,
-                                            candidate.quantity - 1,
-                                          ),
-                                        }
-                                        : candidate
-                                    )
-                                  )}
+                        {cart.map((item) => {
+                          const key = cartItemKey(item);
+                          return (
+                            <div class="esv-cart-item" key={key}>
+                              <a
+                                class="esv-cart-item-media"
+                                href={`/produto/${item.product.slug}`}
+                                onClick={closeAll}
                               >
-                                −
-                              </button>
-                              <span>{item.quantity}</span>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setCart((current) =>
-                                    current.map((candidate) =>
-                                      candidate === item
-                                        ? {
-                                          ...candidate,
-                                          quantity: candidate.quantity + 1,
-                                        }
-                                        : candidate
-                                    )
-                                  )}
-                              >
-                                +
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setCart((current) =>
-                                    current.filter((candidate) =>
-                                      candidate !== item
-                                    )
-                                  )}
-                              >
-                                Remover
-                              </button>
+                                <img
+                                  src={item.product.image}
+                                  alt=""
+                                  width="74"
+                                  height="90"
+                                />
+                              </a>
+                              <span class="esv-cart-item-copy">
+                                <strong>{item.product.title}</strong>
+                                {item.variant?.label && <small>{item.variant.label}</small>}
+                                <em class="esv-cart-item-price">
+                                  {item.variant?.formattedPrice ??
+                                    item.product.formattedPrice}
+                                </em>
+                              </span>
+                              <div class="esv-cart-item-actions">
+                                <div class="esv-cart-quantity" aria-label="Quantidade">
+                                  <button
+                                    type="button"
+                                    aria-label={`Diminuir quantidade de ${item.product.title}`}
+                                    disabled={item.quantity <= 1}
+                                    onClick={() =>
+                                      setCart((current) =>
+                                        current.map((candidate) =>
+                                          cartItemKey(candidate) === key
+                                            ? {
+                                              ...candidate,
+                                              quantity: Math.max(1, candidate.quantity - 1),
+                                            }
+                                            : candidate
+                                        )
+                                      )}
+                                  >
+                                    −
+                                  </button>
+                                  <span>{item.quantity}</span>
+                                  <button
+                                    type="button"
+                                    aria-label={`Aumentar quantidade de ${item.product.title}`}
+                                    onClick={() =>
+                                      setCart((current) =>
+                                        current.map((candidate) =>
+                                          cartItemKey(candidate) === key
+                                            ? {
+                                              ...candidate,
+                                              quantity: candidate.quantity + 1,
+                                            }
+                                            : candidate
+                                        )
+                                      )}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <button
+                                  class="esv-cart-remove"
+                                  type="button"
+                                  onClick={() =>
+                                    setCart((current) =>
+                                      current.filter((candidate) =>
+                                        cartItemKey(candidate) !== key
+                                      )
+                                    )}
+                                >
+                                  Remover
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
-                      {subtotal > 0 && (
-                        <div class="esv-cart-summary">
-                          <span>Subtotal estimado</span>
-                          <strong>{formatBRL(subtotal)}</strong>
-                        </div>
-                      )}
-                      {sendHref && (
-                        <a
-                          class="esv-enquiry-send esv-cart-checkout"
-                          href={sendHref}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Finalizar pelo WhatsApp
-                        </a>
-                      )}
+                      <div class="esv-cart-summary">
+                        {subtotal > 0 && (
+                          <div>
+                            <span>Subtotal estimado</span>
+                            <strong>{formatBRL(subtotal)}</strong>
+                          </div>
+                        )}
+                        <p>
+                          A disponibilidade e os detalhes finais são confirmados pela curadoria.
+                        </p>
+                      </div>
+                      {sendHref
+                        ? (
+                          <a
+                            class="esv-enquiry-send esv-cart-checkout"
+                            href={sendHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Finalizar pelo WhatsApp
+                            <span aria-hidden="true">↗</span>
+                          </a>
+                        )
+                        : (
+                          <p class="esv-cart-channel-unavailable">
+                            Canal de atendimento temporariamente indisponível.
+                          </p>
+                        )}
                     </>
                   )}
               </div>
@@ -500,9 +762,10 @@ export default function EsmeraHeader(
         <div
           class="esv-object-modal-backdrop"
           role="presentation"
-          onClick={() => setSelected(null)}
+          onClick={closeAll}
         >
           <article
+            ref={modalRef}
             class="esv-object-modal"
             role="dialog"
             aria-modal="true"
@@ -513,9 +776,10 @@ export default function EsmeraHeader(
               class="esv-panel-close"
               type="button"
               aria-label="Fechar"
-              onClick={() => setSelected(null)}
+              onClick={closeAll}
+              data-autofocus="true"
             >
-              ×
+              <CloseIcon />
             </button>
             <div class="esv-object-modal-images">
               <img
@@ -542,7 +806,8 @@ export default function EsmeraHeader(
               {selected.variants.filter((variant) => !variant.disabled).length >
                   0 && (
                 <label>
-                  Variação<select
+                  Variação
+                  <select
                     value={selectedVariant?.sku}
                     onChange={(event) =>
                       setSelectedVariant(
@@ -553,7 +818,7 @@ export default function EsmeraHeader(
                   >
                     {selected.variants.filter((variant) => !variant.disabled)
                       .map((variant) => (
-                        <option value={variant.sku}>
+                        <option key={variant.sku} value={variant.sku}>
                           {variant.label} — {variant.formattedPrice}
                         </option>
                       ))}

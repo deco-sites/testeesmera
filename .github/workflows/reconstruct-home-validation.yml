@@ -1,0 +1,46 @@
+name: Reconstruct Home validation
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PAYLOAD_API_URL: https://esmeracms-green.vercel.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Run all gates
+        shell: bash
+        run: |
+          set +e
+          failed=0
+          gate() {
+            echo "::group::$*"
+            "$@"
+            code=$?
+            echo "::endgroup::"
+            if [ "$code" -ne 0 ]; then
+              echo "Gate failed ($code): $*"
+              failed=1
+            fi
+          }
+
+          gate deno task gen
+          gate git diff --exit-code
+          gate deno fmt --check
+          gate deno lint
+          gate deno check dev.ts main.ts
+          gate deno test -A
+          gate deno task validate
+          gate deno task build
+
+          exit "$failed"

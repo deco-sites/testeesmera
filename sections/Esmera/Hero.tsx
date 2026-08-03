@@ -94,6 +94,7 @@ export default function Hero(
     <section
       id="main-content"
       class={`esv-hero is-overlay-${overlay} is-focal-${focalPoint}`}
+      style={{ display: "grid" }}
       aria-labelledby="esv-hero-title"
       data-motion-scene="hero"
     >

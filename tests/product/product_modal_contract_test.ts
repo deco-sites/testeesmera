@@ -100,6 +100,8 @@ Deno.test("cards and Conhecer a peça share the modal and never navigate", async
     'images.length === 1 ? "is-single" : "is-double"',
   );
   assertStringIncludes(modal, 'class="esv-product-zoom"');
+  assertStringIncludes(modal, 'root.style.overflow = "hidden"');
+  assertStringIncludes(modal, "root.style.overflow = previous.rootOverflow");
   assertStringIncludes(css, ".esv-product-modal-gallery.is-single");
   assertStringIncludes(css, ".esv-product-modal-gallery.is-double");
 });

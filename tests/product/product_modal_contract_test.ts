@@ -110,6 +110,10 @@ Deno.test("Matter is a whole-panel category link with stable overlay CSS", async
 
   assertStringIncludes(matter, 'class="esv-territory-panel is-clickable"');
   assertStringIncludes(matter, "panel.category ?? panel.cta");
+  assertStringIncludes(matter, "baselineCategoryLinks");
+  assertStringIncludes(matter, 'href: "/colecao/esculturas"');
+  assertStringIncludes(matter, 'href: "/colecao/vasos"');
+  assertStringIncludes(matter, 'href: "/colecao/bandejas"');
   assertStringIncludes(matter, 'class="esv-territory-link"');
   assertStringIncludes(css, ".esv-territory-media,");
   assertStringIncludes(css, "position: absolute;");

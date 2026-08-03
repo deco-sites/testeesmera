@@ -67,7 +67,10 @@ export default function EsmeraMotion() {
     legacyStaggerSelectors.forEach((selector) => {
       const groups = new Map<Element, HTMLElement[]>();
       document.querySelectorAll<HTMLElement>(selector).forEach((element) => {
-        if (element.matches("[data-motion]") || element.querySelector("[data-motion]")) {
+        if (
+          element.matches("[data-motion]") ||
+          element.querySelector("[data-motion]")
+        ) {
           return;
         }
         const parent = element.parentElement;
@@ -114,14 +117,20 @@ export default function EsmeraMotion() {
       if (!element.classList.contains("is-visible")) observer.observe(element);
     });
 
-    const frame = requestAnimationFrame(() => root.classList.add("esv-motion-ready"));
+    const frame = requestAnimationFrame(() =>
+      root.classList.add("esv-motion-ready")
+    );
 
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
       root.classList.remove("esv-motion-ready");
       elements.forEach((element) => {
-        element.classList.remove("esv-reveal", "esv-reveal-media", "is-visible");
+        element.classList.remove(
+          "esv-reveal",
+          "esv-reveal-media",
+          "is-visible",
+        );
         element.style.removeProperty("--esv-reveal-delay");
       });
     };

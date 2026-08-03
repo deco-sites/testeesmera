@@ -61,9 +61,7 @@ export default function Footer(
               </a>
             )}
           </nav>
-          {source.location && (
-            <span class="esv-kicker">{source.location}</span>
-          )}
+          {source.location && <span class="esv-kicker">{source.location}</span>}
         </div>
       </div>
       {source.whatsappHref && (

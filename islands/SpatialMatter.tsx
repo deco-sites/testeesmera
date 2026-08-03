@@ -37,7 +37,12 @@ export default function SpatialMatter({
       <div class="esv-matter-gallery-track">
         {panels.slice(0, 3).map((panel) => (
           <figure class="esv-matter-gallery-item" key={panel.image}>
-            <img src={panel.image} alt={panel.alt} loading="lazy" decoding="async" />
+            <img
+              src={panel.image}
+              alt={panel.alt}
+              loading="lazy"
+              decoding="async"
+            />
           </figure>
         ))}
       </div>

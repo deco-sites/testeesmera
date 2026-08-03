@@ -39,7 +39,10 @@ function imageField(value: unknown): {
     return { relationship: value as Relationship<PayloadMedia> | undefined };
   }
   if ("image" in value) {
-    const group = value as Exclude<PayloadImageField, Relationship<PayloadMedia>>;
+    const group = value as {
+      image?: Relationship<PayloadMedia>;
+      alt?: string | null;
+    };
     return { relationship: group.image, alt: group.alt };
   }
   return { relationship: value as PayloadMedia };

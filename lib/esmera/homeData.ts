@@ -4,18 +4,20 @@ import {
   getSiteSettings,
   listCategories,
 } from "../payload/loaders.ts";
-import { resolveHome, type ResolvedHome } from "./resolveHome.ts";
+import { type ResolvedHome, resolveHome } from "./resolveHome.ts";
 
 let cached: { expiresAt: number; value: ResolvedHome } | null = null;
 let inFlight: Promise<ResolvedHome> | null = null;
 
 async function fetchResolvedHome(): Promise<ResolvedHome> {
-  const [home, navigation, siteSettings, categories] = await Promise.allSettled([
-    getHome(),
-    getNavigation(),
-    getSiteSettings(),
-    listCategories(),
-  ]);
+  const [home, navigation, siteSettings, categories] = await Promise.allSettled(
+    [
+      getHome(),
+      getNavigation(),
+      getSiteSettings(),
+      listCategories(),
+    ],
+  );
 
   const unavailable = [
     home.status === "rejected" ? "home" : null,

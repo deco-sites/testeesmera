@@ -174,33 +174,31 @@ export function resolveHome({
     : { ...defaultHome.hero };
 
   const cmsManifesto = publishedHome ? toManifesto(publishedHome) : null;
-  const manifesto: ManifestoProps | null = disabled.has("manifesto")
-    ? null
-    : {
-      ...defaultHome.manifesto,
-      eyebrow: present(
-        cmsManifesto?.eyebrow,
-        defaultHome.manifesto.eyebrow ?? "",
-      ),
-      title: present(cmsManifesto?.title, defaultHome.manifesto.title ?? ""),
-      text: present(cmsManifesto?.text, defaultHome.manifesto.text ?? ""),
-      mainImage: present(
-        cmsManifesto?.mainImage,
-        defaultHome.manifesto.mainImage ?? "",
-      ),
-      mainImageAlt: present(
-        cmsManifesto?.mainImageAlt,
-        defaultHome.manifesto.mainImageAlt ?? "",
-      ),
-      secondaryImage: present(
-        cmsManifesto?.secondaryImage,
-        defaultHome.manifesto.secondaryImage ?? "",
-      ),
-      secondaryImageAlt: present(
-        cmsManifesto?.secondaryImageAlt,
-        defaultHome.manifesto.secondaryImageAlt ?? "",
-      ),
-    };
+  const manifesto: ManifestoProps | null = disabled.has("manifesto") ? null : {
+    ...defaultHome.manifesto,
+    eyebrow: present(
+      cmsManifesto?.eyebrow,
+      defaultHome.manifesto.eyebrow ?? "",
+    ),
+    title: present(cmsManifesto?.title, defaultHome.manifesto.title ?? ""),
+    text: present(cmsManifesto?.text, defaultHome.manifesto.text ?? ""),
+    mainImage: present(
+      cmsManifesto?.mainImage,
+      defaultHome.manifesto.mainImage ?? "",
+    ),
+    mainImageAlt: present(
+      cmsManifesto?.mainImageAlt,
+      defaultHome.manifesto.mainImageAlt ?? "",
+    ),
+    secondaryImage: present(
+      cmsManifesto?.secondaryImage,
+      defaultHome.manifesto.secondaryImage ?? "",
+    ),
+    secondaryImageAlt: present(
+      cmsManifesto?.secondaryImageAlt,
+      defaultHome.manifesto.secondaryImageAlt ?? "",
+    ),
+  };
 
   const selectedObjects: SelectedObjectsProps | null = disabled.has(
       "selectedObjects",
@@ -213,13 +211,11 @@ export function resolveHome({
 
   const cmsMatter = publishedHome ? toMatterPanels(publishedHome) : [];
   const baselinePanels = defaultHome.matter.panels ?? [];
-  const matter: MatterProps | null = disabled.has("matter")
-    ? null
-    : {
-      panels: baselinePanels.map((panel, index) =>
-        mergeMatterPanel(panel, cmsMatter[index])
-      ),
-    };
+  const matter: MatterProps | null = disabled.has("matter") ? null : {
+    panels: baselinePanels.map((panel, index) =>
+      mergeMatterPanel(panel, cmsMatter[index])
+    ),
+  };
 
   const signature: SignatureObjectProps[] | null = disabled.has("signature")
     ? null
@@ -242,8 +238,9 @@ export function resolveHome({
   const baselineStages = defaultHome.provenance.stages ?? [];
   const cmsStages = cmsProvenance?.stages ?? [];
   const stageCount = Math.max(baselineStages.length, cmsStages.length);
-  const stages = Array.from({ length: stageCount }, (_, index) =>
-    mergeProvenanceStage(baselineStages[index], cmsStages[index])
+  const stages = Array.from(
+    { length: stageCount },
+    (_, index) => mergeProvenanceStage(baselineStages[index], cmsStages[index]),
   ).filter((stage): stage is ProvenanceStage => Boolean(stage));
   const provenance: ProvenanceProps | null = disabled.has("provenance")
     ? null

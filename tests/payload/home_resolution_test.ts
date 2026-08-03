@@ -69,6 +69,9 @@ Deno.test("grouped Payload image fields produce valid hero slides", () => {
     }],
   } as unknown as PayloadHome;
   const hero = toHero(home, "https://cms.example.com");
-  assertEquals(hero.slides[0].desktopImage, "https://cms.example.com/media/hero.jpg");
+  assertEquals(
+    hero.slides[0].desktopImage,
+    "https://cms.example.com/media/hero.jpg",
+  );
   assertEquals(hero.slides[0].alt, "Alt editorial");
 });

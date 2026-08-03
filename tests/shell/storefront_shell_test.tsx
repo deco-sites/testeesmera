@@ -47,3 +47,11 @@ Deno.test("shell stylesheet matches the interactive markup contract", async () =
   assertStringIncludes(island, 'class="esv-cart-quantity"');
   assertStringIncludes(island, 'class="esv-cart-remove"');
 });
+
+Deno.test("hero preserves grid layout despite the main-content shell selector", async () => {
+  const hero = await Deno.readTextFile("sections/Esmera/Hero.tsx");
+  const carousel = await Deno.readTextFile("islands/HeroCarousel.tsx");
+
+  assertStringIncludes(hero, 'style={{ display: "grid" }}');
+  assertStringIncludes(carousel, 'style={{ display: "grid" }}');
+});

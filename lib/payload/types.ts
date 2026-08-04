@@ -13,6 +13,15 @@ export interface PayloadPaginated<T> {
   nextPage: number | null;
 }
 
+/**
+ * Campos públicos novos ou alterados nestas entidades exigem revisão da
+ * allow-list em backend/src/server/publication/publicRevision.ts.
+ */
+export interface PayloadPublicationMetadata {
+  publicationRevision?: string | null;
+  publicationContractVersion?: string | null;
+}
+
 export interface PayloadMediaSize {
   url?: string | null;
   width?: number | null;
@@ -52,7 +61,7 @@ export interface PayloadCTA {
   kind?: "internal" | "external" | "whatsapp" | null;
 }
 
-export interface PayloadCategory {
+export interface PayloadCategory extends PayloadPublicationMetadata {
   id: string | number;
   title: string;
   slug: string;
@@ -75,7 +84,7 @@ export interface PayloadProductVariant {
   mediaKeys?: Array<{ key?: string | null }> | null;
 }
 
-export interface PayloadProduct {
+export interface PayloadProduct extends PayloadPublicationMetadata {
   id: string | number;
   title: string;
   subtitle?: string | null;
@@ -164,7 +173,7 @@ export interface PayloadSiteSettings {
   _status?: "draft" | "published" | null;
 }
 
-export interface PayloadHome {
+export interface PayloadHome extends PayloadPublicationMetadata {
   heroMode?: "single" | "carousel" | null;
   heroSlides?:
     | Array<{

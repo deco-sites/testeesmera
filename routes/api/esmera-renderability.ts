@@ -12,17 +12,43 @@ import type {
   PayloadHome,
   PayloadPaginated,
   PayloadProduct,
+  PayloadPublicationMetadata,
 } from "../../lib/payload/types.ts";
 
-type ProbeKind = "product" | "category" | "home";
+export type ProbeKind = "product" | "category" | "home";
 
-type ProbeRequest = {
-  kind?: ProbeKind;
+export type StorefrontProbeRequest = {
+  kind: ProbeKind;
   id?: string | number;
   slug?: string;
-  revision?: string;
-  contractVersion?: string;
+  expectedRevision: string;
+  contractVersion: string;
 };
+
+export type StorefrontVerification = {
+  status: "compatible" | "incompatible" | "revision_mismatch" | "unavailable";
+  expectedRevision: string;
+  observedRevision?: string;
+  contractVersion: string;
+  checkedAt: string;
+  publicUrl?: string;
+  issues?: Array<{
+    code: string;
+    path?: string;
+    message: string;
+  }>;
+  compatible: boolean;
+};
+
+type ProbeIssue = NonNullable<StorefrontVerification["issues"]>[number];
+
+type ProbeDependencies = {
+  configuredToken?: string;
+  fetchDocument?: (input: StorefrontProbeRequest) => Promise<unknown>;
+  now?: () => Date;
+};
+
+type LegacyProbeBody = Partial<StorefrontProbeRequest> & { revision?: unknown };
 
 const responseHeaders = {
   "cache-control": "no-store",
@@ -48,23 +74,105 @@ function constantTimeEqual(first: string, second: string): boolean {
   return difference === 0;
 }
 
-function invalidRequest(message: string, status = 400) {
-  return Response.json({
-    ok: false,
-    status: "invalid_request",
-    compatible: false,
-    contractVersion: STOREFRONT_CONTRACT_VERSION,
-    diagnostics: [{
-      id: "probe.invalid_request",
-      severity: "blocker",
-      kind: "probe",
-      message,
-      source: "integration",
-    }],
-  }, { status, headers: responseHeaders });
+function issue(code: string, message: string, path?: string): ProbeIssue {
+  return { code, message, ...(path ? { path } : {}) };
 }
 
-async function fetchDocument(input: ProbeRequest): Promise<unknown> {
+function jsonResponse(
+  body: StorefrontVerification & Record<string, unknown>,
+  status = 200,
+) {
+  const diagnostics = (body.issues || []).map((entry) => ({
+    id: entry.code,
+    severity: "blocker",
+    kind: body.kind,
+    path: entry.path ?? null,
+    message: entry.message,
+    source: entry.code.startsWith("probe.payload") ? "integration" : "contract",
+  }));
+  return Response.json({ ...body, diagnostics }, { status, headers: responseHeaders });
+}
+
+function verification(
+  input: {
+    status: StorefrontVerification["status"];
+    expectedRevision: string;
+    observedRevision?: string;
+    contractVersion: string;
+    checkedAt: string;
+    issues?: ProbeIssue[];
+    kind?: ProbeKind;
+    ok?: boolean;
+  },
+): StorefrontVerification & Record<string, unknown> {
+  return {
+    ok: input.ok ?? input.status !== "unavailable",
+    kind: input.kind,
+    status: input.status,
+    compatible: input.status === "compatible",
+    expectedRevision: input.expectedRevision,
+    ...(input.observedRevision ? { observedRevision: input.observedRevision } : {}),
+    contractVersion: input.contractVersion,
+    checkedAt: input.checkedAt,
+    ...(input.issues?.length ? { issues: input.issues } : {}),
+  };
+}
+
+function invalidRequest(message: string, checkedAt: string, status = 400) {
+  return jsonResponse(verification({
+    status: "incompatible",
+    expectedRevision: "",
+    contractVersion: STOREFRONT_CONTRACT_VERSION,
+    checkedAt,
+    issues: [issue("probe.invalid_request", message)],
+    ok: false,
+  }), status);
+}
+
+function nonEmptyText(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function validIdentifier(value: unknown): value is string | number {
+  return (typeof value === "number" && Number.isFinite(value)) || nonEmptyText(value);
+}
+
+function validateRequest(body: LegacyProbeBody):
+  | { ok: true; input: StorefrontProbeRequest }
+  | { ok: false; message: string } {
+  if ("revision" in body) {
+    return { ok: false, message: "O campo legado revision não é aceito. Use expectedRevision." };
+  }
+  if (!body.kind || !["product", "category", "home"].includes(body.kind)) {
+    return { ok: false, message: "Tipo de documento não reconhecido." };
+  }
+  if (!nonEmptyText(body.expectedRevision)) {
+    return { ok: false, message: "expectedRevision é obrigatório." };
+  }
+  if (!nonEmptyText(body.contractVersion)) {
+    return { ok: false, message: "contractVersion é obrigatório." };
+  }
+  if (
+    (body.kind === "product" || body.kind === "category") &&
+    !validIdentifier(body.id) &&
+    !nonEmptyText(body.slug)
+  ) {
+    return { ok: false, message: `${body.kind === "product" ? "Product" : "Category"} exige id ou slug.` };
+  }
+
+  return {
+    ok: true,
+    input: {
+      kind: body.kind,
+      ...(validIdentifier(body.id) ? { id: body.id } : {}),
+      ...(nonEmptyText(body.slug) ? { slug: body.slug.trim() } : {}),
+      expectedRevision: body.expectedRevision.trim(),
+      contractVersion: body.contractVersion.trim(),
+    },
+  };
+}
+
+async function fetchPublicDocument(input: StorefrontProbeRequest): Promise<unknown> {
   if (input.kind === "home") {
     return await payloadGet<PayloadHome>("globals/home", {
       depth: 2,
@@ -73,12 +181,9 @@ async function fetchDocument(input: ProbeRequest): Promise<unknown> {
     });
   }
 
-  const where = input.id !== undefined && input.id !== null
+  const where = validIdentifier(input.id)
     ? whereEquals("id", input.id)
-    : input.slug?.trim()
-    ? whereEquals("slug", input.slug.trim())
-    : null;
-  if (!where) return null;
+    : whereEquals("slug", input.slug as string);
 
   if (input.kind === "product") {
     const response = await payloadGet<PayloadPaginated<PayloadProduct>>(
@@ -109,112 +214,137 @@ async function fetchDocument(input: ProbeRequest): Promise<unknown> {
   return response.docs[0] ?? null;
 }
 
-export const handler: Handlers = {
-  async POST(request) {
-    const configuredToken = Deno.env.get("ESMERA_RENDERABILITY_TOKEN")?.trim() || "";
-    if (!configuredToken) {
-      return Response.json({
-        ok: false,
-        status: "unavailable",
-        compatible: false,
-        contractVersion: STOREFRONT_CONTRACT_VERSION,
-        diagnostics: [{
-          id: "probe.not_configured",
-          severity: "blocker",
-          kind: "probe",
-          message: "O probe de renderização não está configurado.",
-          source: "integration",
-        }],
-      }, { status: 503, headers: responseHeaders });
-    }
+function publicationRevision(document: unknown): string | undefined {
+  if (!document || typeof document !== "object" || Array.isArray(document)) return undefined;
+  const value = (document as PayloadPublicationMetadata).publicationRevision;
+  return nonEmptyText(value) ? value.trim() : undefined;
+}
 
-    if (!constantTimeEqual(bearerToken(request), configuredToken)) {
-      return invalidRequest("Credencial inválida.", 401);
-    }
+export async function handleStorefrontProbe(
+  request: Request,
+  dependencies: ProbeDependencies = {},
+): Promise<Response> {
+  const checkedAt = (dependencies.now?.() ?? new Date()).toISOString();
+  const configuredToken = dependencies.configuredToken ??
+    Deno.env.get("ESMERA_RENDERABILITY_TOKEN")?.trim() ?? "";
 
-    let input: ProbeRequest;
-    try {
-      input = await request.json() as ProbeRequest;
-    } catch {
-      return invalidRequest("Corpo JSON inválido.");
-    }
+  if (!configuredToken) {
+    return jsonResponse(verification({
+      status: "unavailable",
+      expectedRevision: "",
+      contractVersion: STOREFRONT_CONTRACT_VERSION,
+      checkedAt,
+      issues: [issue("probe.not_configured", "O probe de renderização não está configurado.")],
+      ok: false,
+    }), 503);
+  }
 
-    if (!input.kind || !["product", "category", "home"].includes(input.kind)) {
-      return invalidRequest("Tipo de documento não reconhecido.");
-    }
-    if (
-      input.contractVersion &&
-      !isSupportedStorefrontContractVersion(input.contractVersion)
-    ) {
-      return Response.json({
-        ok: true,
+  if (!constantTimeEqual(bearerToken(request), configuredToken)) {
+    return invalidRequest("Credencial inválida.", checkedAt, 401);
+  }
+
+  let body: LegacyProbeBody;
+  try {
+    body = await request.json() as LegacyProbeBody;
+  } catch {
+    return invalidRequest("Corpo JSON inválido.", checkedAt);
+  }
+
+  const validated = validateRequest(body);
+  if (!validated.ok) return invalidRequest(validated.message, checkedAt);
+  const input = validated.input;
+
+  if (!isSupportedStorefrontContractVersion(input.contractVersion)) {
+    return jsonResponse(verification({
+      status: "incompatible",
+      kind: input.kind,
+      expectedRevision: input.expectedRevision,
+      contractVersion: input.contractVersion,
+      checkedAt,
+      issues: [issue(
+        "probe.contract_version_incompatible",
+        `A versão ${input.contractVersion} não é suportada pela Deco.`,
+      )],
+    }));
+  }
+
+  try {
+    const document = await (dependencies.fetchDocument ?? fetchPublicDocument)(input);
+    if (!document) {
+      return jsonResponse(verification({
         status: "incompatible",
-        compatible: false,
         kind: input.kind,
-        revision: input.revision || null,
-        contractVersion: STOREFRONT_CONTRACT_VERSION,
-        diagnostics: [{
-          id: "probe.contract_version_incompatible",
-          severity: "blocker",
-          kind: input.kind,
-          message: `A versão ${input.contractVersion} não é suportada pela Deco.`,
-          source: "contract",
-        }],
-      }, { headers: responseHeaders });
-    }
-
-    try {
-      const document = await fetchDocument(input);
-      if (!document) {
-        return Response.json({
-          ok: true,
-          status: "incompatible",
-          compatible: false,
-          kind: input.kind,
-          revision: input.revision || null,
-          contractVersion: STOREFRONT_CONTRACT_VERSION,
-          diagnostics: [{
-            id: `probe.${input.kind}.not_found`,
-            severity: "blocker",
-            kind: input.kind,
-            message: "O documento público não foi encontrado pela Deco.",
-            source: "payload",
-          }],
-        }, { headers: responseHeaders });
-      }
-
-      const validation = validatePayloadContract(input.kind, document);
-      return Response.json({
-        ok: true,
-        status: validation.compatible ? "compatible" : "incompatible",
-        compatible: validation.compatible,
-        kind: input.kind,
-        revision: input.revision || null,
-        contractVersion: validation.contractVersion,
-        diagnostics: validation.diagnostics,
-      }, { headers: responseHeaders });
-    } catch (error) {
-      console.error(JSON.stringify({
-        event: "renderability_probe_unavailable",
-        kind: input.kind,
-        errorType: error instanceof Error ? error.name : "unknown",
-        contractVersion: STOREFRONT_CONTRACT_VERSION,
+        expectedRevision: input.expectedRevision,
+        contractVersion: input.contractVersion,
+        checkedAt,
+        issues: [issue(`probe.${input.kind}.not_found`, "O documento público não foi encontrado pela Deco.")],
       }));
-      return Response.json({
-        ok: false,
-        status: "unavailable",
-        compatible: false,
-        kind: input.kind,
-        revision: input.revision || null,
-        contractVersion: STOREFRONT_CONTRACT_VERSION,
-        diagnostics: [{
-          id: "probe.payload_unavailable",
-          severity: "blocker",
-          kind: input.kind,
-          message: "A Deco não conseguiu consultar a fonte pública agora.",
-          source: "integration",
-        }],
-      }, { status: 502, headers: responseHeaders });
     }
+
+    const observedRevision = publicationRevision(document);
+    if (!observedRevision) {
+      return jsonResponse(verification({
+        status: "incompatible",
+        kind: input.kind,
+        expectedRevision: input.expectedRevision,
+        contractVersion: input.contractVersion,
+        checkedAt,
+        issues: [issue("legacy_revision_missing", "O documento público ainda não possui publicationRevision.")],
+      }));
+    }
+
+    const validation = validatePayloadContract(input.kind, document);
+    if (!validation.compatible) {
+      return jsonResponse(verification({
+        status: "incompatible",
+        kind: input.kind,
+        expectedRevision: input.expectedRevision,
+        observedRevision,
+        contractVersion: input.contractVersion,
+        checkedAt,
+        issues: validation.diagnostics.map((entry) => issue(
+          entry.id,
+          entry.message,
+          entry.path || undefined,
+        )),
+      }));
+    }
+
+    const status = observedRevision === input.expectedRevision
+      ? "compatible"
+      : "revision_mismatch";
+    return jsonResponse(verification({
+      status,
+      kind: input.kind,
+      expectedRevision: input.expectedRevision,
+      observedRevision,
+      contractVersion: input.contractVersion,
+      checkedAt,
+      ...(status === "revision_mismatch"
+        ? { issues: [issue("probe.revision_mismatch", "A revisão pública observada difere do snapshot esperado.")] }
+        : {}),
+    }));
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: "renderability_probe_unavailable",
+      kind: input.kind,
+      errorType: error instanceof Error ? error.name : "unknown",
+      contractVersion: STOREFRONT_CONTRACT_VERSION,
+    }));
+    return jsonResponse(verification({
+      status: "unavailable",
+      kind: input.kind,
+      expectedRevision: input.expectedRevision,
+      contractVersion: input.contractVersion,
+      checkedAt,
+      issues: [issue("probe.payload_unavailable", "A Deco não conseguiu consultar a fonte pública agora.")],
+      ok: false,
+    }), 502);
+  }
+}
+
+export const handler: Handlers = {
+  POST(request) {
+    return handleStorefrontProbe(request);
   },
 };

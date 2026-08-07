@@ -1,9 +1,7 @@
-import { Head } from "$fresh/runtime.ts";
+import StorefrontLayout from "../../components/esmera/StorefrontLayout.tsx";
 import StorefrontPageData from "../../loaders/Esmera/StorefrontPageData.ts";
 import { resolveHome } from "../../lib/esmera/resolveHome.ts";
 import { toSEO } from "../../lib/payload/adapters.ts";
-import Footer from "./Footer.tsx";
-import Header from "./Header.tsx";
 import Hero from "./Hero.tsx";
 import Manifesto from "./Manifesto.tsx";
 import Matter from "./Matter.tsx";
@@ -16,10 +14,19 @@ import SignatureObject from "./SignatureObject.tsx";
 export const loader = async () => ({ data: await StorefrontPageData() });
 type Data = Awaited<ReturnType<typeof StorefrontPageData>>;
 
+function homeCanonical(frontendURL?: string | null): string | undefined {
+  if (!frontendURL) return undefined;
+  try {
+    return new URL("/", frontendURL).toString();
+  } catch {
+    return undefined;
+  }
+}
+
 export default function PayloadHome({ data }: { data: Data }) {
   const settings = data.siteSettings;
   const home = data.home;
-  const seo = home ? toSEO(home.seo, settings) : null;
+  const seo = toSEO(home?.seo, settings);
   const resolved = resolveHome({
     home,
     navigation: data.navigation,
@@ -28,19 +35,14 @@ export default function PayloadHome({ data }: { data: Data }) {
   });
 
   return (
-    <>
-      {seo && (
-        <Head>
-          {seo.title && <title>{seo.title}</title>}
-          {seo.description && (
-            <meta name="description" content={seo.description} />
-          )}
-          {seo.noindex && <meta name="robots" content="noindex,nofollow" />}
-          {seo.canonical && <link rel="canonical" href={seo.canonical} />}
-          {seo.image && <meta property="og:image" content={seo.image} />}
-        </Head>
-      )}
-      <Header {...resolved.header} />
+    <StorefrontLayout
+      navigation={data.navigation}
+      settings={settings}
+      categories={data.categories}
+      seo={seo}
+      canonical={homeCanonical(settings?.frontendURL)}
+      headerVariant={resolved.hero ? "over-hero" : "solid"}
+    >
       {resolved.hero && <Hero {...resolved.hero} />}
       {resolved.manifesto && <Manifesto {...resolved.manifesto} />}
       {resolved.selectedObjects && (
@@ -60,7 +62,6 @@ export default function PayloadHome({ data }: { data: Data }) {
       {resolved.privateInvitation && (
         <PrivateInvitation {...resolved.privateInvitation} />
       )}
-      <Footer {...resolved.footer} />
-    </>
+    </StorefrontLayout>
   );
 }

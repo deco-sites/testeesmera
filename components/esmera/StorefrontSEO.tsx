@@ -40,16 +40,17 @@ export default function StorefrontSEO({
       <meta property="og:type" content={ogType} />
       {resolvedCanonical && <meta property="og:url" content={resolvedCanonical} />}
       {image && <meta property="og:image" content={image} />}
-      <meta name="twitter:card" content={image ? "summary_large_image" : "summary"} />
+      <meta
+        name="twitter:card"
+        content={image ? "summary_large_image" : "summary"}
+      />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       {image && <meta name="twitter:image" content={image} />}
       {jsonLd.map((item, index) => (
-        <script
-          key={`jsonld-${index}`}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: safeJSON(item) }}
-        />
+        <script key={`jsonld-${index}`} type="application/ld+json">
+          {safeJSON(item)}
+        </script>
       ))}
     </Head>
   );

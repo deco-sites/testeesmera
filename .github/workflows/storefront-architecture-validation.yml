@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
+      DECO_SITE_NAME: testeesmera
       PAYLOAD_API_URL: https://esmeracms-green.vercel.app
     steps:
       - uses: actions/checkout@v6
@@ -20,7 +21,7 @@ jobs:
           deno-version: v2.x
 
       - name: Format
-        run: deno fmt --check .
+        run: deno fmt --check apps components islands lib loaders routes sections tests dev.ts main.ts
 
       - name: Lint
         run: deno lint

@@ -1,4 +1,4 @@
-import { payloadGet } from "./client.ts";
+import { getPayloadBaseURL, payloadGet } from "./client.ts";
 import {
   emitStorefrontDiagnostic,
   storefrontResult,
@@ -11,6 +11,7 @@ import {
 } from "./contract/validate.ts";
 import { STOREFRONT_CONTRACT_VERSION } from "./contract/version.ts";
 import { toCategory, toEsmeraObject } from "./adapters.ts";
+import { resolvePayloadMedia } from "./media.ts";
 import { whereAnd, whereContains, whereEquals, whereOr } from "./query.ts";
 import type {
   EsmeraObject,
@@ -160,6 +161,21 @@ export interface ProductListInput {
   where?: Record<string, unknown>;
 }
 
+function withCardCover(
+  product: PayloadProduct,
+  item: EsmeraObject,
+): EsmeraObject {
+  const cover = product.gallery?.find((media) => media.role === "cover") ??
+    product.gallery?.[0];
+  const card = resolvePayloadMedia(
+    cover?.image,
+    getPayloadBaseURL(),
+    "card",
+    cover?.alt,
+  );
+  return card ? { ...item, image: card.url, alt: card.alt || item.alt } : item;
+}
+
 export async function listProducts(input: ProductListInput = {}) {
   const response = await payloadGet<PayloadPaginated<PayloadProduct>>(
     "products",
@@ -188,9 +204,10 @@ export async function listProducts(input: ProductListInput = {}) {
 
   return {
     ...response,
-    docs: compatibleProducts.map((product) => toEsmeraObject(product)).filter((
-      item,
-    ): item is EsmeraObject => Boolean(item)),
+    docs: compatibleProducts.map((product) => {
+      const item = toEsmeraObject(product);
+      return item ? withCardCover(product, item) : null;
+    }).filter((item): item is EsmeraObject => Boolean(item)),
   };
 }
 

@@ -1,9 +1,9 @@
 import type { Handlers } from "$fresh/server.ts";
 import { payloadGet } from "../../lib/payload/client.ts";
 import {
+  isSupportedStorefrontContractVersion,
   STOREFRONT_CONTRACT_HEADER,
   STOREFRONT_CONTRACT_VERSION,
-  isSupportedStorefrontContractVersion,
 } from "../../lib/payload/contract/version.ts";
 import { validatePayloadContract } from "../../lib/payload/contract/validate.ts";
 import { whereEquals } from "../../lib/payload/query.ts";
@@ -20,9 +20,21 @@ type ProbeRequest = {
   kind?: ProbeKind;
   id?: string | number;
   slug?: string;
+  expectedRevision?: string;
+  /** Alias legado: o CMS atual envia `expectedRevision`. Mantido para consumidores antigos. */
   revision?: string;
   contractVersion?: string;
 };
+
+/**
+ * O CMS envia `expectedRevision` e exige `expectedRevision` + `checkedAt` de volta.
+ * Resolvemos aceitando o alias legado `revision` quando `expectedRevision` não vier.
+ */
+function resolveExpectedRevision(input: ProbeRequest): string | null {
+  const value = input.expectedRevision ?? input.revision;
+  const trimmed = typeof value === "string" ? value.trim() : "";
+  return trimmed ? trimmed : null;
+}
 
 const responseHeaders = {
   "cache-control": "no-store",
@@ -111,7 +123,8 @@ async function fetchDocument(input: ProbeRequest): Promise<unknown> {
 
 export const handler: Handlers = {
   async POST(request) {
-    const configuredToken = Deno.env.get("ESMERA_RENDERABILITY_TOKEN")?.trim() || "";
+    const configuredToken =
+      Deno.env.get("ESMERA_RENDERABILITY_TOKEN")?.trim() || "";
     if (!configuredToken) {
       return Response.json({
         ok: false,
@@ -139,6 +152,8 @@ export const handler: Handlers = {
       return invalidRequest("Corpo JSON inválido.");
     }
 
+    const expectedRevision = resolveExpectedRevision(input);
+
     if (!input.kind || !["product", "category", "home"].includes(input.kind)) {
       return invalidRequest("Tipo de documento não reconhecido.");
     }
@@ -151,13 +166,16 @@ export const handler: Handlers = {
         status: "incompatible",
         compatible: false,
         kind: input.kind,
-        revision: input.revision || null,
+        expectedRevision,
+        revision: expectedRevision,
+        checkedAt: new Date().toISOString(),
         contractVersion: STOREFRONT_CONTRACT_VERSION,
         diagnostics: [{
           id: "probe.contract_version_incompatible",
           severity: "blocker",
           kind: input.kind,
-          message: `A versão ${input.contractVersion} não é suportada pela Deco.`,
+          message:
+            `A versão ${input.contractVersion} não é suportada pela Deco.`,
           source: "contract",
         }],
       }, { headers: responseHeaders });
@@ -171,7 +189,9 @@ export const handler: Handlers = {
           status: "incompatible",
           compatible: false,
           kind: input.kind,
-          revision: input.revision || null,
+          expectedRevision,
+          revision: expectedRevision,
+          checkedAt: new Date().toISOString(),
           contractVersion: STOREFRONT_CONTRACT_VERSION,
           diagnostics: [{
             id: `probe.${input.kind}.not_found`,
@@ -189,7 +209,9 @@ export const handler: Handlers = {
         status: validation.compatible ? "compatible" : "incompatible",
         compatible: validation.compatible,
         kind: input.kind,
-        revision: input.revision || null,
+        expectedRevision,
+        revision: expectedRevision,
+        checkedAt: new Date().toISOString(),
         contractVersion: validation.contractVersion,
         diagnostics: validation.diagnostics,
       }, { headers: responseHeaders });
@@ -205,7 +227,9 @@ export const handler: Handlers = {
         status: "unavailable",
         compatible: false,
         kind: input.kind,
-        revision: input.revision || null,
+        expectedRevision,
+        revision: expectedRevision,
+        checkedAt: new Date().toISOString(),
         contractVersion: STOREFRONT_CONTRACT_VERSION,
         diagnostics: [{
           id: "probe.payload_unavailable",

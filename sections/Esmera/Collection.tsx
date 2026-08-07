@@ -1,6 +1,10 @@
-import ObjectCard from "../../components/esmera/ObjectCard.tsx";
-import type { EsmeraObject } from "../../lib/payload/types.ts";
 import Arrow from "../../components/esmera/Arrow.tsx";
+import CollectionExplorer from "../../islands/CollectionExplorer.tsx";
+import type {
+  CatalogFilter,
+  CollectionSort,
+} from "../../lib/payload/catalog.ts";
+import type { EsmeraObject } from "../../lib/payload/types.ts";
 
 export interface Props {
   eyebrow?: string;
@@ -8,17 +12,21 @@ export interface Props {
   /** @format textarea */
   text?: string;
   products?: EsmeraObject[];
+  totalDocs?: number;
+  hasNextPage?: boolean;
+  endpoint?: string;
   ctaLabel?: string;
   ctaHref?: string;
   emptyStateTitle?: string;
   emptyStateCopy?: string;
   filters?: {
-    visible: Array<"category" | "material" | "availability" | "sort">;
+    visible: CatalogFilter[];
     categories: Array<{ title: string; slug: string }>;
+    q: string;
     category: string;
     material: string;
     availability: string;
-    sort: string;
+    sort: CollectionSort;
   };
   pagination?: { page: number; totalPages: number; baseHref: string };
 }
@@ -35,6 +43,9 @@ export default function Collection({
   title = "",
   text = "",
   products = [],
+  totalDocs = products.length,
+  hasNextPage = false,
+  endpoint = "/api/esmera-collection",
   ctaLabel = "",
   ctaHref = "",
   emptyStateTitle = "Nenhum objeto publicado no momento.",
@@ -42,81 +53,57 @@ export default function Collection({
   filters,
   pagination,
 }: Props) {
+  const collectionFilters = filters ?? {
+    visible: ["category", "material", "availability", "sort"] as CatalogFilter[],
+    categories: [],
+    q: "",
+    category: "",
+    material: "",
+    availability: "",
+    sort: "editorial" as CollectionSort,
+  };
+
   return (
     <section
       id="catalog"
-      class="esv-collection esv-section"
+      class="esv-collection esv-collection-v2-section esv-section"
       aria-labelledby={title ? "esv-collection-title" : undefined}
       aria-label={title ? undefined : "Coleção"}
     >
-      {(eyebrow || title || text) && (
-        <div class="esv-shell esv-rule-top esv-shelf-head">
-          {eyebrow && <p class="esv-kicker">{eyebrow}</p>}
-          {title && <h2 id="esv-collection-title">{title}</h2>}
-          {text && <p>{text}</p>}
-        </div>
-      )}
+      <header class="esv-shell esv-collection-v2-hero">
+        <nav aria-label="Navegação estrutural">
+          <a href="/">Início</a>
+          <span aria-hidden="true">/</span>
+          <a href="/colecao">Coleções</a>
+          {title && <span aria-hidden="true">/</span>}
+          {title && <span aria-current="page">{title}</span>}
+        </nav>
+        {eyebrow && <p class="esv-kicker">{eyebrow}</p>}
+        {title && <h1 id="esv-collection-title">{title}</h1>}
+        {text && <p class="esv-collection-v2-intro">{text}</p>}
+      </header>
 
-      {filters && filters.visible.length > 0 && (
-        <form class="esv-shell esv-rule-top" method="get">
-          {filters.visible.includes("category") && (
-            <label>
-              Categoria
-              <select name="category" value={filters.category}>
-                <option value="">Todas</option>
-                {filters.categories.map((category) => (
-                  <option key={category.slug} value={category.slug}>
-                    {category.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          {filters.visible.includes("material") && (
-            <label>
-              Matéria
-              <input name="material" value={filters.material} maxlength={80} />
-            </label>
-          )}
-          {filters.visible.includes("availability") && (
-            <label>
-              Disponibilidade
-              <select name="availability" value={filters.availability}>
-                <option value="">Todas</option>
-                <option value="available">Disponível</option>
-                <option value="unique">Peça única</option>
-                <option value="limited">Edição limitada</option>
-                <option value="made_to_order">Sob encomenda</option>
-                <option value="archive">Arquivo</option>
-              </select>
-            </label>
-          )}
-          {filters.visible.includes("sort") && (
-            <label>
-              Ordenar
-              <select name="sort" value={filters.sort}>
-                <option value="title">Nome</option>
-                <option value="basePriceCents">Menor preço</option>
-                <option value="-basePriceCents">Maior preço</option>
-              </select>
-            </label>
-          )}
-          <button type="submit">Aplicar</button>
-        </form>
-      )}
-
-      {products.length > 0
-        ? (
-          <div class="esv-shell esv-product-shelf" role="list">
-            {products.map((item) => <ObjectCard key={item.id} item={item} />)}
-          </div>
-        )
-        : (
-          <div class="esv-shell" role="status">
-            <p>{emptyStateTitle}</p>
-            {emptyStateCopy && <p>{emptyStateCopy}</p>}
-          </div>
-        )}
+      <div class="esv-shell">
+        <CollectionExplorer
+          initialItems={products}
+          initialTotalDocs={totalDocs}
+          initialPage={pagination?.page ?? 1}
+          initialTotalPages={pagination?.totalPages ?? 1}
+          initialHasNextPage={hasNextPage}
+          endpoint={endpoint}
+          visibleFilters={collectionFilters.visible}
+          categories={collectionFilters.categories}
+          initial={{
+            q: collectionFilters.q,
+            category: collectionFilters.category,
+            material: collectionFilters.material,
+            availability: collectionFilters.availability,
+            sort: collectionFilters.sort,
+          }}
+          emptyStateTitle={emptyStateTitle}
+          emptyStateCopy={emptyStateCopy}
+        />
+      </div>
 
       {ctaLabel && ctaHref && (
         <div class="esv-shell esv-collection-end">
@@ -125,16 +112,20 @@ export default function Collection({
           </a>
         </div>
       )}
+
       {pagination && pagination.totalPages > 1 && (
-        <nav class="esv-shell esv-collection-end" aria-label="Paginação">
+        <nav
+          class="esv-shell esv-collection-v2-pagination"
+          aria-label="Paginação da coleção"
+        >
           {pagination.page > 1 && (
-            <a href={pageHref(pagination.baseHref, pagination.page - 1)}>
+            <a rel="prev" href={pageHref(pagination.baseHref, pagination.page - 1)}>
               Página anterior
             </a>
           )}
           <span>Página {pagination.page} de {pagination.totalPages}</span>
           {pagination.page < pagination.totalPages && (
-            <a href={pageHref(pagination.baseHref, pagination.page + 1)}>
+            <a rel="next" href={pageHref(pagination.baseHref, pagination.page + 1)}>
               Próxima página
             </a>
           )}

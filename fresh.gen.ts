@@ -3,13 +3,17 @@
 // This file is automatically updated during development when running `dev.ts`.
 
 import * as $_app from "./routes/_app.tsx";
+import * as $api_esmera_collection from "./routes/api/esmera-collection.ts";
 import * as $api_esmera_renderability from "./routes/api/esmera-renderability.ts";
 import * as $api_esmera_search from "./routes/api/esmera-search.ts";
 import * as $colecao_slug_ from "./routes/colecao/[slug].tsx";
 import * as $colecao_index from "./routes/colecao/index.tsx";
 import * as $contato from "./routes/contato.tsx";
+import * as $pagina_slug_ from "./routes/pagina/[slug].tsx";
 import * as $produto_slug_ from "./routes/produto/[slug].tsx";
 import * as $sobre from "./routes/sobre.tsx";
+import * as $CollectionExplorer from "./islands/CollectionExplorer.tsx";
+import * as $DynamicMenu from "./islands/DynamicMenu.tsx";
 import * as $EsmeraHeader from "./islands/EsmeraHeader.tsx";
 import * as $EsmeraMotion from "./islands/EsmeraMotion.tsx";
 import * as $EsmeraScrollScenes from "./islands/EsmeraScrollScenes.tsx";
@@ -22,15 +26,19 @@ import type { Manifest } from "$fresh/server.ts";
 const manifest = {
   routes: {
     "./routes/_app.tsx": $_app,
+    "./routes/api/esmera-collection.ts": $api_esmera_collection,
     "./routes/api/esmera-renderability.ts": $api_esmera_renderability,
     "./routes/api/esmera-search.ts": $api_esmera_search,
     "./routes/colecao/[slug].tsx": $colecao_slug_,
     "./routes/colecao/index.tsx": $colecao_index,
     "./routes/contato.tsx": $contato,
+    "./routes/pagina/[slug].tsx": $pagina_slug_,
     "./routes/produto/[slug].tsx": $produto_slug_,
     "./routes/sobre.tsx": $sobre,
   },
   islands: {
+    "./islands/CollectionExplorer.tsx": $CollectionExplorer,
+    "./islands/DynamicMenu.tsx": $DynamicMenu,
     "./islands/EsmeraHeader.tsx": $EsmeraHeader,
     "./islands/EsmeraMotion.tsx": $EsmeraMotion,
     "./islands/EsmeraScrollScenes.tsx": $EsmeraScrollScenes,

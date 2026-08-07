@@ -42,7 +42,7 @@
   },
   "tasks": {
     "start": "deno run -A --unstable-http --env https://deco.cx/run -- deno task dev",
-    "gen": "deno run -A dev.ts build",
+    "gen": "DECO_SITE_NAME=testeesmera deno run -A dev.ts build",
     "play": "USE_LOCAL_STORAGE_ONLY=true deno task start",
     "component": "deno eval 'import \"deco/scripts/component.ts\"'",
     "release": "deno eval 'import \"deco/scripts/release.ts\"'",
@@ -52,7 +52,7 @@
     "uninstall": "deno eval 'import \"deco/scripts/apps/uninstall.ts\"'",
     "bundle": "deno run -A jsr:@deco/deco/scripts/bundle site",
     "cache_clean": "rm deno.lock; deno cache -r main.ts",
-    "build": "deno run -A dev.ts build",
+    "build": "DECO_SITE_NAME=testeesmera deno run -A dev.ts build",
     "preview": "deno run -A main.ts",
     "dev": "deno run -A --env --unstable-kv --unstable-hmr dev.ts",
     "reload": "deno cache -r https://deco.cx/run",

@@ -13,7 +13,7 @@
     "@std/crypto": "jsr:@std/crypto@1.0.0-rc.1",
     "@std/datetime": "jsr:@std/datetime@^0.224.0",
     "@std/encoding": "jsr:@std/encoding@^1.0.0-rc.1",
-    "@std/flags": "jsr:@std/flags@^0.224.0",
+    "@std/flags": "jsr:@std/flags@^0.224.3",
     "@std/fmt": "jsr:@std/fmt@^0.225.3",
     "@std/fs": "jsr:@std/fs@^0.229.1",
     "@std/http": "jsr:@std/http@^1.0.0",
@@ -35,9 +35,6 @@
     "deco/": "https://cdn.jsdelivr.net/gh/deco-cx/deco@1.197.0/",
     "apps/": "https://cdn.jsdelivr.net/gh/deco-cx/apps@0.150.0/",
     "@preact/signals": "https://esm.sh/*@preact/signals@1.2.2",
-    "@preact/signals-core": "https://esm.sh/*@preact/signals-core@1.5.1",
-    "daisyui": "npm:daisyui@4.4.19",
-    "@deco/htmx": "https://cdn.jsdelivr.net/gh/deco-cx/apps@0.150.0/htmx/mod.ts",
     "https://esm.sh/*preact-render-to-string@6.3.1": "npm:preact-render-to-string@6.4.2",
     "@deco/deco": "jsr:@deco/deco@1.197.0",
     "@deco/dev": "jsr:@deco/dev@1.197.0"
@@ -69,7 +66,8 @@
     "README.md",
     "_fresh",
     "**/_fresh/*",
-    ".deco/**"
+    ".deco/**",
+    ".github/**"
   ],
   "lint": {
     "rules": {

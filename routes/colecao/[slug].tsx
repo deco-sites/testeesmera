@@ -3,6 +3,7 @@ import StorefrontLayout from "../../components/esmera/StorefrontLayout.tsx";
 import {
   buildCatalogQuery,
   type CatalogFilter,
+  hasCollectionRefinements,
   normalizeVisibleFilters,
 } from "../../lib/payload/catalog.ts";
 import {
@@ -26,9 +27,13 @@ interface Data {
   seo: SEOModel;
   visibleFilters: CatalogFilter[];
   query: ReturnType<typeof buildCatalogQuery>;
+  totalDocs: number;
   totalPages: number;
+  hasNextPage: boolean;
   baseHref: string;
+  slug: string;
 }
+
 export const handler: Handlers<Data> = {
   async GET(req, ctx) {
     const [category, chrome, collectionPage] = await Promise.all([
@@ -36,57 +41,74 @@ export const handler: Handlers<Data> = {
       getPageChrome(),
       getCollectionPage(),
     ]);
+    const url = new URL(req.url);
     if (!category) {
       return ctx.render({
         category: null,
         products: [],
         chrome,
-        seo: { title: "", description: "", noindex: true },
+        seo: { title: "Categoria não encontrada", description: "", noindex: true },
         visibleFilters: [],
-        query: buildCatalogQuery(new URL(req.url), [], []),
+        query: buildCatalogQuery(url, [], []),
+        totalDocs: 0,
         totalPages: 0,
-        baseHref: new URL(req.url).pathname,
+        hasNextPage: false,
+        baseHref: url.pathname,
+        slug: ctx.params.slug,
       }, { status: 404 });
     }
     const visibleFilters = normalizeVisibleFilters(
       collectionPage?.visibleFilters,
     ).filter((filter) => filter !== "category");
-    const url = new URL(req.url);
     const query = buildCatalogQuery(url, visibleFilters, chrome.categories);
     const products = await listProductsByCategory(category.id, {
-      limit: 12,
+      limit: 24,
       page: query.page,
-      sort: query.sort,
+      sort: query.payloadSort,
       where: query.where,
     });
+    const categorySEO = {
+      ...category.seo,
+      title: category.seo.title || category.title,
+      description: category.seo.description || category.description,
+    };
     return ctx.render({
       category,
       products: products.docs,
       chrome,
       seo: {
-        ...category.seo,
-        title: category.seo.title || category.title,
-        description: category.seo.description || category.description,
+        ...categorySEO,
+        canonical: categorySEO.canonical || `${url.origin}${url.pathname}`,
+        noindex: categorySEO.noindex || hasCollectionRefinements(query),
       },
       visibleFilters,
       query,
+      totalDocs: products.totalDocs,
       totalPages: products.totalPages,
-      baseHref: `${url.pathname}?${url.searchParams}`,
+      hasNextPage: products.hasNextPage,
+      baseHref: `${url.pathname}${url.search}`,
+      slug: ctx.params.slug,
     });
   },
 };
+
 export default function CategoryRoute({ data }: PageProps<Data>) {
   return (
     <StorefrontLayout {...data.chrome} seo={data.seo}>
       {data.category
         ? (
           <Collection
+            eyebrow="Coleção"
             title={data.category.title}
             text={data.category.description}
             products={data.products}
+            totalDocs={data.totalDocs}
+            hasNextPage={data.hasNextPage}
+            endpoint={`/api/esmera-collection?slug=${encodeURIComponent(data.slug)}`}
             filters={{
               visible: data.visibleFilters,
               categories: [],
+              q: data.query.q,
               category: "",
               material: data.query.material,
               availability: data.query.availability,

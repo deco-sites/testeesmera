@@ -1,9 +1,11 @@
 import { asset, Head } from "$fresh/runtime.ts";
+import type { NavigationNode } from "../../lib/payload/navigation.ts";
 import type { NavigationLink } from "../../lib/payload/types.ts";
 import {
   loadResolvedHome,
   type ResolvedHome,
 } from "../../lib/esmera/homeData.ts";
+import DynamicMenu from "../../islands/DynamicMenu.tsx";
 import EsmeraHeader from "../../islands/EsmeraHeader.tsx";
 import EsmeraMotion from "../../islands/EsmeraMotion.tsx";
 import EsmeraScrollScenes from "../../islands/EsmeraScrollScenes.tsx";
@@ -14,7 +16,9 @@ export interface Props {
   enquiryLabel?: string;
   navigation?: NavigationLink[];
   categories?: NavigationLink[];
+  menu?: NavigationNode[];
   whatsappHref?: string;
+  instagramHref?: string;
 }
 
 export const loader = async (props: Props) => ({
@@ -33,6 +37,7 @@ export default function Header(
     categories = [],
     whatsappHref = "",
   } = source;
+  const menu = props.menu ?? [];
 
   return (
     <>
@@ -64,6 +69,7 @@ export default function Header(
           rel="stylesheet"
           href={asset("/esmera-matter-interaction.css")}
         />
+        <link rel="stylesheet" href={asset("/esmera-catalog-v2.css")} />
         <meta name="theme-color" content="#111210" />
       </Head>
       <a class="esv-skip" href="#main-content">Pular para o conteúdo</a>
@@ -74,6 +80,13 @@ export default function Header(
         categories={categories}
         whatsappHref={whatsappHref}
       />
+      {menu.length > 0 && (
+        <DynamicMenu
+          items={menu}
+          whatsappHref={whatsappHref}
+          instagramHref={props.instagramHref}
+        />
+      )}
       <ProductModal />
       <EsmeraMotion />
       <EsmeraScrollScenes />

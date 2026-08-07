@@ -1,10 +1,15 @@
 import { Head } from "$fresh/runtime.ts";
 import type { ComponentChildren } from "preact";
 import {
+  sanitizePublicHref,
   toCategoryNavigation,
   toFooter,
   toNavigation,
 } from "../../lib/payload/adapters.ts";
+import {
+  buildNavigationTree,
+  type StorefrontCategory,
+} from "../../lib/payload/navigation.ts";
 import type {
   PayloadNavigation,
   PayloadSiteSettings,
@@ -17,7 +22,7 @@ export interface Props {
   children: ComponentChildren;
   navigation: PayloadNavigation | null;
   settings: PayloadSiteSettings | null;
-  categories: Array<{ title: string; slug: string }>;
+  categories: StorefrontCategory[];
   seo?: SEOModel;
 }
 
@@ -28,13 +33,20 @@ export default function StorefrontLayout(
   const categoryLinks = [
     ...(navigation ? toCategoryNavigation(navigation) : []),
     ...categories.map((category) => ({
-      label: category.title,
-      href: `/colecao/${category.slug}`,
-      external: false,
+      label: category.label,
+      href: category.href || `/colecao/${category.slug}`,
+      external: category.external,
     })),
   ].filter((link, index, links) =>
     links.findIndex((candidate) => candidate.href === link.href) === index
   );
+  const menu = buildNavigationTree(categories, navigation);
+  const instagram = settings?.officialChannels?.find((channel) =>
+    channel.active !== false && channel.kind === "instagram"
+  );
+  const instagramHref = sanitizePublicHref(instagram?.url) ||
+    sanitizePublicHref(instagram?.value);
+
   return (
     <>
       <Head>
@@ -50,7 +62,9 @@ export default function StorefrontLayout(
         logo={settings?.siteName ?? ""}
         navigation={navigation ? toNavigation(navigation) : []}
         categories={categoryLinks}
+        menu={menu}
         whatsappHref={footer?.whatsappHref}
+        instagramHref={instagramHref}
       />
       <main id="main-content">{children}</main>
       {footer && <Footer siteName={settings?.siteName ?? ""} {...footer} />}

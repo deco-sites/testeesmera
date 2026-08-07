@@ -21,7 +21,8 @@ Deno.test("applies only CMS-enabled catalogue filters", () => {
     [{ id: "cat-1", title: "Mesas", slug: "mesas" }],
   );
   assertEquals(query.page, 2);
-  assertEquals(query.sort, "-basePriceCents");
+  assertEquals(query.sort, "price-desc");
+  assertEquals(query.payloadSort, "-basePriceCents,title");
   assertEquals(query.where, {
     and: [
       { categories: { contains: "cat-1" } },
@@ -40,6 +41,7 @@ Deno.test("ignores unsupported query values", () => {
     [],
   );
   assertEquals(query.page, 1);
-  assertEquals(query.sort, "title");
+  assertEquals(query.sort, "editorial");
+  assertEquals(query.payloadSort, "title");
   assertEquals(query.where, undefined);
 });

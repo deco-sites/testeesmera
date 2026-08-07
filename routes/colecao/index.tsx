@@ -3,6 +3,7 @@ import StorefrontLayout from "../../components/esmera/StorefrontLayout.tsx";
 import {
   buildCatalogQuery,
   type CatalogFilter,
+  hasCollectionRefinements,
   normalizeVisibleFilters,
 } from "../../lib/payload/catalog.ts";
 import { lexicalToText } from "../../lib/payload/richText.ts";
@@ -23,9 +24,12 @@ interface Data {
   seo: SEOModel;
   visibleFilters: CatalogFilter[];
   query: ReturnType<typeof buildCatalogQuery>;
+  totalDocs: number;
   totalPages: number;
+  hasNextPage: boolean;
   baseHref: string;
 }
+
 export const handler: Handlers<Data> = {
   async GET(req, ctx) {
     const [page, chrome] = await Promise.all([
@@ -36,31 +40,42 @@ export const handler: Handlers<Data> = {
     const url = new URL(req.url);
     const query = buildCatalogQuery(url, visibleFilters, chrome.categories);
     const products = await listProducts({
-      limit: 12,
+      limit: 24,
       page: query.page,
-      sort: query.sort,
+      sort: query.payloadSort,
       where: query.where,
     });
+    const seo = toSEO(page?.seo, chrome.settings);
     return ctx.render({
       products: products.docs,
       page,
       chrome,
-      seo: toSEO(page?.seo, chrome.settings),
+      seo: {
+        ...seo,
+        canonical: seo.canonical || `${url.origin}${url.pathname}`,
+        noindex: seo.noindex || hasCollectionRefinements(query),
+      },
       visibleFilters,
       query,
+      totalDocs: products.totalDocs,
       totalPages: products.totalPages,
-      baseHref: `${url.pathname}?${url.searchParams}`,
+      hasNextPage: products.hasNextPage,
+      baseHref: `${url.pathname}${url.search}`,
     });
   },
 };
+
 export default function CollectionRoute({ data }: PageProps<Data>) {
   return (
     <StorefrontLayout {...data.chrome} seo={data.seo}>
       <Collection
         eyebrow={data.page?.eyebrow ?? ""}
-        title={data.page?.title ?? ""}
+        title={data.page?.title ?? "Coleções"}
         text={lexicalToText(data.page?.introduction)}
         products={data.products}
+        totalDocs={data.totalDocs}
+        hasNextPage={data.hasNextPage}
+        endpoint="/api/esmera-collection"
         ctaLabel={data.page?.callToAction?.label ?? ""}
         ctaHref={data.page?.callToAction?.href ?? ""}
         emptyStateTitle={data.page?.emptyStateTitle ?? undefined}
@@ -68,6 +83,7 @@ export default function CollectionRoute({ data }: PageProps<Data>) {
         filters={{
           visible: data.visibleFilters,
           categories: data.chrome.categories,
+          q: data.query.q,
           category: data.query.category,
           material: data.query.material,
           availability: data.query.availability,

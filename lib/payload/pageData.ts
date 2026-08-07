@@ -1,10 +1,11 @@
-import { getNavigation, getSiteSettings, listCategories } from "./loaders.ts";
+import { getNavigation, getSiteSettings } from "./loaders.ts";
+import { listStorefrontCategories } from "./navigationLoader.ts";
 
 export async function getPageChrome() {
   const [navigation, settings, categories] = await Promise.allSettled([
     getNavigation(),
     getSiteSettings(),
-    listCategories(),
+    listStorefrontCategories(),
   ]);
   return {
     navigation: navigation.status === "fulfilled" ? navigation.value : null,

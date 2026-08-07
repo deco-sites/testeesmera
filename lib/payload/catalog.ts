@@ -1,6 +1,17 @@
-import { whereAnd, whereContains, whereEquals } from "./query.ts";
+import {
+  whereAnd,
+  whereContains,
+  whereEquals,
+  whereOr,
+} from "./query.ts";
 
 export type CatalogFilter = "category" | "material" | "availability" | "sort";
+export type CollectionSort =
+  | "editorial"
+  | "newest"
+  | "price-asc"
+  | "price-desc"
+  | "name";
 
 const availabilityValues = new Set([
   "unique",
@@ -9,14 +20,28 @@ const availabilityValues = new Set([
   "limited",
   "archive",
 ]);
-const sortValues = new Set([
-  "title",
-  "-title",
-  "basePriceCents",
-  "-basePriceCents",
-  "createdAt",
-  "-createdAt",
-]);
+
+const sortAliases: Record<string, CollectionSort> = {
+  editorial: "editorial",
+  newest: "newest",
+  "price-asc": "price-asc",
+  "price-desc": "price-desc",
+  name: "name",
+  title: "name",
+  "-title": "name",
+  basePriceCents: "price-asc",
+  "-basePriceCents": "price-desc",
+  createdAt: "newest",
+  "-createdAt": "newest",
+};
+
+const payloadSortByCollectionSort: Record<CollectionSort, string> = {
+  editorial: "title",
+  newest: "-createdAt",
+  "price-asc": "basePriceCents,title",
+  "price-desc": "-basePriceCents,title",
+  name: "title",
+};
 
 export function normalizeVisibleFilters(
   filters?: Array<string | { value?: string | null }> | null,
@@ -40,11 +65,17 @@ export interface CatalogCategory {
 
 export interface CatalogQueryState {
   page: number;
-  sort: string;
+  q: string;
+  sort: CollectionSort;
+  payloadSort: string;
   category: string;
   material: string;
   availability: string;
   where?: Record<string, unknown>;
+}
+
+export function normalizeCollectionSort(value?: string | null): CollectionSort {
+  return sortAliases[value?.trim() ?? ""] ?? "editorial";
 }
 
 export function buildCatalogQuery(
@@ -54,6 +85,7 @@ export function buildCatalogQuery(
   fixedCategoryID?: string,
 ): CatalogQueryState {
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
+  const q = url.searchParams.get("q")?.trim().slice(0, 80) ?? "";
   const material = visibleFilters.includes("material")
     ? (url.searchParams.get("material")?.trim().slice(0, 80) ?? "")
     : "";
@@ -71,20 +103,31 @@ export function buildCatalogQuery(
     : "";
   const categoryID = fixedCategoryID ||
     categories.find((item) => item.slug === category)?.id;
-  const sortCandidate = visibleFilters.includes("sort")
-    ? (url.searchParams.get("sort")?.trim() ?? "")
-    : "";
-  const sort = sortValues.has(sortCandidate) ? sortCandidate : "title";
+  const sort = visibleFilters.includes("sort")
+    ? normalizeCollectionSort(url.searchParams.get("sort"))
+    : "editorial";
+  const searchCondition = q.length >= 2
+    ? whereOr(
+      whereContains("title", q),
+      whereContains("subtitle", q),
+      whereContains("code", q),
+      whereContains("material", q),
+      whereContains("searchTerms.term", q),
+    )
+    : null;
   const conditions = [
     categoryID ? whereContains("categories", categoryID) : null,
     material ? whereContains("material", material) : null,
     availability ? whereEquals("availability", availability) : null,
+    searchCondition,
   ].filter((condition): condition is Record<string, unknown> =>
     Boolean(condition)
   );
   return {
     page,
+    q,
     sort,
+    payloadSort: payloadSortByCollectionSort[sort],
     category,
     material,
     availability,
@@ -94,4 +137,11 @@ export function buildCatalogQuery(
       ? conditions[0]
       : whereAnd(...conditions),
   };
+}
+
+export function hasCollectionRefinements(query: CatalogQueryState): boolean {
+  return query.page > 1 || query.q.length >= 2 || Boolean(
+    query.category || query.material || query.availability ||
+      query.sort !== "editorial",
+  );
 }

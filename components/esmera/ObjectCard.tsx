@@ -23,6 +23,7 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
       <div class="esv-product-media-wrap">
         <figure
           class="esv-product-media"
+          style={{ aspectRatio: "4 / 5" }}
           data-motion="media-reveal"
           data-motion-order={String(motionOrder)}
         >

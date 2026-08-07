@@ -14,6 +14,7 @@ export interface Props {
   editorialText?: string;
   dimensions?: string;
   showFullDetails?: boolean;
+  headingLevel?: "h1" | "h2";
 }
 
 export const loader = async (props: Props) => ({
@@ -28,6 +29,7 @@ function SignatureObjectView({
     "Uma peça recebe tempo editorial para que forma, matéria e construção possam ser percebidas antes da decisão de aquisição.",
   dimensions = "",
   showFullDetails = false,
+  headingLevel = "h2",
 }: Props) {
   if (!product) return null;
   const availability = getAvailabilityMeta(product.availability);
@@ -37,8 +39,11 @@ function SignatureObjectView({
     product.edition ? { label: "Edição", value: product.edition } : null,
     { label: "Estado", value: availability.label },
   ].filter((item): item is { label: string; value: string } => Boolean(item));
+  const editorialCover = product.gallery.find((item) => item.role === "cover");
+  const primaryImage = editorialCover?.url || product.image;
+  const primaryAlt = editorialCover?.alt || product.alt;
   const additionalGallery = product.gallery.filter((item) =>
-    item.url !== product.image && item.url !== product.detailImage
+    item.url !== primaryImage && item.url !== product.detailImage
   );
 
   return (
@@ -57,8 +62,8 @@ function SignatureObjectView({
         >
           <EsmeraImage
             class="esv-signature-image-primary"
-            src={product.image}
-            alt={product.alt}
+            src={primaryImage}
+            alt={primaryAlt}
             loading="lazy"
             decoding="async"
             width={1400}
@@ -85,7 +90,9 @@ function SignatureObjectView({
           data-motion-order="2"
         >
           <p class="esv-kicker">{eyebrow}</p>
-          <h2 id="esv-signature-title">{product.title}</h2>
+          {headingLevel === "h1"
+            ? <h1 id="esv-signature-title">{product.title}</h1>
+            : <h2 id="esv-signature-title">{product.title}</h2>}
           {product.subtitle && (
             <p class="esv-signature-subtitle">{product.subtitle}</p>
           )}

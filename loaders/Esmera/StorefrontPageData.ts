@@ -1,34 +1,26 @@
-import {
-  getHome,
-  getNavigation,
-  getSiteSettings,
-  listCategories,
-} from "../../lib/payload/loaders.ts";
+import { getHome } from "../../lib/payload/loaders.ts";
+import { getPageChrome } from "../../lib/payload/pageData.ts";
 
 export const cache = { maxAge: 300 };
 export const cacheKey = () => "storefront-page-data";
 
 export default async function StorefrontPageData() {
-  const [home, navigation, siteSettings, categories] = await Promise.allSettled(
-    [
-      getHome(),
-      getNavigation(),
-      getSiteSettings(),
-      listCategories(),
-    ],
-  );
+  const [home, chrome] = await Promise.allSettled([
+    getHome(),
+    getPageChrome(),
+  ]);
+  const resolvedChrome = chrome.status === "fulfilled"
+    ? chrome.value
+    : { navigation: null, settings: null, categories: [], unavailable: ["shell"] };
+
   return {
     home: home.status === "fulfilled" ? home.value : null,
-    navigation: navigation.status === "fulfilled" ? navigation.value : null,
-    siteSettings: siteSettings.status === "fulfilled"
-      ? siteSettings.value
-      : null,
-    categories: categories.status === "fulfilled" ? categories.value : [],
+    navigation: resolvedChrome.navigation,
+    siteSettings: resolvedChrome.settings,
+    categories: resolvedChrome.categories,
     unavailable: [
       home.status === "rejected" ? "home" : null,
-      navigation.status === "rejected" ? "navigation" : null,
-      siteSettings.status === "rejected" ? "site-settings" : null,
-      categories.status === "rejected" ? "categories" : null,
+      ...resolvedChrome.unavailable,
     ].filter((value): value is string => Boolean(value)),
   };
 }

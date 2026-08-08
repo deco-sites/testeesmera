@@ -20,7 +20,7 @@ export default function BuyButton(
     <button
       type="button"
       class="esv-card-cta"
-      aria-label={`Comprar ${productTitle}`}
+      aria-label={`Adquirir ${productTitle}`}
       onClick={(event) =>
         globalThis.dispatchEvent(
           new CustomEvent("esmera:buy", {
@@ -33,7 +33,7 @@ export default function BuyButton(
           }),
         )}
     >
-      COMPRAR
+      Adquirir
     </button>
   );
 }

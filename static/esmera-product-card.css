@@ -1,30 +1,32 @@
 /*
- * Card de produto Esméra — fonte única do card final (plano §12/§13).
- * Carregado por último para sobrepor regras legadas de .esv-product-card.
- * Sem novas fontes: herda Inter do shell.
+ * Card de produto Esméra — registro quiet luxury (peça de pedra, ticket alto).
+ * Fonte única do card final; carregado por último para sobrepor regras legadas.
+ * Sem nova fonte (herda Inter). Menos "card de loja", mais peça de galeria:
+ * sem caixa, tipografia leve, verde da marca só no gesto de compra.
  */
 :root {
-  --product-card-bg: #f7f4ee;
-  --product-card-border: rgba(28, 26, 23, 0.1);
-  --product-card-text: #1c1a17;
-  --product-card-muted: #5a554e;
+  --product-card-ground: #efebe1;
+  --product-card-text: #26241f;
+  --product-card-muted: #8a8478;
+  --product-card-line: rgba(38, 36, 31, 0.14);
   --product-card-cta: #1f4438;
-  --product-card-cta-hover: #18372d;
-  --product-card-radius: 14px;
+  --product-card-cta-hover: #173328;
+  --product-card-bone: #f4f1ea;
 }
 
+/* ---- Container: sem caixa, a peça respira sobre o fundo ---- */
 .esv-product-card {
   display: flex;
   flex-direction: column;
-  background: var(--product-card-bg);
+  background: transparent;
   color: var(--product-card-text);
-  border: 1px solid var(--product-card-border);
-  border-radius: var(--product-card-radius);
-  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
   isolation: isolate;
 }
 
-/* ---- Mídia 3:4 ---- */
+/* ---- Mídia 3:4, editorial ---- */
 .esv-product-card .esv-product-media-wrap {
   position: relative;
 }
@@ -34,7 +36,7 @@
   margin: 0;
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  background: #ece7dd;
+  background: #e7e2d6;
 }
 
 .esv-product-card .esv-product-media img {
@@ -44,19 +46,26 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 1.2s cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+
+.esv-product-card:hover .esv-product-image-primary,
+.esv-product-card:hover .esv-product-image-static,
+.esv-product-card:focus-within .esv-product-image-static {
+  transform: scale(1.045);
 }
 
 .esv-product-card .esv-product-image-detail {
   opacity: 0;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.6s ease, transform 1.2s cubic-bezier(0.2, 0.6, 0.2, 1);
 }
 
 .esv-product-card.has-detail:hover .esv-product-image-detail,
 .esv-product-card.has-detail:focus-within .esv-product-image-detail {
   opacity: 1;
+  transform: scale(1.045);
 }
 
-/* Botão invisível que abre o modal, cobrindo a mídia. */
 .esv-product-card .esv-product-modal-trigger-media {
   position: absolute;
   inset: 0;
@@ -68,25 +77,25 @@
   z-index: 1;
 }
 
-/* ---- Overlay de status ---- */
+/* ---- Raridade: flag discreta, sem pill pesado ---- */
 .esv-card-status {
   position: absolute;
-  top: 14px;
-  left: 14px;
+  top: 16px;
+  left: 16px;
   z-index: 2;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  max-width: calc(100% - 84px);
-  padding: 7px 14px;
-  border-radius: 999px;
-  background: rgba(247, 244, 238, 0.92);
-  backdrop-filter: blur(6px);
+  gap: 7px;
+  max-width: calc(100% - 76px);
+  padding: 6px 11px;
+  border: 1px solid var(--product-card-line);
+  background: rgba(244, 241, 234, 0.82);
   color: var(--product-card-text);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  line-height: 1.2;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  line-height: 1.25;
+  text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -95,13 +104,13 @@
 .esv-card-status::before {
   content: "";
   flex: none;
-  width: 7px;
-  height: 7px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: var(--product-card-cta);
 }
 
-/* ---- Wishlist ---- */
+/* ---- Wishlist minimalista ---- */
 .esv-card-wishlist {
   position: absolute;
   top: 12px;
@@ -110,54 +119,58 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: rgba(247, 244, 238, 0.92);
-  backdrop-filter: blur(6px);
+  background: rgba(244, 241, 234, 0.62);
   color: var(--product-card-text);
   cursor: pointer;
-  transition: transform 0.18s ease, background 0.18s ease;
+  transition: background 0.25s ease, color 0.25s ease;
 }
 
 .esv-card-wishlist:hover {
-  transform: scale(1.06);
+  background: rgba(244, 241, 234, 0.95);
 }
 
 .esv-card-wishlist[data-favorited="true"] {
-  color: #9c2b2b;
+  color: var(--product-card-cta);
 }
 
 .esv-card-wishlist:focus-visible {
-  outline: 2px solid var(--product-card-cta);
+  outline: 1px solid var(--product-card-cta);
   outline-offset: 2px;
+}
+
+.esv-card-wishlist svg {
+  width: 19px;
+  height: 19px;
 }
 
 /* ---- Conteúdo ---- */
 .esv-product-card-copy {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 20px;
+  padding: 20px 2px 0;
 }
 
 .esv-card-eyebrow {
   margin: 0;
   color: var(--product-card-muted);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  line-height: 1.35;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  line-height: 1.4;
+  text-transform: uppercase;
 }
 
 .esv-card-title {
-  margin: 0;
-  font-size: clamp(1.55rem, 1.2rem + 1.4vw, 1.9rem);
-  font-weight: 500;
-  line-height: 1.12;
-  letter-spacing: -0.01em;
+  margin: 9px 0 0;
+  font-size: clamp(1.32rem, 1rem + 0.7vw, 1.56rem);
+  font-weight: 400;
+  line-height: 1.14;
+  letter-spacing: -0.006em;
 }
 
 .esv-card-title .esv-product-modal-trigger-title {
@@ -177,95 +190,105 @@
 }
 
 .esv-card-title .esv-product-modal-trigger-title:focus-visible {
-  outline: 2px solid var(--product-card-cta);
+  outline: 1px solid var(--product-card-cta);
   outline-offset: 3px;
 }
 
 .esv-card-specs {
-  margin: 0;
+  margin: 10px 0 0;
   color: var(--product-card-muted);
-  font-size: 14px;
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
   line-height: 1.4;
 }
 
 .esv-card-divider {
-  margin: 8px 0;
+  width: 34px;
+  height: 1px;
+  margin: 18px 0;
   border: 0;
-  border-top: 1px solid var(--product-card-border);
+  background: var(--product-card-line);
 }
 
 .esv-card-pricing {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .esv-card-price {
-  font-size: 1.6rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  font-size: 1.12rem;
+  font-weight: 400;
+  letter-spacing: -0.005em;
 }
 
 .esv-card-installment {
   margin: 0;
   color: var(--product-card-muted);
-  font-size: 13px;
+  font-size: 12px;
+  letter-spacing: 0.01em;
   line-height: 1.4;
 }
 
 .esv-card-installment strong {
   color: var(--product-card-text);
-  font-weight: 600;
+  font-weight: 500;
 }
 
-/* ---- CTA COMPRAR ---- */
+/* ---- CTA fantasma → preenche verde no hover ---- */
 .esv-card-cta {
-  margin-top: 12px;
+  margin-top: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 52px;
+  min-height: 50px;
   padding: 0 20px;
-  border: 0;
-  border-radius: 10px;
-  background: var(--product-card-cta);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  border: 1px solid rgba(38, 36, 31, 0.42);
+  border-radius: 0;
+  background: transparent;
+  color: var(--product-card-text);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.18s ease;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 .esv-card-cta:hover {
-  background: var(--product-card-cta-hover);
+  background: var(--product-card-cta);
+  border-color: var(--product-card-cta);
+  color: var(--product-card-bone);
 }
 
 .esv-card-cta:focus-visible {
-  outline: 2px solid var(--product-card-cta);
+  outline: 1px solid var(--product-card-cta);
   outline-offset: 2px;
 }
 
-/* CTA alternativo (peças sob consulta) mantém o island compacto existente. */
+/* CTA alternativo (peças sob consulta) — mantém o island compacto existente. */
 .esv-product-card .esv-product-actions.is-compact {
-  margin-top: 12px;
+  margin-top: 18px;
 }
 
 /* ---- Responsivo (plano §18) ---- */
 @media (max-width: 429px) {
   .esv-product-card-copy {
-    padding: 16px;
-  }
-  .esv-card-title {
-    font-size: clamp(1.5rem, 1.3rem + 2vw, 1.75rem);
+    padding: 18px 0 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .esv-product-card .esv-product-image-detail,
-  .esv-card-wishlist {
+  .esv-product-card .esv-product-media img,
+  .esv-card-wishlist,
+  .esv-card-cta {
     transition: none;
+  }
+  .esv-product-card:hover .esv-product-image-primary,
+  .esv-product-card:hover .esv-product-image-static,
+  .esv-product-card.has-detail:hover .esv-product-image-detail {
+    transform: none;
   }
 }
 
@@ -285,12 +308,12 @@
   gap: 12px;
   margin: 0;
   padding: 14px 18px;
-  border-radius: 12px;
   background: var(--product-card-text);
-  color: #f7f4ee;
-  font-size: 14px;
-  line-height: 1.4;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  color: var(--product-card-bone);
+  font-size: 13.5px;
+  letter-spacing: 0.01em;
+  line-height: 1.45;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
 }
 
 .esv-buy-flow-msg.is-success {
@@ -298,7 +321,7 @@
 }
 
 .esv-buy-flow-msg.is-sold {
-  background: #7a2b24;
+  background: #6f2a22;
 }
 
 .esv-buy-flow-msg.is-error {
@@ -319,6 +342,6 @@
 }
 
 .esv-buy-flow-close:focus-visible {
-  outline: 2px solid #fff;
+  outline: 1px solid #fff;
   outline-offset: 2px;
 }

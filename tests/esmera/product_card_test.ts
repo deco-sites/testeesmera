@@ -68,6 +68,21 @@ Deno.test("título cai para o nome quando não há pieceType", () => {
   assertEquals(vm.title, "Gelato");
 });
 
+Deno.test("sem tipo de peça, eyebrow mostra só o material (não repete o nome)", () => {
+  const vm = toProductCardViewModel(
+    product({
+      pieceType: null,
+      identity: {
+        name: "Bandeja Grande Bege Bahia",
+        pieceType: null,
+        material: "Bege Bahia Natural",
+      },
+    }),
+  );
+  assertEquals(vm.title, "Bandeja Grande Bege Bahia");
+  assertEquals(vm.eyebrow, "BEGE BAHIA NATURAL");
+});
+
 Deno.test("sem peso mostra apenas a dimensão", () => {
   const vm = toProductCardViewModel(
     product({

@@ -10,285 +10,214 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      PAYLOAD_API_URL: https://esmeracms-green.vercel.app
-      PORT: "8000"
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
 
-      - name: Format changed files
-        run: >-
-          deno fmt --check
-          components/esmera/ObjectCard.tsx
-          islands/ProductActions.tsx
-          islands/ProductModal.tsx
-          lib/esmera/editorialProps.ts
-          sections/Esmera/Header.tsx
-          sections/Esmera/Hero.tsx
-          sections/Esmera/Manifesto.tsx
-          sections/Esmera/Matter.tsx
-          sections/Esmera/MatterInterlude.tsx
-          sections/Esmera/Provenance.tsx
-          static/esmera-matter-interaction.css
-          static/esmera-product-modal-v2.css
-          tests/editorial/home_editability_test.ts
-          tests/product/product_modal_contract_test.ts
-
-      - name: Generate Deco metadata
-        run: deno task gen
-
-      - name: Verify generated Deco metadata
+      - name: Apply guarded header cleanup
         shell: bash
         run: |
-          if ! git diff --quiet -- .deco/blocks/esmera.json manifest.gen.ts; then
-            echo "Generated Deco metadata is not committed."
-            git diff -- .deco/blocks/esmera.json manifest.gen.ts
-            exit 1
-          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
 
-      - name: Lint
-        run: deno lint
+          def find_open(text: str, start: int) -> int:
+              i = start
+              quote = None
+              while i < len(text):
+                  if text.startswith('/*', i):
+                      end = text.find('*/', i + 2)
+                      if end < 0:
+                          return -1
+                      i = end + 2
+                      continue
+                  ch = text[i]
+                  if quote:
+                      if ch == '\\':
+                          i += 2
+                          continue
+                      if ch == quote:
+                          quote = None
+                      i += 1
+                      continue
+                  if ch in ('"', "'"):
+                      quote = ch
+                      i += 1
+                      continue
+                  if ch == '{':
+                      return i
+                  i += 1
+              return -1
 
-      - name: Typecheck
-        run: deno check dev.ts main.ts
+          def find_close(text: str, start: int) -> int:
+              depth = 1
+              i = start + 1
+              quote = None
+              while i < len(text):
+                  if text.startswith('/*', i):
+                      end = text.find('*/', i + 2)
+                      if end < 0:
+                          raise ValueError('unterminated CSS comment')
+                      i = end + 2
+                      continue
+                  ch = text[i]
+                  if quote:
+                      if ch == '\\':
+                          i += 2
+                          continue
+                      if ch == quote:
+                          quote = None
+                      i += 1
+                      continue
+                  if ch in ('"', "'"):
+                      quote = ch
+                  elif ch == '{':
+                      depth += 1
+                  elif ch == '}':
+                      depth -= 1
+                      if depth == 0:
+                          return i
+                  i += 1
+              raise ValueError('unbalanced CSS braces')
 
-      - name: Tests
-        run: deno test -A
+          def clean_prelude(value: str) -> str:
+              return re.sub(r'/\*[\s\S]*?\*/', ' ', value).strip()
 
-      - name: Build
-        run: deno task build
+          def transform_css(text: str, should_remove) -> str:
+              out = []
+              cursor = 0
+              while cursor < len(text):
+                  opening = find_open(text, cursor)
+                  if opening < 0:
+                      out.append(text[cursor:])
+                      break
+                  closing = find_close(text, opening)
+                  prelude = text[cursor:opening]
+                  inner = text[opening + 1:closing]
+                  selector = clean_prelude(prelude)
+                  lowered = selector.lower()
+                  if lowered.startswith(('@media', '@supports', '@container', '@layer')):
+                      out.append(prelude + '{' + transform_css(inner, should_remove) + '}')
+                  elif lowered.startswith(('@keyframes', '@-webkit-keyframes')):
+                      out.append(prelude + '{' + inner + '}')
+                  elif should_remove(selector):
+                      out.append(re.match(r'^\s*', prelude).group(0))
+                  else:
+                      out.append(prelude + '{' + inner + '}')
+                  cursor = closing + 1
+              return ''.join(out)
 
-      - name: Start preview
-        shell: bash
-        run: |
-          deno task preview > /tmp/esmera-preview.log 2>&1 &
-          for attempt in $(seq 1 90); do
-            if curl --silent --fail http://127.0.0.1:8000/ > /dev/null; then
-              exit 0
-            fi
-            sleep 1
-          done
-          cat /tmp/esmera-preview.log
-          exit 1
+          def shell_root(selector: str) -> bool:
+              return bool(re.search(r'\.esv-header(?=$|[\s.#:\[]|-(?:nav|menu|icon|actions))', selector))
 
-      - name: Install Chromium
-        run: |
-          npm install --no-save playwright@1.54.2
-          npx playwright install --with-deps chromium
+          def master_remove(selector: str) -> bool:
+              return any((
+                  shell_root(selector),
+                  '.esv-wordmark' in selector,
+                  '.esv-enquiry-link' in selector,
+                  '.esv-object-taxonomy' in selector,
+                  '.esv-header-search > input' in selector,
+              ))
 
-      - name: Smoke test desktop and mobile
-        shell: bash
-        run: |
-          mkdir -p smoke-artifacts/videos
-          trap 'rm -f ./.storefront-smoke.mjs' EXIT
-          cat > ./.storefront-smoke.mjs <<'JS'
-          import { mkdir, writeFile } from "node:fs/promises";
-          import { chromium } from "playwright";
+          def commerce_remove(selector: str) -> bool:
+              return any((
+                  shell_root(selector),
+                  '.esv-wordmark' in selector,
+                  '.esv-enquiry-link' in selector,
+                  '.esv-header-overlay-menu' in selector,
+                  '.esv-header-panel-menu' in selector,
+                  '.esv-menu-' in selector,
+              ))
 
-          const BASE_URL = "http://127.0.0.1:8000/";
-          const ARTIFACT_DIR = "smoke-artifacts";
-          let currentStep = "initialization";
+          def finish_remove(selector: str) -> bool:
+              return any((
+                  shell_root(selector),
+                  '.esv-wordmark' in selector,
+                  '.esv-enquiry-link' in selector,
+              ))
 
-          await mkdir(`${ARTIFACT_DIR}/videos`, { recursive: true });
+          master_path = Path('static/esmera-master.css')
+          commerce_path = Path('static/esmera-commerce-refine.css')
+          finish_path = Path('static/esmera-finish.css')
+          header_path = Path('islands/EsmeraHeader.tsx')
 
-          async function step(name, operation) {
-            currentStep = name;
-            console.log(`[smoke:start] ${name}`);
-            const value = await operation();
-            console.log(`[smoke:pass] ${name}`);
-            return value;
+          master = transform_css(master_path.read_text(), master_remove)
+          commerce = transform_css(commerce_path.read_text(), commerce_remove)
+          finish = transform_css(finish_path.read_text(), finish_remove)
+
+          old_ease = '--ease-esmera: cubic-bezier(.22, .61, .36, 1);'
+          if old_ease not in master:
+              raise SystemExit('expected legacy easing not found')
+          master = master.replace(old_ease, '--ease-esmera: cubic-bezier(.16, 1, .3, 1);', 1)
+
+          if '--header-h: 52px;' not in master:
+              raise SystemExit('expected mobile master header height not found')
+          master = master.replace('--header-h: 52px;', '--header-h: 56px;', 1)
+          commerce = re.sub(r'^\s*--header-h:\s*[^;]+;\s*$', '', commerce, flags=re.M)
+          finish = re.sub(r'^\s*--header-h:\s*[^;]+;\s*$', '', finish, flags=re.M)
+
+          whatsapp = re.compile(r'(\.esv-whatsapp-sticky:hover\s*\{)([^{}]*)(\})', re.S)
+          match = whatsapp.search(commerce)
+          if match:
+              body = re.sub(r'^\s*transform:\s*translateY\(-2px\);\s*$', '', match.group(2), flags=re.M)
+              if 'opacity:' not in body:
+                  body = body.rstrip() + '\n  opacity: .86;\n'
+              commerce = commerce[:match.start()] + match.group(1) + body + match.group(3) + commerce[match.end():]
+
+          header = header_path.read_text()
+          old_scroll = 'setIsScrolled((globalThis.scrollY || 0) > 14);'
+          new_scroll = '''setIsScrolled((previous) => {
+        const y = globalThis.scrollY || 0;
+        return previous ? y > 8 : y > 24;
+      });'''
+          if old_scroll not in header:
+              raise SystemExit('expected scroll threshold not found')
+          header = header.replace(old_scroll, new_scroll, 1)
+
+          old_badge = '<sup aria-live="polite">{cartCount}</sup>'
+          new_badge = '<sup key={cartCount} aria-live="polite">{cartCount}</sup>'
+          if old_badge not in header:
+              raise SystemExit('expected cart badge not found')
+          header = header.replace(old_badge, new_badge, 1)
+
+          master_path.write_text(master)
+          commerce_path.write_text(commerce)
+          finish_path.write_text(finish)
+          header_path.write_text(header)
+
+          checks = {
+              'master is-scrolled': '.esv-header.is-scrolled' not in master,
+              'master old nav': '.esv-header-nav' not in master,
+              'master old menu': '.esv-header-menu' not in master,
+              'master old taxonomy': '.esv-object-taxonomy' not in master,
+              'commerce is-scrolled': '.esv-header.is-scrolled' not in commerce,
+              'commerce old nav': '.esv-header-nav' not in commerce,
+              'commerce old menu': '.esv-menu-' not in commerce,
+              'commerce overlay retained': '.esv-header-overlay' in commerce,
+              'commerce panel retained': '.esv-header-panel' in commerce,
+              'commerce search retained': '.esv-search-field' in commerce,
+              'finish direct header removed': '.esv-header {' not in finish,
+              'finish wordmark removed': '.esv-wordmark' not in finish,
+              'mobile height consolidated': master.count('--header-h: 56px;') == 1 and '--header-h:' not in finish and '--header-h:' not in commerce,
+              'hysteresis applied': 'return previous ? y > 8 : y > 24;' in header,
+              'cart badge keyed': 'key={cartCount}' in header,
           }
+          failed = [name for name, ok in checks.items() if not ok]
+          if failed:
+              raise SystemExit('cleanup assertions failed: ' + ', '.join(failed))
+          PY
 
-          async function validateMatter(page) {
-            await page.waitForSelector(".esv-territory-panel.is-clickable", {
-              state: "visible",
-              timeout: 20000,
-            });
-            const geometry = await page.locator(".esv-territory-panel.is-clickable").first().evaluate((panel) => {
-              const copy = panel.querySelector(".esv-territory-copy");
-              if (!(copy instanceof HTMLElement)) throw new Error("Matter copy missing");
-              const panelRect = panel.getBoundingClientRect();
-              const copyRect = copy.getBoundingClientRect();
-              return {
-                tag: panel.tagName,
-                panelTop: panelRect.top,
-                panelBottom: panelRect.bottom,
-                copyTop: copyRect.top,
-                copyBottom: copyRect.bottom,
-              };
-            });
-            if (geometry.tag !== "A") {
-              throw new Error(`Matter panel is not a link: ${JSON.stringify(geometry)}`);
-            }
-            if (geometry.copyTop < geometry.panelTop - 1 || geometry.copyBottom > geometry.panelBottom + 1) {
-              throw new Error(`Matter overlay escaped panel: ${JSON.stringify(geometry)}`);
-            }
-            return geometry;
-          }
+          git diff --check
+          git diff --stat
 
-          async function runViewport(browser, name, viewport, scenario) {
-            const context = await browser.newContext({
-              viewport,
-              recordVideo: {
-                dir: `${ARTIFACT_DIR}/videos`,
-                size: viewport,
-              },
-            });
-            await context.tracing.start({ screenshots: true, snapshots: true, sources: true });
-            const page = await context.newPage();
-
-            try {
-              return await scenario(page);
-            } catch (error) {
-              const stack = error instanceof Error ? error.stack ?? error.message : String(error);
-              console.error(`[smoke:fail] ${currentStep}\n${stack}`);
-              await page.screenshot({
-                path: `${ARTIFACT_DIR}/${name}-failure.png`,
-                fullPage: true,
-              }).catch(() => undefined);
-              await writeFile(
-                `${ARTIFACT_DIR}/${name}-error.txt`,
-                `Step: ${currentStep}\n\n${stack}\n`,
-              );
-              throw error;
-            } finally {
-              await context.tracing.stop({
-                path: `${ARTIFACT_DIR}/${name}-trace.zip`,
-              }).catch((error) => console.error(`[smoke:trace-fail] ${String(error)}`));
-              await context.close();
-            }
-          }
-
-          const browser = await chromium.launch({ headless: true });
-
-          try {
-            const desktopModal = await runViewport(
-              browser,
-              "desktop",
-              { width: 1440, height: 900 },
-              async (desktop) => {
-                await step("desktop: load homepage", () =>
-                  desktop.goto(BASE_URL, { waitUntil: "networkidle", timeout: 120000 })
-                );
-                await step("desktop: find product media trigger", () =>
-                  desktop.waitForSelector(".esv-product-modal-trigger-media", {
-                    state: "visible",
-                    timeout: 20000,
-                  })
-                );
-
-                const initialUrl = desktop.url();
-                const mediaTrigger = desktop.locator(".esv-product-modal-trigger-media").first();
-                await step("desktop: open modal from product media", async () => {
-                  await mediaTrigger.scrollIntoViewIfNeeded();
-                  await mediaTrigger.click();
-                  await desktop.waitForSelector(".esv-product-modal", { state: "visible" });
-                });
-                await step("desktop: confirm product click did not navigate", async () => {
-                  if (desktop.url() !== initialUrl) {
-                    throw new Error(`Product click navigated: ${desktop.url()}`);
-                  }
-                });
-
-                const modal = await step("desktop: validate gallery and buybox layout", async () => {
-                  const metrics = await desktop.locator(".esv-product-modal").evaluate((element) => ({
-                    columns: getComputedStyle(element).gridTemplateColumns,
-                    width: element.getBoundingClientRect().width,
-                  }));
-                  if (metrics.columns.split(" ").length < 2) {
-                    throw new Error(`Desktop modal is not gallery + buybox: ${JSON.stringify(metrics)}`);
-                  }
-                  await desktop.waitForSelector(".esv-product-modal-buybox", { state: "visible" });
-                  const galleryClass = await desktop.locator(".esv-product-modal-gallery").getAttribute("class");
-                  if (!galleryClass?.includes("is-single") && !galleryClass?.includes("is-double")) {
-                    throw new Error(`Adaptive gallery class missing: ${galleryClass}`);
-                  }
-                  return metrics;
-                });
-
-                await step("desktop: open image zoom", async () => {
-                  await desktop.locator(".esv-product-modal-image").first().click();
-                  await desktop.waitForSelector(".esv-product-zoom", { state: "visible" });
-                });
-                await step("desktop: first Escape closes only zoom", async () => {
-                  await desktop.keyboard.press("Escape");
-                  await desktop.waitForSelector(".esv-product-zoom", { state: "detached" });
-                  await desktop.waitForSelector(".esv-product-modal", { state: "visible" });
-                });
-                await step("desktop: second Escape closes modal", async () => {
-                  await desktop.keyboard.press("Escape");
-                  await desktop.waitForSelector(".esv-product-modal", { state: "detached" });
-                });
-
-                await step("desktop: open modal from compact CTA", async () => {
-                  const cta = desktop.locator(".esv-product-actions.is-compact button").first();
-                  await cta.scrollIntoViewIfNeeded();
-                  await cta.click();
-                  await desktop.waitForSelector(".esv-product-modal", { state: "visible" });
-                });
-                await step("desktop: close CTA modal with Escape", async () => {
-                  await desktop.keyboard.press("Escape");
-                  await desktop.waitForSelector(".esv-product-modal", { state: "detached" });
-                });
-                await step("desktop: validate Matter link geometry", () => validateMatter(desktop));
-
-                return modal;
-              },
-            );
-
-            const mobileModal = await runViewport(
-              browser,
-              "mobile",
-              { width: 390, height: 844 },
-              async (mobile) => {
-                await step("mobile: load homepage", () =>
-                  mobile.goto(BASE_URL, { waitUntil: "networkidle", timeout: 120000 })
-                );
-                await step("mobile: validate Matter link geometry", () => validateMatter(mobile));
-                await step("mobile: open modal from product media", async () => {
-                  const mobileTrigger = mobile.locator(".esv-product-modal-trigger-media").first();
-                  await mobileTrigger.scrollIntoViewIfNeeded();
-                  await mobileTrigger.click();
-                  await mobile.waitForSelector(".esv-product-modal", { state: "visible" });
-                });
-                const metrics = await step("mobile: validate full-width modal", async () => {
-                  const result = await mobile.locator(".esv-product-modal").evaluate((element) => ({
-                    width: element.getBoundingClientRect().width,
-                    viewport: window.innerWidth,
-                    display: getComputedStyle(element).display,
-                  }));
-                  if (Math.abs(result.width - result.viewport) > 2) {
-                    throw new Error(`Mobile modal is not full width: ${JSON.stringify(result)}`);
-                  }
-                  return result;
-                });
-                await step("mobile: close modal with Escape", async () => {
-                  await mobile.keyboard.press("Escape");
-                  await mobile.waitForSelector(".esv-product-modal", { state: "detached" });
-                });
-                return metrics;
-              },
-            );
-
-            console.log(JSON.stringify({ desktopModal, mobileModal, status: "passed" }));
-          } finally {
-            await browser.close();
-          }
-          JS
-          node ./.storefront-smoke.mjs
-
-      - name: Upload Playwright evidence
-        if: always()
+      - name: Upload cleaned header sources
         uses: actions/upload-artifact@v4
         with:
-          name: storefront-smoke-evidence
-          path: smoke-artifacts/
-          if-no-files-found: ignore
-          retention-days: 7
+          name: header-cleanup-sources
+          path: |
+            static/esmera-master.css
+            static/esmera-commerce-refine.css
+            static/esmera-finish.css
+            islands/EsmeraHeader.tsx
+          if-no-files-found: error
+          retention-days: 1

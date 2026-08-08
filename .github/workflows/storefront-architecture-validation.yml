@@ -26,8 +26,16 @@ jobs:
       - name: Typecheck
         shell: bash
         run: |
-          set -o pipefail
-          deno check dev.ts main.ts 2>&1 | sed 's/^/::error::/'
+          set +e
+          tmp="$(mktemp)"
+          deno check dev.ts main.ts >"$tmp" 2>&1
+          status=$?
+          cat "$tmp"
+          if [ "$status" -ne 0 ]; then
+            grep -E '(^error: TS[0-9]+|TS[0-9]+ \[ERROR\]|    at file:///home/runner/work/testeesmera/testeesmera/.*:[0-9]+:[0-9]+$|Found [0-9]+ errors?)' "$tmp" \
+              | sed 's/%/%25/g; s/\r/%0D/g; s/\n/%0A/g; s/^/::error::/'
+          fi
+          exit "$status"
 
       - name: Tests
         run: deno test -A

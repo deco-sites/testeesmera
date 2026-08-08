@@ -1,5 +1,4 @@
 import type { Props as FooterProps } from "../../sections/Esmera/Footer.tsx";
-import type { Props as HeaderProps } from "../../sections/Esmera/Header.tsx";
 import type { Props as HeroProps } from "../../sections/Esmera/Hero.tsx";
 import type { Props as ManifestoProps } from "../../sections/Esmera/Manifesto.tsx";
 import type { Props as MatterProps } from "../../sections/Esmera/Matter.tsx";
@@ -8,9 +7,18 @@ import type { Props as PrivateInvitationProps } from "../../sections/Esmera/Priv
 import type { Props as ProvenanceProps } from "../../sections/Esmera/Provenance.tsx";
 import type { Props as SelectedObjectsProps } from "../../sections/Esmera/SelectedObjects.tsx";
 import type { Props as SignatureObjectProps } from "../../sections/Esmera/SignatureObject.tsx";
+import type { NavigationLink } from "../payload/types.ts";
+
+export interface HomeHeaderBaseline {
+  logo?: string;
+  enquiryLabel?: string;
+  navigation?: NavigationLink[];
+  categories?: NavigationLink[];
+  whatsappHref?: string;
+}
 
 export interface HomeBaseline {
-  header: HeaderProps;
+  header: HomeHeaderBaseline;
   hero: HeroProps;
   manifesto: ManifestoProps;
   selectedObjects: SelectedObjectsProps;

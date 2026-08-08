@@ -47,13 +47,7 @@
   line-height: 1.55;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Header                                                                     */
-/* -------------------------------------------------------------------------- */
 
-.esv-header {
-  min-height: 56px;
-}
 
 /* -------------------------------------------------------------------------- */
 /* 02 — Maison: one dominant asymmetry, no incidental drift                  */
@@ -282,23 +276,14 @@
   :root {
     --page-x: clamp(18px, 5vw, 22px);
     --section-y: clamp(68px, 16vw, 88px);
-    --header-h: 56px;
+
   }
 
-  .esv-header {
-    min-height: 56px;
-  }
 
-  .esv-wordmark {
-    position: absolute;
-    left: 50%;
-    justify-self: auto;
-    transform: translateX(-50%);
-  }
 
-  .esv-enquiry-link {
-    font-size: 12px;
-  }
+
+
+
 
   .esv-hero {
     min-height: 86svh;
@@ -537,18 +522,11 @@
     --grid-gap: 14px;
   }
 
-  .esv-header {
-    padding-inline: 8px 10px;
-  }
 
-  .esv-wordmark {
-    font-size: 12px;
-  }
 
-  .esv-enquiry-link {
-    min-width: 62px;
-    font-size: 12px;
-  }
+
+
+
 
   .esv-hero-statement {
     font-size: clamp(32px, 9.8vw, 42px);

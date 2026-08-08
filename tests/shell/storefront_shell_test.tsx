@@ -1,51 +1,78 @@
 import { assertFalse, assertStringIncludes } from "@std/assert";
 import { renderToString } from "preact-render-to-string";
+import DynamicMenu from "../../islands/DynamicMenu.tsx";
 import EsmeraHeader from "../../islands/EsmeraHeader.tsx";
+import type { NavigationNode } from "../../lib/payload/navigation.ts";
 
-const navigation = [
-  { label: "Seleção", href: "#selection", external: false },
-  { label: "Objetos", href: "/colecao", external: false },
-  { label: "Maison", href: "/sobre", external: false },
+const menu: NavigationNode[] = [
+  {
+    id: "home",
+    label: "HOME",
+    href: "/",
+    external: false,
+    visibility: "both",
+    highlights: [],
+    children: [],
+  },
+  {
+    id: "pieces",
+    label: "PEÇAS",
+    href: "/colecao",
+    external: false,
+    visibility: "both",
+    highlights: [],
+    children: [],
+  },
 ];
 
-Deno.test("header renders semantic navigation and stable controls", () => {
+Deno.test("shell renders the header controls and DynamicMenu as the sole navigation", () => {
   const html = renderToString(
-    <EsmeraHeader
-      logo="ESMÉRA"
-      enquiryLabel="Carrinho"
-      navigation={navigation}
-      categories={[]}
-      whatsappHref="https://wa.me/5500000000000"
-    />,
+    <>
+      <EsmeraHeader
+        logo="ESMÉRA"
+        enquiryLabel="Carrinho"
+        whatsappHref="https://wa.me/5500000000000"
+      />
+      <DynamicMenu
+        items={menu}
+        whatsappHref="https://wa.me/5500000000000"
+      />
+    </>,
   );
 
   assertStringIncludes(html, 'class="esv-header"');
-  assertStringIncludes(html, '<nav class="esv-header-nav"');
-  assertStringIncludes(html, 'href="#selection"');
+  assertStringIncludes(html, '<nav class="esv-nav-v2-desktop"');
+  assertStringIncludes(html, 'href="/"');
+  assertStringIncludes(html, 'href="/colecao"');
   assertStringIncludes(html, 'aria-label="Abrir menu"');
   assertStringIncludes(html, 'aria-label="Buscar objetos"');
   assertStringIncludes(html, "Carrinho");
   assertStringIncludes(html, "<svg");
+  assertFalse(html.includes('class="esv-header-nav"'));
   assertFalse(html.includes("☰"));
   assertFalse(html.includes("⌕"));
 });
 
-Deno.test("shell stylesheet matches the interactive markup contract", async () => {
-  const css = await Deno.readTextFile("static/esmera-commerce-refine.css");
-  const island = await Deno.readTextFile("islands/EsmeraHeader.tsx");
+Deno.test("shell stylesheets match the new navigation and interactive markup contracts", async () => {
+  const commerceCss = await Deno.readTextFile("static/esmera-commerce-refine.css");
+  const catalogCss = await Deno.readTextFile("static/esmera-catalog-v2.css");
+  const headerIsland = await Deno.readTextFile("islands/EsmeraHeader.tsx");
+  const menuIsland = await Deno.readTextFile("islands/DynamicMenu.tsx");
 
-  assertStringIncludes(css, ".esv-menu-primary-links > a");
-  assertStringIncludes(css, ".esv-menu-subnav a");
-  assertStringIncludes(css, "body.esv-overlay-open");
-  assertStringIncludes(css, "overflow-anchor: none");
-  assertStringIncludes(css, ".esv-cart-quantity");
-  assertStringIncludes(css, ".esv-search-field");
+  assertStringIncludes(catalogCss, ".esv-nav-v2-desktop");
+  assertStringIncludes(catalogCss, ".esv-nav-v2-mobile-trigger");
+  assertStringIncludes(catalogCss, ".esv-nav-v2-drawer");
+  assertStringIncludes(commerceCss, "body.esv-overlay-open");
+  assertStringIncludes(commerceCss, "overflow-anchor: none");
+  assertStringIncludes(commerceCss, ".esv-cart-quantity");
+  assertStringIncludes(commerceCss, ".esv-search-field");
 
-  assertStringIncludes(island, 'body.style.position = "fixed"');
-  assertStringIncludes(island, "globalThis.scrollTo");
-  assertStringIncludes(island, "setIsScrolled");
-  assertStringIncludes(island, 'class="esv-cart-quantity"');
-  assertStringIncludes(island, 'class="esv-cart-remove"');
+  assertStringIncludes(headerIsland, 'body.style.position = "fixed"');
+  assertStringIncludes(headerIsland, "globalThis.scrollTo");
+  assertStringIncludes(headerIsland, "setIsScrolled");
+  assertStringIncludes(headerIsland, 'class="esv-cart-quantity"');
+  assertStringIncludes(headerIsland, 'class="esv-cart-remove"');
+  assertStringIncludes(menuIsland, 'class="esv-nav-v2-mobile-trigger"');
 });
 
 Deno.test("hero preserves grid layout despite the main-content shell selector", async () => {

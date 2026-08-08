@@ -71,7 +71,11 @@ export default function Hero(
 ) {
   if (props.resolvedHome?.hero === null) return null;
   const { resolvedHome, ...editorialProps } = props;
-  const source = mergeDefined<Props>(resolvedHome?.hero, editorialProps);
+  const payloadControlsHero = resolvedHome?.sources.hero === "payload_override" ||
+    resolvedHome?.sources.hero === "stale_payload";
+  const source = payloadControlsHero
+    ? mergeDefined<Props>(editorialProps, resolvedHome?.hero ?? undefined)
+    : mergeDefined<Props>(resolvedHome?.hero, editorialProps);
   const {
     mode = "single",
     slides = [],

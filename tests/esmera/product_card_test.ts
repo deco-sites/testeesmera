@@ -175,10 +175,12 @@ function esmera(overrides: Partial<EsmeraObject> = {}): EsmeraObject {
   };
 }
 
-Deno.test("bridge EsmeraObject → ViewModel (sem parcelamento)", () => {
+Deno.test("bridge EsmeraObject → ViewModel: título = nome, eyebrow = material", () => {
   const vm = esmeraObjectToCardViewModel(esmera());
-  assertEquals(vm.eyebrow, "GELATO · ROCHA DE ESMERALDA NATURAL");
-  assertEquals(vm.title, "Ponta de Esmeralda");
+  // No pipeline atual não há tipo de peça confiável: o nome é o título e o
+  // eyebrow mostra só o material (nunca a coleção/categoria como título).
+  assertEquals(vm.title, "Gelato");
+  assertEquals(vm.eyebrow, "ROCHA DE ESMERALDA NATURAL");
   assertEquals(vm.status, "PEÇA ÚNICA · DISPONÍVEL");
   assertEquals(vm.specs, "18 cm · 1,2 kg");
   assertEquals(vm.price, "R$ 490,00");

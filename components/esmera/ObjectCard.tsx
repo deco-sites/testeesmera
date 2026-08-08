@@ -1,7 +1,9 @@
 import ProductActions from "../../islands/ProductActions.tsx";
+import WishlistButton from "../../islands/WishlistButton.tsx";
+import BuyButton from "../../islands/BuyButton.tsx";
 import type { EsmeraObject } from "../../lib/payload/types.ts";
+import { esmeraObjectToCardViewModel } from "../../lib/esmera/productCard.ts";
 import { EsmeraImage } from "./ResponsiveMedia.tsx";
-import { getAvailabilityMeta } from "./availability.ts";
 
 export interface Props {
   item: EsmeraObject;
@@ -9,21 +11,18 @@ export interface Props {
 }
 
 export default function ObjectCard({ item, motionOrder = 0 }: Props) {
-  const availability = getAvailabilityMeta(item.availability);
-  const meta = [availability.compactLabel, item.material]
-    .filter(Boolean)
-    .join(" · ");
+  const vm = esmeraObjectToCardViewModel(item);
 
   return (
     <article
       class={`esv-product-card${item.detailImage ? " has-detail" : ""}`}
       role="listitem"
-      data-product-id={item.id}
+      data-product-id={vm.id}
     >
       <div class="esv-product-media-wrap">
         <figure
           class="esv-product-media"
-          style={{ aspectRatio: "4 / 5" }}
+          style={{ aspectRatio: "3 / 4" }}
           data-motion="media-reveal"
           data-motion-order={String(motionOrder)}
         >
@@ -31,30 +30,42 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
             class={item.detailImage
               ? "esv-product-image-primary"
               : "esv-product-image-static"}
-            src={item.image}
-            alt={item.alt}
+            src={vm.image ?? ""}
+            alt={vm.imageAlt}
             loading="lazy"
             decoding="async"
-            width={960}
+            width={900}
             height={1200}
             sizes="(max-width: 429px) calc(100vw - 36px), (max-width: 767px) calc(100vw - 44px), (max-width: 1023px) 46vw, 24vw"
           />
-          {item.detailImage && (
+          {vm.hoverImage && (
             <EsmeraImage
               class="esv-product-image-detail"
-              src={item.detailImage}
+              src={vm.hoverImage}
               alt=""
               loading="lazy"
               decoding="async"
-              width={960}
+              width={900}
               height={1200}
               sizes="(max-width: 429px) calc(100vw - 36px), (max-width: 767px) calc(100vw - 44px), (max-width: 1023px) 46vw, 24vw"
             />
           )}
         </figure>
+
+        {vm.status && (
+          <span
+            class="esv-card-status"
+            data-unique={vm.status.includes("PEÇA ÚNICA") ? "true" : "false"}
+          >
+            {vm.status}
+          </span>
+        )}
+
+        <WishlistButton productId={vm.id} productTitle={vm.title} />
+
         <ProductActions
-          productId={item.id}
-          productTitle={item.title}
+          productId={vm.id}
+          productTitle={vm.title}
           product={item}
           presentation="media"
         />
@@ -65,37 +76,52 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
         data-motion="reveal"
         data-motion-order={String(motionOrder + 2)}
       >
-        <p class="esv-product-meta-line" style={{ minHeight: "2.7em" }}>
-          {meta}
-        </p>
-        <h3>
+        {vm.eyebrow && <p class="esv-card-eyebrow">{vm.eyebrow}</p>}
+
+        <h3 class="esv-card-title">
           <ProductActions
-            productId={item.id}
-            productTitle={item.title}
+            productId={vm.id}
+            productTitle={vm.title}
             product={item}
             presentation="title"
           />
         </h3>
-        {item.subtitle && (
-          <p class="esv-product-subtitle" style={{ marginBottom: "6px" }}>
-            {item.subtitle}
-          </p>
-        )}
 
-        {(item.price || availability.label) && (
-          <div class="esv-product-commercial">
-            <span class="esv-product-state">{availability.label}</span>
-            {item.price && <span class="esv-product-price">{item.price}</span>}
+        {vm.specs && <p class="esv-card-specs">{vm.specs}</p>}
+
+        <hr class="esv-card-divider" aria-hidden="true" />
+
+        {vm.price && (
+          <div class="esv-card-pricing">
+            <span class="esv-card-price">{vm.price}</span>
+            {vm.installment && (
+              <p class="esv-card-installment">
+                {vm.installment.prefix}
+                <strong>{vm.installment.emphasis}</strong>
+                {vm.installment.suffix}
+              </p>
+            )}
           </div>
         )}
 
-        <ProductActions
-          productId={item.id}
-          productTitle={item.title}
-          product={item}
-          compact
-          emphasized
-        />
+        {vm.isPurchasable
+          ? (
+            <BuyButton
+              productId={vm.id}
+              productSlug={vm.slug}
+              productTitle={vm.title}
+              product={item}
+            />
+          )
+          : (
+            <ProductActions
+              productId={vm.id}
+              productTitle={vm.title}
+              product={item}
+              compact
+              emphasized
+            />
+          )}
       </div>
     </article>
   );

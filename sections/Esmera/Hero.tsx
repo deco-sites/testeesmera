@@ -74,7 +74,7 @@ export default function Hero(
   const payloadControlsHero = resolvedHome?.sources.hero === "payload_override" ||
     resolvedHome?.sources.hero === "stale_payload";
   const source = payloadControlsHero
-    ? mergeDefined<Props>(editorialProps, resolvedHome?.hero ?? undefined)
+    ? mergeDefined<Props>(editorialProps, resolvedHome?.hero ?? {})
     : mergeDefined<Props>(resolvedHome?.hero, editorialProps);
   const {
     mode = "single",

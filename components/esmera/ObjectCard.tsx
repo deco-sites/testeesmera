@@ -30,33 +30,31 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
   // Compatibilidade temporária apenas com o modal legado; a apresentação do
   // card usa o contrato Storefront quando disponível e preserva o objeto já
   // resolvido pela Home como fallback se o enriquecimento público falhar.
-  const modalProduct: EsmeraObject = legacyItem
-    ? item
-    : {
-      id: item.id,
-      slug: item.slug,
-      code: item.code ?? "",
-      title: item.identity?.name ?? item.title,
-      image: item.image?.url ?? "",
-      alt: item.image?.alt ?? item.title,
-      availability: item.availability === "unique"
-        ? "unique"
-        : item.state ?? "available",
-      category: item.pieceType ?? undefined,
-      material: item.material ?? undefined,
-      subtitle: item.subtitle ?? undefined,
-      detailImage: item.hoverImage?.url ?? undefined,
-      gallery: [],
-      attributes: [],
-      priceMode: item.pricing?.mode ?? "inquiry",
-      priceCents: item.pricing?.priceCents ?? item.price ?? null,
-      formattedPrice: formatPriceCents(
-        item.pricing?.priceCents ?? item.price ?? null,
-      ) ?? "",
-      isInquiry: item.pricing?.mode !== "fixed",
-      variants: [],
-      seo: { title: "", description: "", noindex: false },
-    };
+  const modalProduct: EsmeraObject = legacyItem ? item : {
+    id: item.id,
+    slug: item.slug,
+    code: item.code ?? "",
+    title: item.identity?.name ?? item.title,
+    image: item.image?.url ?? "",
+    alt: item.image?.alt ?? item.title,
+    availability: item.availability === "unique"
+      ? "unique"
+      : item.state ?? "available",
+    category: item.pieceType ?? undefined,
+    material: item.material ?? undefined,
+    subtitle: item.subtitle ?? undefined,
+    detailImage: item.hoverImage?.url ?? undefined,
+    gallery: [],
+    attributes: [],
+    priceMode: item.pricing?.mode ?? "inquiry",
+    priceCents: item.pricing?.priceCents ?? item.price ?? null,
+    formattedPrice: formatPriceCents(
+      item.pricing?.priceCents ?? item.price ?? null,
+    ) ?? "",
+    isInquiry: item.pricing?.mode !== "fixed",
+    variants: [],
+    seo: { title: "", description: "", noindex: false },
+  };
 
   return (
     <article

@@ -11,5 +11,10 @@ export async function getPageChrome() {
     navigation: navigation.status === "fulfilled" ? navigation.value : null,
     settings: settings.status === "fulfilled" ? settings.value : null,
     categories: categories.status === "fulfilled" ? categories.value : [],
+    unavailable: [
+      navigation.status === "rejected" ? "navigation" : null,
+      settings.status === "rejected" ? "site-settings" : null,
+      categories.status === "rejected" ? "categories" : null,
+    ].filter((value): value is string => Boolean(value)),
   };
 }

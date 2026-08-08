@@ -92,7 +92,7 @@ export default function DynamicMenu(
   const [path, setPath] = useState<string[]>([]);
   const drawerRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const closeTimer = useRef<number | null>(null);
+  const closeTimer = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
 
   const desktopItems = useMemo(
     () => filterByVisibility(items, "desktop"),

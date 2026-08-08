@@ -2,29 +2,56 @@ import { asset, Head } from "$fresh/runtime.ts";
 import { defineApp } from "$fresh/server.ts";
 import Theme from "../sections/Theme/Theme.tsx";
 import { Context } from "@deco/deco";
+
 export default defineApp(async (_req, ctx) => {
   const revision = await Context.active().release?.revision();
   return (
     <>
-      {/* Include default fonts and css vars */}
       <Theme colorScheme="any" />
 
-      {/* Include Icons and manifest */}
       <Head>
-        {/* Standards-based cross-document View Transitions opt-in. */}
         <style>{`@view-transition { navigation: auto; }`}</style>
 
-        {/* Tailwind v3 CSS file */}
         <link
           href={asset(`/styles.css?revision=${revision}`)}
           rel="stylesheet"
         />
 
-        {/* Web Manifest */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin=""
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap"
+          rel="stylesheet"
+        />
+        <link rel="stylesheet" href={asset("/esmera-master.css")} />
+        <link rel="stylesheet" href={asset("/esmera-finish.css")} />
+        <link rel="stylesheet" href={asset("/esmera-motion-v2.css")} />
+        <link rel="stylesheet" href={asset("/esmera-structure-guard.css")} />
+        <link rel="stylesheet" href={asset("/esmera-commerce-refine.css")} />
+        <link
+          rel="stylesheet"
+          href={asset("/esmera-hotfix-product-modal.css")}
+        />
+        <link
+          rel="stylesheet"
+          href={asset("/esmera-product-modal-v2.css")}
+        />
+        <link
+          rel="stylesheet"
+          href={asset("/esmera-matter-interaction.css")}
+        />
+        <link rel="stylesheet" href={asset("/esmera-catalog-v2.css")} />
+
         <link rel="manifest" href={asset("/site.webmanifest")} />
+        <link rel="icon" href={asset("/favicon.ico")} />
+        <link rel="apple-touch-icon" href={asset("/apple-touch-icon.png")} />
+        <meta name="theme-color" content="#111210" />
       </Head>
 
-      {/* Rest of Preact tree */}
       <ctx.Component />
     </>
   );

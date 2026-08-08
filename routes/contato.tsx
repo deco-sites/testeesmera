@@ -1,5 +1,6 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import StorefrontLayout from "../components/esmera/StorefrontLayout.tsx";
+import { institutionalBaseline } from "../lib/esmera/institutionalBaseline.ts";
 import { getPayloadBaseURL } from "../lib/payload/client.ts";
 import { lexicalToText } from "../lib/payload/richText.ts";
 import {
@@ -10,10 +11,14 @@ import {
 import { resolvePayloadMedia } from "../lib/payload/media.ts";
 import { getContact } from "../lib/payload/loaders.ts";
 import { getPageChrome } from "../lib/payload/pageData.ts";
-import type { PayloadContact, SEOModel } from "../lib/payload/types.ts";
+import type {
+  PayloadContact,
+  PayloadSiteSettings,
+  SEOModel,
+} from "../lib/payload/types.ts";
 import Manifesto from "../sections/Esmera/Manifesto.tsx";
 
-type ContactChannel = NonNullable<PayloadContact["channels"]>[number];
+type ContactChannel = NonNullable<PayloadSiteSettings["officialChannels"]>[number];
 
 function channelHref(channel: ContactChannel): string {
   if (channel.url) return sanitizePublicHref(channel.url);
@@ -35,68 +40,76 @@ interface Data {
   chrome: Awaited<ReturnType<typeof getPageChrome>>;
   seo: SEOModel;
 }
+
 export const handler: Handlers<Data> = {
-  async GET(_req, ctx) {
+  async GET(req, ctx) {
     const [page, chrome] = await Promise.all([getContact(), getPageChrome()]);
+    const url = new URL(req.url);
+    const seo = toSEO(page?.seo, chrome.settings);
     return ctx.render({
       page,
       chrome,
-      seo: toSEO(page?.seo, chrome.settings),
+      seo: {
+        ...seo,
+        title: seo.title || "Contato | Esméra",
+        description: seo.description || institutionalBaseline.contact.text,
+        canonical: seo.canonical || `${url.origin}${url.pathname}`,
+      },
     });
   },
 };
+
 export default function ContactRoute({ data }: PageProps<Data>) {
   const page = data.page;
   const image = page
     ? resolvePayloadMedia(page.image, getPayloadBaseURL(), "wide")
     : null;
-  const cta = resolveCallToAction(page?.callToAction);
+  const cta = resolveCallToAction(page?.callToAction) ?? {
+    label: institutionalBaseline.contact.ctaLabel,
+    href: institutionalBaseline.contact.ctaHref,
+    external: false,
+  };
+  const title = page?.title?.trim() || institutionalBaseline.contact.title;
+  const eyebrow = page?.eyebrow?.trim() || institutionalBaseline.contact.eyebrow;
+  const text = lexicalToText(page?.content) || institutionalBaseline.contact.text;
   const hasEditorialFeature = Boolean(page?.title && image);
-  const channels = (page?.channels ?? []).filter((channel) =>
-    channel.active !== false && channelHref(channel)
-  );
+  const channels = (page?.channels ?? data.chrome.settings?.officialChannels ?? [])
+    .filter((channel) => channel.active !== false && channelHref(channel));
+
   return (
     <StorefrontLayout {...data.chrome} seo={data.seo}>
-      {page && image && hasEditorialFeature && (
+      {hasEditorialFeature && image && (
         <Manifesto
-          eyebrow={page.eyebrow ?? ""}
-          title={page.title ?? ""}
-          text={lexicalToText(page.content)}
+          eyebrow={eyebrow}
+          title={title}
+          text={text}
           mainImage={image.url}
           mainImageAlt={image.alt}
-          ctaLabel={cta?.label}
-          ctaHref={cta?.href}
+          ctaLabel={cta.label}
+          ctaHref={cta.href}
         />
       )}
       <section class="esv-shell esv-section">
-        {page
-          ? (
-            <>
-              {!hasEditorialFeature && (
-                <>
-                  {page.eyebrow && <p class="esv-kicker">{page.eyebrow}</p>}
-                  <h1>{page.title}</h1>
-                  <p>{lexicalToText(page.content)}</p>
-                  {cta && (
-                    <a class="esv-text-link" href={cta.href}>{cta.label}</a>
-                  )}
-                </>
-              )}
-              {page.hours && <p>{page.hours}</p>}
-              {channels.length > 0 && (
-                <ul>
-                  {channels.map((channel) => (
-                    <li key={`${channel.kind}-${channel.value}`}>
-                      <a href={channelHref(channel)}>
-                        {channel.label || channel.value}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </>
-          )
-          : <h1>Conteúdo não disponível</h1>}
+        {!hasEditorialFeature && (
+          <>
+            <p class="esv-kicker">{eyebrow}</p>
+            <h1>{title}</h1>
+            <p>{text}</p>
+            <a class="esv-text-link" href={cta.href}>{cta.label}</a>
+          </>
+        )}
+        {page?.hours && <p>{page.hours}</p>}
+        {channels.length > 0 && (
+          <ul>
+            {channels.map((channel) => (
+              <li key={`${channel.kind}-${channel.value}`}>
+                <a href={channelHref(channel)}>
+                  {channel.label || channel.value}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </StorefrontLayout>
   );

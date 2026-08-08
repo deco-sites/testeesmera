@@ -1,0 +1,46 @@
+name: Storefront architecture validation
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DECO_SITE_NAME: testeesmera
+      PAYLOAD_API_URL: https://esmeracms-green.vercel.app
+    steps:
+      - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Lint
+        run: deno lint
+
+      - name: Typecheck
+        run: deno check dev.ts main.ts
+
+      - name: Tests
+        run: deno test -A
+
+      - name: Build
+        run: deno task build
+
+      - name: Enforce single shell, menu and modal contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(grep -c 'site/sections/Esmera/PayloadHome.tsx' .deco/blocks/pages-home.json)" -eq 1
+          ! grep -q 'site/sections/Esmera/Header.tsx' .deco/blocks/pages-home.json
+          ! grep -q 'site/sections/Esmera/Footer.tsx' .deco/blocks/pages-home.json
+          ! grep -R -n 'esmera:view-object' islands components sections
+          ! grep -R -n 'esv-object-modal' islands components sections
+          grep -q 'new CustomEvent("esmera:open-product"' islands/EsmeraHeader.tsx
+          grep -q 'label: "HOME"' lib/esmera/shellData.ts
+          grep -q 'href: "/"' lib/esmera/shellData.ts

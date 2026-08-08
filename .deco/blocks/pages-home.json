@@ -3,42 +3,7 @@
   "path": "/",
   "sections": [
     {
-      "__resolveType": "site/sections/Esmera/Header.tsx"
-    },
-    {
-      "__resolveType": "site/sections/Esmera/Hero.tsx",
-      "autoplay": false,
-      "mode": "single"
-    },
-    {
-      "__resolveType": "site/sections/Esmera/Manifesto.tsx"
-    },
-    {
-      "__resolveType": "site/sections/Esmera/SelectedObjects.tsx"
-    },
-    {
-      "__resolveType": "site/sections/Esmera/Matter.tsx"
-    },
-    {
-      "__resolveType": "site/sections/Esmera/SignatureObject.tsx"
-    },
-    {
-      "__resolveType": "site/sections/Esmera/MatterInterlude.tsx"
-    },
-    {
-      "__resolveType": "site/sections/Esmera/Provenance.tsx"
-    },
-    {
-      "__resolveType": "site/sections/Esmera/PrivateInvitation.tsx"
-    },
-    {
-      "__resolveType": "site/sections/Esmera/Footer.tsx"
-    },
-    {
-      "__resolveType": "website/sections/Rendering/Lazy.tsx",
-      "section": {
-        "__resolveType": "website/sections/Seo/Seo.tsx"
-      }
+      "__resolveType": "site/sections/Esmera/PayloadHome.tsx"
     }
   ],
   "__resolveType": "website/pages/Page.tsx"

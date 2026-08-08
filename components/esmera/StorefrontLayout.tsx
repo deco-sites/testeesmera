@@ -1,15 +1,9 @@
-import { Head } from "$fresh/runtime.ts";
 import type { ComponentChildren } from "preact";
 import {
-  sanitizePublicHref,
-  toCategoryNavigation,
-  toFooter,
-  toNavigation,
-} from "../../lib/payload/adapters.ts";
-import {
-  buildNavigationTree,
-  type StorefrontCategory,
-} from "../../lib/payload/navigation.ts";
+  type HeaderVariant,
+  resolveShell,
+} from "../../lib/esmera/shellData.ts";
+import type { StorefrontCategory } from "../../lib/payload/navigation.ts";
 import type {
   PayloadNavigation,
   PayloadSiteSettings,
@@ -17,6 +11,7 @@ import type {
 } from "../../lib/payload/types.ts";
 import Footer from "../../sections/Esmera/Footer.tsx";
 import Header from "../../sections/Esmera/Header.tsx";
+import StorefrontSEO from "./StorefrontSEO.tsx";
 
 export interface Props {
   children: ComponentChildren;
@@ -24,50 +19,47 @@ export interface Props {
   settings: PayloadSiteSettings | null;
   categories: StorefrontCategory[];
   seo?: SEOModel;
+  canonical?: string;
+  headerVariant?: HeaderVariant;
+  ogType?: "website" | "product";
+  jsonLd?: unknown[];
 }
 
 export default function StorefrontLayout(
-  { children, navigation, settings, categories, seo }: Props,
+  {
+    children,
+    navigation,
+    settings,
+    categories,
+    seo,
+    canonical,
+    headerVariant = "solid",
+    ogType = "website",
+    jsonLd = [],
+  }: Props,
 ) {
-  const footer = settings ? toFooter(settings) : null;
-  const categoryLinks = [
-    ...(navigation ? toCategoryNavigation(navigation) : []),
-    ...categories.map((category) => ({
-      label: category.label,
-      href: category.href || `/colecao/${category.slug}`,
-      external: category.external,
-    })),
-  ].filter((link, index, links) =>
-    links.findIndex((candidate) => candidate.href === link.href) === index
-  );
-  const menu = buildNavigationTree(categories, navigation);
-  const instagram = settings?.officialChannels?.find((channel) =>
-    channel.active !== false && channel.kind === "instagram"
-  );
-  const instagramHref = sanitizePublicHref(instagram?.url) ||
-    sanitizePublicHref(instagram?.value);
+  const shell = resolveShell(navigation, settings, categories);
 
   return (
     <>
-      <Head>
-        {seo?.title && <title>{seo.title}</title>}
-        {seo?.description && (
-          <meta name="description" content={seo.description} />
-        )}
-        {seo?.noindex && <meta name="robots" content="noindex,nofollow" />}
-        {seo?.canonical && <link rel="canonical" href={seo.canonical} />}
-        {seo?.image && <meta property="og:image" content={seo.image} />}
-      </Head>
+      <StorefrontSEO
+        seo={seo}
+        fallback={shell.defaultSEO}
+        canonical={canonical}
+        ogType={ogType}
+        jsonLd={jsonLd}
+      />
       <Header
-        logo={settings?.siteName ?? ""}
-        navigation={navigation ? toNavigation(navigation) : []}
-        categories={categoryLinks}
-        menu={menu}
-        whatsappHref={footer?.whatsappHref}
-        instagramHref={instagramHref}
+        logo={shell.siteName}
+        navigation={shell.navigation}
+        categories={shell.categories}
+        menu={shell.menu}
+        whatsappHref={shell.footer.whatsappHref}
+        instagramHref={shell.instagramHref}
+        variant={headerVariant}
       />
       <main id="main-content">{children}</main>
-      {footer && <Footer siteName={settings?.siteName ?? ""} {...footer} />}
+      <Footer {...shell.footer} />
     </>
   );
 }

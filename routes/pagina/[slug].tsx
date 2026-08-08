@@ -67,7 +67,6 @@ export default function EditorialPage({ data }: PageProps<Data>) {
                   width="1600"
                   height="1000"
                   loading="eager"
-                  fetchPriority="high"
                 />
               </figure>
             )}

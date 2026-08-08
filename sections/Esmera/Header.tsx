@@ -1,10 +1,6 @@
-import { asset, Head } from "$fresh/runtime.ts";
+import type { HeaderVariant } from "../../lib/esmera/shellData.ts";
 import type { NavigationNode } from "../../lib/payload/navigation.ts";
 import type { NavigationLink } from "../../lib/payload/types.ts";
-import {
-  loadResolvedHome,
-  type ResolvedHome,
-} from "../../lib/esmera/homeData.ts";
 import DynamicMenu from "../../islands/DynamicMenu.tsx";
 import EsmeraHeader from "../../islands/EsmeraHeader.tsx";
 import EsmeraMotion from "../../islands/EsmeraMotion.tsx";
@@ -19,74 +15,31 @@ export interface Props {
   menu?: NavigationNode[];
   whatsappHref?: string;
   instagramHref?: string;
+  variant?: HeaderVariant;
 }
 
-export const loader = async (props: Props) => ({
-  ...props,
-  resolvedHome: await loadResolvedHome(),
-});
-
-export default function Header(
-  props: Props & { resolvedHome?: ResolvedHome },
-) {
-  const source = props.resolvedHome?.header ?? props;
-  const {
-    logo = "ESMÉRA",
-    enquiryLabel = "Carrinho",
-    navigation = [],
-    categories = [],
-    whatsappHref = "",
-  } = source;
-  const menu = props.menu ?? [];
-
+export default function Header({
+  logo = "ESMÉRA",
+  enquiryLabel = "Carrinho",
+  menu = [],
+  whatsappHref = "",
+  instagramHref = "",
+  variant = "solid",
+}: Props) {
   return (
     <>
-      <Head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossorigin=""
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap"
-          rel="stylesheet"
-        />
-        <link rel="stylesheet" href={asset("/esmera-master.css")} />
-        <link rel="stylesheet" href={asset("/esmera-finish.css")} />
-        <link rel="stylesheet" href={asset("/esmera-motion-v2.css")} />
-        <link rel="stylesheet" href={asset("/esmera-structure-guard.css")} />
-        <link rel="stylesheet" href={asset("/esmera-commerce-refine.css")} />
-        <link
-          rel="stylesheet"
-          href={asset("/esmera-hotfix-product-modal.css")}
-        />
-        <link
-          rel="stylesheet"
-          href={asset("/esmera-product-modal-v2.css")}
-        />
-        <link
-          rel="stylesheet"
-          href={asset("/esmera-matter-interaction.css")}
-        />
-        <link rel="stylesheet" href={asset("/esmera-catalog-v2.css")} />
-        <meta name="theme-color" content="#111210" />
-      </Head>
       <a class="esv-skip" href="#main-content">Pular para o conteúdo</a>
       <EsmeraHeader
-        logo={logo}
+        logo={logo.trim() || "ESMÉRA"}
         enquiryLabel={enquiryLabel}
-        navigation={navigation}
-        categories={categories}
         whatsappHref={whatsappHref}
+        variant={variant}
       />
-      {menu.length > 0 && (
-        <DynamicMenu
-          items={menu}
-          whatsappHref={whatsappHref}
-          instagramHref={props.instagramHref}
-        />
-      )}
+      <DynamicMenu
+        items={menu}
+        whatsappHref={whatsappHref}
+        instagramHref={instagramHref}
+      />
       <ProductModal />
       <EsmeraMotion />
       <EsmeraScrollScenes />

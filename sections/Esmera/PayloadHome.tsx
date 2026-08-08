@@ -41,7 +41,7 @@ export default function PayloadHome({ data }: { data: Data }) {
       categories={data.categories}
       seo={seo}
       canonical={homeCanonical(settings?.frontendURL)}
-      headerVariant={resolved.hero ? "over-hero" : "solid"}
+      headerVariant={resolved.hero ? "transparent" : "solid"}
     >
       {resolved.hero && <Hero {...resolved.hero} />}
       {resolved.manifesto && <Manifesto {...resolved.manifesto} />}

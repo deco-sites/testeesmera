@@ -268,3 +268,57 @@
     transition: none;
   }
 }
+
+/* ---- Aviso do fluxo de compra (PR5) ---- */
+.esv-buy-flow {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 60;
+  max-width: min(92vw, 420px);
+}
+
+.esv-buy-flow-msg {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: var(--product-card-text);
+  color: #f7f4ee;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+}
+
+.esv-buy-flow-msg.is-success {
+  background: var(--product-card-cta);
+}
+
+.esv-buy-flow-msg.is-sold {
+  background: #7a2b24;
+}
+
+.esv-buy-flow-msg.is-error {
+  background: #5a554e;
+}
+
+.esv-buy-flow-close {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: inherit;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.esv-buy-flow-close:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}

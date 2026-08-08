@@ -2,6 +2,8 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
+import * as $_404 from "./routes/_404.tsx";
+import * as $_500 from "./routes/_500.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $api_esmera_collection from "./routes/api/esmera-collection.ts";
 import * as $api_esmera_renderability from "./routes/api/esmera-renderability.ts";
@@ -10,8 +12,12 @@ import * as $colecao_slug_ from "./routes/colecao/[slug].tsx";
 import * as $colecao_index from "./routes/colecao/index.tsx";
 import * as $contato from "./routes/contato.tsx";
 import * as $pagina_slug_ from "./routes/pagina/[slug].tsx";
+import * as $politica_de_privacidade from "./routes/politica-de-privacidade.tsx";
 import * as $produto_slug_ from "./routes/produto/[slug].tsx";
+import * as $robots_txt from "./routes/robots.txt.ts";
+import * as $sitemap_xml from "./routes/sitemap.xml.ts";
 import * as $sobre from "./routes/sobre.tsx";
+import * as $termos from "./routes/termos.tsx";
 import * as $CollectionExplorer from "./islands/CollectionExplorer.tsx";
 import * as $DynamicMenu from "./islands/DynamicMenu.tsx";
 import * as $EsmeraHeader from "./islands/EsmeraHeader.tsx";
@@ -25,6 +31,8 @@ import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
+    "./routes/_404.tsx": $_404,
+    "./routes/_500.tsx": $_500,
     "./routes/_app.tsx": $_app,
     "./routes/api/esmera-collection.ts": $api_esmera_collection,
     "./routes/api/esmera-renderability.ts": $api_esmera_renderability,
@@ -33,8 +41,12 @@ const manifest = {
     "./routes/colecao/index.tsx": $colecao_index,
     "./routes/contato.tsx": $contato,
     "./routes/pagina/[slug].tsx": $pagina_slug_,
+    "./routes/politica-de-privacidade.tsx": $politica_de_privacidade,
     "./routes/produto/[slug].tsx": $produto_slug_,
+    "./routes/robots.txt.ts": $robots_txt,
+    "./routes/sitemap.xml.ts": $sitemap_xml,
     "./routes/sobre.tsx": $sobre,
+    "./routes/termos.tsx": $termos,
   },
   islands: {
     "./islands/CollectionExplorer.tsx": $CollectionExplorer,

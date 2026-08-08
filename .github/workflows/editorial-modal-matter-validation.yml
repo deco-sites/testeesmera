@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
@@ -13,6 +13,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Apply guarded header cleanup
         run: python3 scripts/header_cleanup.py
@@ -23,14 +25,15 @@ jobs:
           git diff --check
           git diff --stat
 
-      - name: Upload cleaned header sources
-        uses: actions/upload-artifact@v4
-        with:
-          name: header-cleanup-sources
-          path: |
-            static/esmera-master.css
-            static/esmera-commerce-refine.css
-            static/esmera-finish.css
-            islands/EsmeraHeader.tsx
-          if-no-files-found: error
-          retention-days: 1
+      - name: Commit cleaned header sources
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No cleanup changes produced"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add static/esmera-master.css static/esmera-commerce-refine.css static/esmera-finish.css islands/EsmeraHeader.tsx
+          git commit -m "refactor(header): remove legacy shell competition"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}

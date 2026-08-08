@@ -83,6 +83,7 @@ Deno.test("transparent is explicit and solid remains the SSR default", () => {
 Deno.test("unified header stylesheet is authoritative and loaded last", async () => {
   const commerceCss = await Deno.readTextFile("static/esmera-commerce-refine.css");
   const headerCss = await Deno.readTextFile("static/esmera-header.css");
+  const headerCssWithoutComments = headerCss.replace(/\/\*[\s\S]*?\*\//g, "");
   const app = await Deno.readTextFile("routes/_app.tsx");
   const headerIsland = await Deno.readTextFile("islands/EsmeraHeader.tsx");
   const headerSection = await Deno.readTextFile("sections/Esmera/Header.tsx");
@@ -95,7 +96,7 @@ Deno.test("unified header stylesheet is authoritative and loaded last", async ()
   assertStringIncludes(headerCss, ".esv-header .esv-mega-v2");
   assertStringIncludes(headerCss, ".esv-header .esv-nav-v2-drawer");
   assertStringIncludes(headerCss, "position: static;");
-  assertFalse(headerCss.includes("body:has("));
+  assertFalse(headerCssWithoutComments.includes("body:has("));
 
   const catalogIndex = app.indexOf("/esmera-catalog-v2.css");
   const headerIndex = app.indexOf("/esmera-header.css");

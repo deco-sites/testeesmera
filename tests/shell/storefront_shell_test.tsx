@@ -1,8 +1,4 @@
-import {
-  assert,
-  assertFalse,
-  assertStringIncludes,
-} from "@std/assert";
+import { assert, assertFalse, assertStringIncludes } from "@std/assert";
 import { renderToString } from "preact-render-to-string";
 import EsmeraHeader from "../../islands/EsmeraHeader.tsx";
 import type { NavigationNode } from "../../lib/payload/navigation.ts";
@@ -84,7 +80,9 @@ Deno.test("transparent is explicit and solid remains the SSR default", () => {
 
 Deno.test("unified header stylesheet owns shell layers without trapping fixed menu surfaces", async () => {
   const masterCss = await Deno.readTextFile("static/esmera-master.css");
-  const commerceCss = await Deno.readTextFile("static/esmera-commerce-refine.css");
+  const commerceCss = await Deno.readTextFile(
+    "static/esmera-commerce-refine.css",
+  );
   const finishCss = await Deno.readTextFile("static/esmera-finish.css");
   const headerCss = await Deno.readTextFile("static/esmera-header.css");
   const headerCssWithoutComments = headerCss.replace(/\/\*[\s\S]*?\*\//g, "");
@@ -112,7 +110,8 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   assertStringIncludes(headerCss, "@keyframes esv-mega-v2-in");
   assertFalse(headerCssWithoutComments.includes("body:has("));
 
-  const headerBase = headerCss.match(/\.esv-header\.esv-header\s*\{([^}]*)\}/)?.[1] ?? "";
+  const headerBase =
+    headerCss.match(/\.esv-header\.esv-header\s*\{([^}]*)\}/)?.[1] ?? "";
   assert(headerBase.length > 0);
   assertFalse(headerBase.includes("backdrop-filter"));
 
@@ -144,7 +143,9 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   assertStringIncludes(commerceCss, ".esv-search-field");
 
   assertStringIncludes(menuIsland, 'import("preact/compat")');
-  assertFalse(menuIsland.startsWith('import { createPortal } from "preact/compat"'));
+  assertFalse(
+    menuIsland.startsWith('import { createPortal } from "preact/compat"'),
+  );
   assertStringIncludes(menuIsland, 'pointerType !== "mouse"');
   assertStringIncludes(menuIsland, "}, 120);");
   assertStringIncludes(menuIsland, "key={activeDesktop.id}");
@@ -162,7 +163,7 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   assertStringIncludes(headerIsland, "<DynamicMenu");
   assertFalse(headerIsland.includes("is-scrolled"));
 
-  assertFalse(headerSection.includes('import DynamicMenu from'));
+  assertFalse(headerSection.includes("import DynamicMenu from"));
   assertFalse(headerSection.includes("navigation?:"));
   assertFalse(headerSection.includes("categories?:"));
   assertStringIncludes(shellData, 'HeaderVariant = "transparent" | "solid"');

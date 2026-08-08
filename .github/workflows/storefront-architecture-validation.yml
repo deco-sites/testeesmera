@@ -5,223 +5,35 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   architecture:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      DECO_SITE_NAME: testeesmera
+      PAYLOAD_API_URL: https://esmeracms-green.vercel.app
     steps:
       - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          deno-version: v2.x
 
-      - name: Apply guarded header cleanup
+      - name: Tests
         shell: bash
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
+          set +e
+          deno test -A > test.log 2>&1
+          status=$?
+          cat test.log
+          exit "$status"
 
-          def find_open(text: str, start: int) -> int:
-              i = start
-              quote = None
-              while i < len(text):
-                  if text.startswith('/*', i):
-                      end = text.find('*/', i + 2)
-                      if end < 0:
-                          return -1
-                      i = end + 2
-                      continue
-                  ch = text[i]
-                  if quote:
-                      if ch == '\\':
-                          i += 2
-                          continue
-                      if ch == quote:
-                          quote = None
-                      i += 1
-                      continue
-                  if ch in ('"', "'"):
-                      quote = ch
-                      i += 1
-                      continue
-                  if ch == '{':
-                      return i
-                  i += 1
-              return -1
-
-          def find_close(text: str, start: int) -> int:
-              depth = 1
-              i = start + 1
-              quote = None
-              while i < len(text):
-                  if text.startswith('/*', i):
-                      end = text.find('*/', i + 2)
-                      if end < 0:
-                          raise ValueError('unterminated CSS comment')
-                      i = end + 2
-                      continue
-                  ch = text[i]
-                  if quote:
-                      if ch == '\\':
-                          i += 2
-                          continue
-                      if ch == quote:
-                          quote = None
-                      i += 1
-                      continue
-                  if ch in ('"', "'"):
-                      quote = ch
-                  elif ch == '{':
-                      depth += 1
-                  elif ch == '}':
-                      depth -= 1
-                      if depth == 0:
-                          return i
-                  i += 1
-              raise ValueError('unbalanced CSS braces')
-
-          def clean_prelude(value: str) -> str:
-              return re.sub(r'/\*[\s\S]*?\*/', ' ', value).strip()
-
-          def transform_css(text: str, should_remove) -> str:
-              out = []
-              cursor = 0
-              while cursor < len(text):
-                  opening = find_open(text, cursor)
-                  if opening < 0:
-                      out.append(text[cursor:])
-                      break
-                  closing = find_close(text, opening)
-                  prelude = text[cursor:opening]
-                  inner = text[opening + 1:closing]
-                  selector = clean_prelude(prelude)
-                  lowered = selector.lower()
-                  if lowered.startswith(('@media', '@supports', '@container', '@layer')):
-                      out.append(prelude + '{' + transform_css(inner, should_remove) + '}')
-                  elif lowered.startswith(('@keyframes', '@-webkit-keyframes')):
-                      out.append(prelude + '{' + inner + '}')
-                  elif should_remove(selector):
-                      leading = re.match(r'^\s*', prelude).group(0)
-                      out.append(leading)
-                  else:
-                      out.append(prelude + '{' + inner + '}')
-                  cursor = closing + 1
-              return ''.join(out)
-
-          def shell_root(selector: str) -> bool:
-              return bool(re.search(r'\.esv-header(?=$|[\s.#:\[]|-(?:nav|menu|icon|actions))', selector))
-
-          def master_remove(selector: str) -> bool:
-              return any([
-                  shell_root(selector),
-                  '.esv-wordmark' in selector,
-                  '.esv-enquiry-link' in selector,
-                  '.esv-object-taxonomy' in selector,
-                  '.esv-header-search > input' in selector,
-              ])
-
-          def commerce_remove(selector: str) -> bool:
-              return any([
-                  shell_root(selector),
-                  '.esv-wordmark' in selector,
-                  '.esv-enquiry-link' in selector,
-                  '.esv-header-overlay-menu' in selector,
-                  '.esv-header-panel-menu' in selector,
-                  '.esv-menu-' in selector,
-              ])
-
-          def finish_remove(selector: str) -> bool:
-              return any([
-                  shell_root(selector),
-                  '.esv-wordmark' in selector,
-                  '.esv-enquiry-link' in selector,
-              ])
-
-          master_path = Path('static/esmera-master.css')
-          commerce_path = Path('static/esmera-commerce-refine.css')
-          finish_path = Path('static/esmera-finish.css')
-          header_path = Path('islands/EsmeraHeader.tsx')
-
-          master = transform_css(master_path.read_text(), master_remove)
-          commerce = transform_css(commerce_path.read_text(), commerce_remove)
-          finish = transform_css(finish_path.read_text(), finish_remove)
-
-          old_ease = '--ease-esmera: cubic-bezier(.22, .61, .36, 1);'
-          if old_ease not in master:
-              raise SystemExit('expected legacy easing not found')
-          master = master.replace(old_ease, '--ease-esmera: cubic-bezier(.16, 1, .3, 1);', 1)
-
-          if '--header-h: 52px;' not in master:
-              raise SystemExit('expected mobile master header height not found')
-          master = master.replace('--header-h: 52px;', '--header-h: 56px;', 1)
-          commerce = re.sub(r'^\s*--header-h:\s*[^;]+;\s*$', '', commerce, flags=re.M)
-          finish = re.sub(r'^\s*--header-h:\s*[^;]+;\s*$', '', finish, flags=re.M)
-
-          whatsapp = re.compile(r'(\.esv-whatsapp-sticky:hover\s*\{)([^{}]*)(\})', re.S)
-          match = whatsapp.search(commerce)
-          if match:
-              body = re.sub(r'^\s*transform:\s*translateY\(-2px\);\s*$', '', match.group(2), flags=re.M)
-              if 'opacity:' not in body:
-                  body = body.rstrip() + '\n  opacity: .86;\n'
-              commerce = commerce[:match.start()] + match.group(1) + body + match.group(3) + commerce[match.end():]
-
-          header = header_path.read_text()
-          old_scroll = 'setIsScrolled((globalThis.scrollY || 0) > 14);'
-          new_scroll = '''setIsScrolled((previous) => {
-        const y = globalThis.scrollY || 0;
-        return previous ? y > 8 : y > 24;
-      });'''
-          if old_scroll not in header:
-              raise SystemExit('expected scroll threshold not found')
-          header = header.replace(old_scroll, new_scroll, 1)
-
-          old_badge = '<sup aria-live="polite">{cartCount}</sup>'
-          new_badge = '<sup key={cartCount} aria-live="polite">{cartCount}</sup>'
-          if old_badge not in header:
-              raise SystemExit('expected cart badge not found')
-          header = header.replace(old_badge, new_badge, 1)
-
-          master_path.write_text(master)
-          commerce_path.write_text(commerce)
-          finish_path.write_text(finish)
-          header_path.write_text(header)
-
-          checks = {
-              'master is-scrolled': '.esv-header.is-scrolled' not in master,
-              'master old nav': '.esv-header-nav' not in master,
-              'master old menu': '.esv-header-menu' not in master,
-              'master old taxonomy': '.esv-object-taxonomy' not in master,
-              'commerce is-scrolled': '.esv-header.is-scrolled' not in commerce,
-              'commerce old nav': '.esv-header-nav' not in commerce,
-              'commerce old menu': '.esv-menu-' not in commerce,
-              'commerce overlay retained': '.esv-header-overlay' in commerce,
-              'commerce panel retained': '.esv-header-panel' in commerce,
-              'commerce search retained': '.esv-search-field' in commerce,
-              'finish direct header removed': '.esv-header {' not in finish,
-              'finish wordmark removed': '.esv-wordmark' not in finish,
-              'mobile height consolidated': master.count('--header-h: 56px;') == 1 and '--header-h:' not in finish and '--header-h:' not in commerce,
-              'hysteresis applied': 'return previous ? y > 8 : y > 24;' in header,
-              'cart badge keyed': 'key={cartCount}' in header,
-          }
-          failed = [name for name, ok in checks.items() if not ok]
-          if failed:
-              raise SystemExit('cleanup assertions failed: ' + ', '.join(failed))
-          PY
-
-          git diff --check
-          git diff --stat
-
-      - name: Commit cleanup to PR branch
-        shell: bash
-        run: |
-          if git diff --quiet; then
-            echo "No cleanup changes produced"
-            exit 1
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add static/esmera-master.css static/esmera-commerce-refine.css static/esmera-finish.css islands/EsmeraHeader.tsx
-          git commit -m "refactor(header): remove legacy shell competition"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-diagnostics
+          path: test.log
+          if-no-files-found: error
+          retention-days: 1

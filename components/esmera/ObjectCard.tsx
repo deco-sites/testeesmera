@@ -4,21 +4,33 @@ import BuyButton from "../../islands/BuyButton.tsx";
 import type { EsmeraObject } from "../../lib/payload/types.ts";
 import type { StorefrontProductV2 } from "../../lib/esmera/storefront.ts";
 import {
+  esmeraObjectToCardViewModel,
   formatPriceCents,
   toProductCardViewModel,
 } from "../../lib/esmera/productCard.ts";
 import { EsmeraImage } from "./ResponsiveMedia.tsx";
 
 export interface Props {
-  item: StorefrontProductV2;
+  item: StorefrontProductV2 | EsmeraObject;
   motionOrder?: number;
 }
 
+function isEsmeraObject(
+  item: StorefrontProductV2 | EsmeraObject,
+): item is EsmeraObject {
+  return typeof item.image === "string";
+}
+
 export default function ObjectCard({ item, motionOrder = 0 }: Props) {
-  const vm = toProductCardViewModel(item);
+  const legacyItem = isEsmeraObject(item);
+  const vm = legacyItem
+    ? esmeraObjectToCardViewModel(item)
+    : toProductCardViewModel(item);
+
   // Compatibilidade temporária apenas com o modal legado; a apresentação do
-  // card acima usa exclusivamente o contrato Storefront enriquecido.
-  const modalProduct: EsmeraObject = {
+  // card usa o contrato Storefront quando disponível e preserva o objeto já
+  // resolvido pela Home como fallback se o enriquecimento público falhar.
+  const modalProduct: EsmeraObject = legacyItem ? item : {
     id: item.id,
     slug: item.slug,
     code: item.code ?? "",

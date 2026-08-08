@@ -21,27 +21,45 @@ export interface Props {
   collectionHref?: string;
 }
 
+type CuratedProduct = StorefrontProductV2 | EsmeraObject;
+
+function hasRenderableImage(product: CuratedProduct): boolean {
+  return typeof product.image === "string"
+    ? product.image.trim().length > 0
+    : Boolean(product.image?.url);
+}
+
 export const loader = async (props: Props) => {
   const resolvedHome = await loadResolvedHome();
   const source = resolvedHome.selectedObjects ?? props;
-  const enriched = await Promise.allSettled(
-    (source.products ?? []).slice(0, 4).map((product) =>
-      fetchStorefrontProduct(product.slug).then((result) => result.product)
-    ),
+  const selectedProducts = (source.products ?? []).slice(0, 4);
+  const storefrontProducts = await Promise.all(
+    selectedProducts.map(async (product): Promise<CuratedProduct> => {
+      try {
+        return (await fetchStorefrontProduct(product.slug)).product;
+      } catch (error) {
+        console.warn(JSON.stringify({
+          event: "selected_object_enrichment_failed",
+          slug: product.slug,
+          fallbackUsed: true,
+          errorType: error instanceof Error ? error.name : "unknown",
+        }));
+        return product;
+      }
+    }),
   );
+
   return {
     ...props,
     resolvedHome,
-    storefrontProducts: enriched.flatMap((result) =>
-      result.status === "fulfilled" ? [result.value] : []
-    ),
+    storefrontProducts,
   };
 };
 
 export default function SelectedObjects(
   props: Props & {
     resolvedHome?: ResolvedHome;
-    storefrontProducts?: StorefrontProductV2[];
+    storefrontProducts?: CuratedProduct[];
   },
 ) {
   if (props.resolvedHome?.selectedObjects === null) return null;
@@ -54,9 +72,13 @@ export default function SelectedObjects(
     collectionLabel = "Ver coleção",
     collectionHref = "/colecao",
   } = source;
-  const curatedProducts = (props.storefrontProducts ?? []).filter((product) =>
-    Boolean(product.id && product.slug && product.title && product.image?.url)
-  ).slice(0, 4);
+  const curatedProducts = (props.storefrontProducts ?? source.products ?? [])
+    .filter((product) =>
+      Boolean(
+        product.id && product.slug && product.title && hasRenderableImage(product),
+      )
+    )
+    .slice(0, 4);
 
   return (
     <section

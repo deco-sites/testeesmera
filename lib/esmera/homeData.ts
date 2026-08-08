@@ -82,9 +82,12 @@ async function fetchResolvedHome(): Promise<FetchResult> {
 
   const results = [home, navigation, siteSettings, categories];
   const diagnostics = results.flatMap((result) => result.diagnostics);
-  const unavailable = results.some((result) => result.source === "unavailable");
+  // The Home document is the authority for Home editorial content. An
+  // unavailable auxiliary source (navigation, settings or categories) must not
+  // freeze Hero/Selected Objects behind an old aggregate snapshot.
+  const unavailable = home.source === "unavailable";
 
-  if (unavailable) {
+  if (results.some((result) => result.source === "unavailable")) {
     console.warn(JSON.stringify({
       event: "payload_home_fallback",
       unavailable: {

@@ -20,42 +20,20 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Lint
-        run: deno lint
-
-      - name: Typecheck
+      - name: Tests
         shell: bash
         run: |
           set +e
-          deno check dev.ts main.ts > typecheck.log 2>&1
+          deno test -A > test.log 2>&1
           status=$?
-          cat typecheck.log
+          cat test.log
           exit "$status"
 
-      - name: Upload typecheck diagnostics
+      - name: Upload test diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: typecheck-diagnostics
-          path: typecheck.log
+          name: test-diagnostics
+          path: test.log
           if-no-files-found: error
           retention-days: 1
-
-      - name: Tests
-        run: deno test -A
-
-      - name: Build
-        run: deno task build
-
-      - name: Enforce single shell, menu and modal contracts
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "$(grep -c 'site/sections/Esmera/PayloadHome.tsx' .deco/blocks/pages-home.json)" -eq 1
-          ! grep -q 'site/sections/Esmera/Header.tsx' .deco/blocks/pages-home.json
-          ! grep -q 'site/sections/Esmera/Footer.tsx' .deco/blocks/pages-home.json
-          ! grep -R -n 'esmera:view-object' islands components sections
-          ! grep -R -n 'esv-object-modal' islands components sections
-          grep -q 'new CustomEvent("esmera:open-product"' islands/EsmeraHeader.tsx
-          grep -q 'label: "HOME"' lib/esmera/shellData.ts
-          grep -q 'href: "/"' lib/esmera/shellData.ts

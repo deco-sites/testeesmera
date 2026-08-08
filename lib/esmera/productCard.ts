@@ -8,6 +8,7 @@ import type {
   StorefrontAvailabilityStateV2,
   StorefrontProductV2,
 } from "./storefront.ts";
+import type { EsmeraObject } from "../payload/types.ts";
 
 export interface ProductCardInstallment {
   prefix: string;
@@ -127,6 +128,67 @@ export function buildInstallment(
     prefix: "ou ",
     emphasis: `${installment.count}x de ${amount}`,
     suffix: installment.interestFree ? " sem juros" : "",
+  };
+}
+
+function fold(value: string | null | undefined): string {
+  return (value ?? "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .trim()
+    .toLocaleLowerCase("pt-BR");
+}
+
+function stateFromAvailability(
+  availability: string | null | undefined,
+): StorefrontAvailabilityStateV2 {
+  if (availability === "made_to_order" || availability === "limited") {
+    return availability;
+  }
+  if (availability === "archive") return "archive";
+  return "available";
+}
+
+function specsFromAttributes(
+  attributes: Array<{ label: string; value: string }>,
+): string | null {
+  const pick = (pattern: RegExp) =>
+    attributes.find((attribute) => pattern.test(fold(attribute.label)))?.value
+      ?.trim();
+  const parts = [pick(/altura|height|dimens/), pick(/peso|weight/)]
+    .filter((part): part is string => Boolean(part));
+  return parts.length ? parts.join(" · ") : null;
+}
+
+/**
+ * Ponte a partir do `EsmeraObject` atual (pipeline Payload direto), enquanto a
+ * coleção não migra para a Storefront API. Enriquecimento é best-effort: o
+ * parcelamento só existe via contrato público (fica nulo aqui).
+ */
+export function esmeraObjectToCardViewModel(
+  item: EsmeraObject,
+): ProductCardViewModel {
+  const isUnique = item.availability === "unique" ||
+    fold(item.edition) === "peca unica";
+  const state = stateFromAvailability(item.availability);
+  const price = item.isInquiry
+    ? null
+    : (item.price ?? item.formattedPrice ?? "").replace(/\s/g, " ") || null;
+
+  return {
+    id: item.id,
+    slug: item.slug,
+    eyebrow: buildEyebrow(item.title, item.material ?? null),
+    title: item.category?.trim() || item.subtitle?.trim() || item.title,
+    status: buildStatus(state, isUnique),
+    specs: specsFromAttributes(item.attributes ?? []),
+    price,
+    installment: null,
+    image: item.image || null,
+    imageAlt: item.alt || item.title,
+    hoverImage: item.detailImage || null,
+    isPurchasable: !item.isInquiry &&
+      (state === "available" || state === "limited"),
   };
 }
 

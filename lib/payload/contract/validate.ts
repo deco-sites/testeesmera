@@ -36,8 +36,12 @@ function relation<T>(value: unknown): T | null {
 }
 
 function validPublicURL(value: unknown): boolean {
+  const raw = text(value);
+  if (!raw) return false;
+  if (raw.startsWith("/") && !raw.startsWith("//")) return true;
+
   try {
-    const parsed = new URL(text(value));
+    const parsed = new URL(raw);
     return parsed.protocol === "https:" ||
       (parsed.protocol === "http:" && parsed.hostname === "localhost");
   } catch {
@@ -61,6 +65,22 @@ function diagnostic(
     source: input.source ?? "contract",
     meta: input.meta,
   };
+}
+
+type MediaField = {
+  media: unknown;
+  alt?: unknown;
+};
+
+function unwrapMediaField(value: unknown): MediaField {
+  const field = record(value);
+  if (field && "image" in field) {
+    return {
+      media: field.image,
+      alt: field.alt,
+    };
+  }
+  return { media: value };
 }
 
 function mediaDiagnostics(
@@ -250,16 +270,22 @@ function homeDiagnostics(home: PayloadHome): StorefrontDiagnostic[] {
   const slides = Array.isArray(home.heroSlides) ? home.heroSlides : [];
   slides.forEach((slide, index) => {
     if (slide.active === false) return;
+
+    const desktop = unwrapMediaField(slide.desktopImage);
     diagnostics.push(...mediaDiagnostics(
-      slide.desktopImage,
+      desktop.media,
       "home",
-      `heroSlides.${index}.desktopImage`,
+      `heroSlides.${index}.desktopImage.image`,
+      desktop.alt,
     ));
+
     if (slide.mobileImage) {
+      const mobile = unwrapMediaField(slide.mobileImage);
       diagnostics.push(...mediaDiagnostics(
-        slide.mobileImage,
+        mobile.media,
         "home",
-        `heroSlides.${index}.mobileImage`,
+        `heroSlides.${index}.mobileImage.image`,
+        mobile.alt,
       ));
     }
   });

@@ -17,7 +17,7 @@ import type {
 } from "../payload/types.ts";
 import { defaultHome } from "./homeBaseline.ts";
 
-export type HeaderVariant = "over-hero" | "solid";
+export type HeaderVariant = "transparent" | "solid";
 
 export interface ShellFooter {
   siteName: string;
@@ -120,20 +120,22 @@ export function resolveShell(
   const navigationLinks = ensureHomeLink(
     cmsNavigation.length > 0 ? cmsNavigation : FALLBACK_NAVIGATION,
   );
-  const categoryLinks = uniqueLinks([
-    ...(navigation ? toCategoryNavigation(navigation) : []),
-    ...categories.map((category) => ({
-      label: category.label,
-      href: category.href || `/colecao/${category.slug}`,
-      external: category.external,
-    })),
-  ]);
-  const menu = ensureHomeNode(buildNavigationTree(categories, navigation));
-  const instagram = settings?.officialChannels?.find((channel) =>
-    channel.active !== false && channel.kind === "instagram"
-  );
-  const instagramHref = sanitizePublicHref(instagram?.url) ||
-    sanitizePublicHref(instagram?.value);
+  const categoryLinks = toCategoryNavigation(categories);
+  const menu = ensureHomeNode(buildNavigationTree(navigation, categories));
+  const instagramHref = sanitizePublicHref(settings?.instagram ?? "") ?? "";
+  const defaultSEO = settings
+    ? {
+      title: present(settings.seo?.title, siteName),
+      description: present(settings.seo?.description, footer.statement),
+      image: settings.seo?.image ?? null,
+      noindex: false,
+    }
+    : {
+      title: siteName,
+      description: footer.statement,
+      image: null,
+      noindex: false,
+    };
 
   return {
     siteName,
@@ -142,13 +144,6 @@ export function resolveShell(
     menu,
     footer,
     instagramHref,
-    defaultSEO: {
-      title: present(settings?.defaultSeoTitle, siteName),
-      description: present(
-        settings?.defaultSeoDescription,
-        "Objetos de matéria natural, design autoral e curadoria Esméra.",
-      ),
-      noindex: false,
-    },
+    defaultSEO,
   };
 }

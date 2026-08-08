@@ -1,9 +1,13 @@
 import { getPayloadBaseURL, payloadGet } from "./client.ts";
 import {
+  fetchStorefrontCollection,
+  fetchStorefrontProducts,
+} from "../esmera/storefront.ts";
+import {
   emitStorefrontDiagnostic,
-  storefrontResult,
   type StorefrontDiagnostic,
   type StorefrontResult,
+  storefrontResult,
 } from "./contract/diagnostics.ts";
 import {
   type StorefrontContractKind,
@@ -12,7 +16,7 @@ import {
 import { STOREFRONT_CONTRACT_VERSION } from "./contract/version.ts";
 import { toCategory, toEsmeraObject } from "./adapters.ts";
 import { resolvePayloadMedia } from "./media.ts";
-import { whereAnd, whereContains, whereEquals, whereOr } from "./query.ts";
+import { whereContains, whereEquals, whereOr } from "./query.ts";
 import type {
   EsmeraObject,
   PayloadAbout,
@@ -72,11 +76,15 @@ export async function getPublishedGlobalResult<
 
     const validation = validatePayloadContract(kind, result);
     if (!validation.compatible) {
-      emitStorefrontDiagnostic("payload_contract_rejected", validation.diagnostics, {
-        kind,
-        slug,
-        contractVersion: STOREFRONT_CONTRACT_VERSION,
-      });
+      emitStorefrontDiagnostic(
+        "payload_contract_rejected",
+        validation.diagnostics,
+        {
+          kind,
+          slug,
+          contractVersion: STOREFRONT_CONTRACT_VERSION,
+        },
+      );
       return storefrontResult(null, {
         source: "deco_baseline",
         diagnostics: validation.diagnostics,
@@ -86,11 +94,15 @@ export async function getPublishedGlobalResult<
     }
 
     if (validation.diagnostics.length) {
-      emitStorefrontDiagnostic("payload_contract_warning", validation.diagnostics, {
-        kind,
-        slug,
-        contractVersion: STOREFRONT_CONTRACT_VERSION,
-      });
+      emitStorefrontDiagnostic(
+        "payload_contract_warning",
+        validation.diagnostics,
+        {
+          kind,
+          slug,
+          contractVersion: STOREFRONT_CONTRACT_VERSION,
+        },
+      );
     }
     return storefrontResult(result, {
       source: "payload_override",
@@ -146,19 +158,40 @@ export const getSiteSettingsResult = () =>
 
 export const getHome = async () => (await getHomeResult()).data;
 export const getNavigation = async () => (await getNavigationResult()).data;
-export const getSiteSettings = async () =>
-  (await getSiteSettingsResult()).data;
+export const getSiteSettings = async () => (await getSiteSettingsResult()).data;
 export const getAbout = () => getPublishedGlobal<PayloadAbout>("about", 2);
 export const getContact = () =>
   getPublishedGlobal<PayloadContact>("contact", 2);
-export const getCollectionPage = () =>
-  getPublishedGlobal<PayloadCollectionPage>("collection-page", 2);
+export async function getCollectionPage(): Promise<PayloadCollectionPage> {
+  const params = new URLSearchParams({ page: "1", limit: "1" });
+  const { catalog } = await fetchStorefrontProducts(params);
+  return {
+    title: catalog.title,
+    introduction: catalog.introduction,
+    visibleFilters: catalog.visibleFilters,
+    emptyStateTitle: catalog.emptyStateTitle,
+    emptyStateCopy: catalog.emptyStateCopy,
+    callToAction: catalog.callToAction,
+    seo: catalog.seo
+      ? {
+        ...catalog.seo,
+        noindex: catalog.seo.noIndex,
+        socialImage: catalog.seo.socialImage,
+      }
+      : null,
+    _status: "published",
+  };
+}
 
 export interface ProductListInput {
   limit?: number;
   page?: number;
   sort?: string;
   where?: Record<string, unknown>;
+  q?: string;
+  category?: string;
+  material?: string;
+  availability?: string;
 }
 
 function withCardCover(
@@ -176,7 +209,7 @@ function withCardCover(
   return card ? { ...item, image: card.url, alt: card.alt || item.alt } : item;
 }
 
-export async function listProducts(input: ProductListInput = {}) {
+async function listPayloadProducts(input: ProductListInput = {}) {
   const response = await payloadGet<PayloadPaginated<PayloadProduct>>(
     "products",
     {
@@ -211,9 +244,50 @@ export async function listProducts(input: ProductListInput = {}) {
   };
 }
 
+const storefrontSort: Record<string, string> = {
+  editorial: "editorial",
+  title: "name_asc",
+  name: "name_asc",
+  newest: "newest",
+  "-createdAt": "newest",
+  "price-asc": "price_asc",
+  basePriceCents: "price_asc",
+  "basePriceCents,title": "price_asc",
+  "price-desc": "price_desc",
+  "-basePriceCents": "price_desc",
+  "-basePriceCents,title": "price_desc",
+};
+
+function storefrontParams(input: ProductListInput): URLSearchParams {
+  const params = new URLSearchParams();
+  params.set("limit", String(Math.min(48, Math.max(1, input.limit ?? 12))));
+  params.set("page", String(Math.max(1, input.page ?? 1)));
+  params.set("sort", storefrontSort[input.sort ?? "editorial"] ?? "editorial");
+  if (input.q?.trim()) params.set("q", input.q.trim());
+  if (input.category?.trim()) params.set("category", input.category.trim());
+  if (input.material?.trim()) params.set("material", input.material.trim());
+  if (input.availability?.trim()) {
+    params.set("availability", input.availability.trim());
+  }
+  return params;
+}
+
+function paginatedProducts(
+  response: Awaited<ReturnType<typeof fetchStorefrontProducts>>,
+) {
+  return { ...response.pagination, docs: response.items };
+}
+
+/** Catálogo amplo: o card recebe somente o contrato público enriquecido. */
+export async function listProducts(input: ProductListInput = {}) {
+  return paginatedProducts(
+    await fetchStorefrontProducts(storefrontParams(input)),
+  );
+}
+
 export async function getProductBySlug(slug: string) {
   if (!slug.trim()) return null;
-  const result = await listProducts({
+  const result = await listPayloadProducts({
     limit: 1,
     where: whereEquals("slug", slug.trim()),
   });
@@ -288,31 +362,34 @@ export async function getCategoryBySlug(slug: string) {
   if (!category) return null;
   const validation = validatePayloadContract("category", category);
   if (!validation.compatible) {
-    emitStorefrontDiagnostic("payload_category_rejected", validation.diagnostics, {
-      slug,
-      contractVersion: STOREFRONT_CONTRACT_VERSION,
-    });
+    emitStorefrontDiagnostic(
+      "payload_category_rejected",
+      validation.diagnostics,
+      {
+        slug,
+        contractVersion: STOREFRONT_CONTRACT_VERSION,
+      },
+    );
     return null;
   }
   return toCategory(category);
 }
 
 export async function listProductsByCategory(
-  categoryID: string,
+  categorySlug: string,
   input: ProductListInput = {},
 ) {
-  return await listProducts({
-    ...input,
-    where: input.where
-      ? whereAnd(whereContains("categories", categoryID), input.where)
-      : whereContains("categories", categoryID),
-  });
+  const response = await fetchStorefrontCollection(
+    categorySlug,
+    storefrontParams(input),
+  );
+  return { ...response.pagination, docs: response.items };
 }
 
 export async function searchProducts(search: string, limit = 8) {
   const query = search.trim().slice(0, 80);
   if (query.length < 2) return [];
-  const result = await listProducts({
+  const result = await listPayloadProducts({
     limit: Math.min(12, Math.max(1, limit)),
     sort: "title",
     where: whereOr(

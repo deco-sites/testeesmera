@@ -4,6 +4,10 @@ import {
   loadResolvedHome,
   type ResolvedHome,
 } from "../../lib/esmera/homeData.ts";
+import {
+  fetchStorefrontProduct,
+  type StorefrontProductV2,
+} from "../../lib/esmera/storefront.ts";
 import type { EsmeraObject } from "../../lib/payload/types.ts";
 
 export interface Props {
@@ -17,13 +21,28 @@ export interface Props {
   collectionHref?: string;
 }
 
-export const loader = async (props: Props) => ({
-  ...props,
-  resolvedHome: await loadResolvedHome(),
-});
+export const loader = async (props: Props) => {
+  const resolvedHome = await loadResolvedHome();
+  const source = resolvedHome.selectedObjects ?? props;
+  const enriched = await Promise.allSettled(
+    (source.products ?? []).slice(0, 4).map((product) =>
+      fetchStorefrontProduct(product.slug).then((result) => result.product)
+    ),
+  );
+  return {
+    ...props,
+    resolvedHome,
+    storefrontProducts: enriched.flatMap((result) =>
+      result.status === "fulfilled" ? [result.value] : []
+    ),
+  };
+};
 
 export default function SelectedObjects(
-  props: Props & { resolvedHome?: ResolvedHome },
+  props: Props & {
+    resolvedHome?: ResolvedHome;
+    storefrontProducts?: StorefrontProductV2[];
+  },
 ) {
   if (props.resolvedHome?.selectedObjects === null) return null;
   const source = props.resolvedHome?.selectedObjects ?? props;
@@ -32,12 +51,11 @@ export default function SelectedObjects(
     title = "Objetos de\npresença singular.",
     text =
       "Uma seleção curta de obras disponíveis, reunidas por matéria, presença e permanência.",
-    products = [],
     collectionLabel = "Ver coleção",
     collectionHref = "/colecao",
   } = source;
-  const curatedProducts = products.filter((product) =>
-    Boolean(product.id && product.slug && product.title && product.image)
+  const curatedProducts = (props.storefrontProducts ?? []).filter((product) =>
+    Boolean(product.id && product.slug && product.title && product.image?.url)
   ).slice(0, 4);
 
   return (

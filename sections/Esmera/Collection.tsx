@@ -4,14 +4,14 @@ import type {
   CatalogFilter,
   CollectionSort,
 } from "../../lib/payload/catalog.ts";
-import type { EsmeraObject } from "../../lib/payload/types.ts";
+import type { StorefrontProductV2 } from "../../lib/esmera/storefront.ts";
 
 export interface Props {
   eyebrow?: string;
   title?: string;
   /** @format textarea */
   text?: string;
-  products?: EsmeraObject[];
+  products?: StorefrontProductV2[];
   totalDocs?: number;
   hasNextPage?: boolean;
   endpoint?: string;
@@ -54,7 +54,12 @@ export default function Collection({
   pagination,
 }: Props) {
   const collectionFilters = filters ?? {
-    visible: ["category", "material", "availability", "sort"] as CatalogFilter[],
+    visible: [
+      "category",
+      "material",
+      "availability",
+      "sort",
+    ] as CatalogFilter[],
     categories: [],
     q: "",
     category: "",
@@ -119,13 +124,19 @@ export default function Collection({
           aria-label="Paginação da coleção"
         >
           {pagination.page > 1 && (
-            <a rel="prev" href={pageHref(pagination.baseHref, pagination.page - 1)}>
+            <a
+              rel="prev"
+              href={pageHref(pagination.baseHref, pagination.page - 1)}
+            >
               Página anterior
             </a>
           )}
           <span>Página {pagination.page} de {pagination.totalPages}</span>
           {pagination.page < pagination.totalPages && (
-            <a rel="next" href={pageHref(pagination.baseHref, pagination.page + 1)}>
+            <a
+              rel="next"
+              href={pageHref(pagination.baseHref, pagination.page + 1)}
+            >
               Próxima página
             </a>
           )}

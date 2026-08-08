@@ -10,15 +10,15 @@ import { lexicalToText } from "../../lib/payload/richText.ts";
 import { toSEO } from "../../lib/payload/adapters.ts";
 import { getCollectionPage, listProducts } from "../../lib/payload/loaders.ts";
 import { getPageChrome } from "../../lib/payload/pageData.ts";
+import type { StorefrontProductV2 } from "../../lib/esmera/storefront.ts";
 import type {
-  EsmeraObject,
   PayloadCollectionPage,
   SEOModel,
 } from "../../lib/payload/types.ts";
 import Collection from "../../sections/Esmera/Collection.tsx";
 
 interface Data {
-  products: EsmeraObject[];
+  products: StorefrontProductV2[];
   page: PayloadCollectionPage | null;
   chrome: Awaited<ReturnType<typeof getPageChrome>>;
   seo: SEOModel;
@@ -43,7 +43,10 @@ export const handler: Handlers<Data> = {
       limit: 24,
       page: query.page,
       sort: query.payloadSort,
-      where: query.where,
+      q: query.q.length >= 2 ? query.q : undefined,
+      category: query.category || undefined,
+      material: query.material || undefined,
+      availability: query.availability || undefined,
     });
     const seo = toSEO(page?.seo, chrome.settings);
     return ctx.render({

@@ -27,21 +27,24 @@ export const handler: Handlers = {
           headers: { "cache-control": "no-store" },
         });
       }
-      const visibleFilters = normalizeVisibleFilters(collectionPage?.visibleFilters)
+      const visibleFilters = normalizeVisibleFilters(
+        collectionPage?.visibleFilters,
+      )
         .filter((filter) => !slug || filter !== "category");
       const query = buildCatalogQuery(url, visibleFilters, chrome.categories);
+      const common = {
+        limit: 24,
+        page: query.page,
+        sort: query.payloadSort,
+        q: query.q.length >= 2 ? query.q : undefined,
+        category: query.category || undefined,
+        material: query.material || undefined,
+        availability: query.availability || undefined,
+      };
       const result = category
-        ? await listProductsByCategory(category.id, {
-          limit: 24,
-          page: query.page,
-          sort: query.payloadSort,
-          where: query.where,
-        })
+        ? await listProductsByCategory(category.slug, common)
         : await listProducts({
-          limit: 24,
-          page: query.page,
-          sort: query.payloadSort,
-          where: query.where,
+          ...common,
         });
 
       return Response.json({
@@ -62,7 +65,8 @@ export const handler: Handlers = {
         },
       }, {
         headers: {
-          "cache-control": "public, max-age=15, s-maxage=45, stale-while-revalidate=120",
+          "cache-control":
+            "public, max-age=15, s-maxage=45, stale-while-revalidate=120",
           "content-type": "application/json; charset=utf-8",
         },
       });

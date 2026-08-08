@@ -103,6 +103,29 @@ export type StorefrontCollectionV2 = {
   applied: Record<string, unknown>;
 };
 
+export type StorefrontProductsV2 =
+  & Omit<
+    StorefrontCollectionV2,
+    "category"
+  >
+  & {
+    catalog: {
+      title: string;
+      introduction?: unknown;
+      visibleFilters: string[];
+      emptyStateTitle?: string | null;
+      emptyStateCopy?: string | null;
+      callToAction?: { label: string; href: string } | null;
+      seo?: {
+        title?: string | null;
+        description?: string | null;
+        canonical?: string | null;
+        noIndex?: boolean;
+        socialImage?: StorefrontMediaV2 | null;
+      } | null;
+    };
+  };
+
 export type StorefrontProductDetailV2 = {
   version: number;
   revision: string;
@@ -183,6 +206,17 @@ export function fetchStorefrontCollection(
     params,
     options,
   );
+}
+
+export function fetchStorefrontProducts(
+  params: URLSearchParams = new URLSearchParams(),
+  options?: {
+    fetcher?: typeof fetch;
+    cache?: RequestCache;
+    timeoutMs?: number;
+  },
+): Promise<StorefrontProductsV2> {
+  return storefrontGet<StorefrontProductsV2>("products", params, options);
 }
 
 export function fetchStorefrontProduct(

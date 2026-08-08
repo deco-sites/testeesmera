@@ -7,6 +7,7 @@ import * as $_500 from "./routes/_500.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $api_esmera_collection from "./routes/api/esmera-collection.ts";
 import * as $api_esmera_renderability from "./routes/api/esmera-renderability.ts";
+import * as $api_esmera_reserve from "./routes/api/esmera-reserve.ts";
 import * as $api_esmera_search from "./routes/api/esmera-search.ts";
 import * as $colecao_slug_ from "./routes/colecao/[slug].tsx";
 import * as $colecao_index from "./routes/colecao/index.tsx";
@@ -18,6 +19,8 @@ import * as $robots_txt from "./routes/robots.txt.ts";
 import * as $sitemap_xml from "./routes/sitemap.xml.ts";
 import * as $sobre from "./routes/sobre.tsx";
 import * as $termos from "./routes/termos.tsx";
+import * as $BuyButton from "./islands/BuyButton.tsx";
+import * as $BuyFlow from "./islands/BuyFlow.tsx";
 import * as $CollectionExplorer from "./islands/CollectionExplorer.tsx";
 import * as $DynamicMenu from "./islands/DynamicMenu.tsx";
 import * as $EsmeraHeader from "./islands/EsmeraHeader.tsx";
@@ -27,6 +30,7 @@ import * as $HeroCarousel from "./islands/HeroCarousel.tsx";
 import * as $ProductActions from "./islands/ProductActions.tsx";
 import * as $ProductModal from "./islands/ProductModal.tsx";
 import * as $SpatialMatter from "./islands/SpatialMatter.tsx";
+import * as $WishlistButton from "./islands/WishlistButton.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -36,6 +40,7 @@ const manifest = {
     "./routes/_app.tsx": $_app,
     "./routes/api/esmera-collection.ts": $api_esmera_collection,
     "./routes/api/esmera-renderability.ts": $api_esmera_renderability,
+    "./routes/api/esmera-reserve.ts": $api_esmera_reserve,
     "./routes/api/esmera-search.ts": $api_esmera_search,
     "./routes/colecao/[slug].tsx": $colecao_slug_,
     "./routes/colecao/index.tsx": $colecao_index,
@@ -49,6 +54,8 @@ const manifest = {
     "./routes/termos.tsx": $termos,
   },
   islands: {
+    "./islands/BuyButton.tsx": $BuyButton,
+    "./islands/BuyFlow.tsx": $BuyFlow,
     "./islands/CollectionExplorer.tsx": $CollectionExplorer,
     "./islands/DynamicMenu.tsx": $DynamicMenu,
     "./islands/EsmeraHeader.tsx": $EsmeraHeader,
@@ -58,6 +65,7 @@ const manifest = {
     "./islands/ProductActions.tsx": $ProductActions,
     "./islands/ProductModal.tsx": $ProductModal,
     "./islands/SpatialMatter.tsx": $SpatialMatter,
+    "./islands/WishlistButton.tsx": $WishlistButton,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

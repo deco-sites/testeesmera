@@ -71,7 +71,8 @@ export default function Hero(
 ) {
   if (props.resolvedHome?.hero === null) return null;
   const { resolvedHome, ...editorialProps } = props;
-  const payloadControlsHero = resolvedHome?.sources.hero === "payload_override" ||
+  const payloadControlsHero =
+    resolvedHome?.sources.hero === "payload_override" ||
     resolvedHome?.sources.hero === "stale_payload";
   const source = payloadControlsHero
     ? mergeDefined<Props>(editorialProps, resolvedHome?.hero ?? {})

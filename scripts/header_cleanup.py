@@ -92,6 +92,11 @@ def transform_css(text: str, should_remove) -> str:
     return "".join(out)
 
 
+def normalize_whitespace(text: str) -> str:
+    trailing_newline = "\n" if text.endswith("\n") else ""
+    return "\n".join(line.rstrip() for line in text.splitlines()) + trailing_newline
+
+
 def shell_root(selector: str) -> bool:
     return bool(
         re.search(
@@ -195,6 +200,11 @@ def main() -> None:
     if old_badge not in header:
         raise SystemExit("expected cart badge not found")
     header = header.replace(old_badge, new_badge, 1)
+
+    master = normalize_whitespace(master)
+    commerce = normalize_whitespace(commerce)
+    finish = normalize_whitespace(finish)
+    header = normalize_whitespace(header)
 
     master_path.write_text(master)
     commerce_path.write_text(commerce)

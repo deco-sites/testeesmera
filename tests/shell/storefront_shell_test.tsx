@@ -83,7 +83,9 @@ Deno.test("transparent is explicit and solid remains the SSR default", () => {
 });
 
 Deno.test("unified header stylesheet owns shell layers without trapping fixed menu surfaces", async () => {
+  const masterCss = await Deno.readTextFile("static/esmera-master.css");
   const commerceCss = await Deno.readTextFile("static/esmera-commerce-refine.css");
+  const finishCss = await Deno.readTextFile("static/esmera-finish.css");
   const headerCss = await Deno.readTextFile("static/esmera-header.css");
   const headerCssWithoutComments = headerCss.replace(/\/\*[\s\S]*?\*\//g, "");
   const app = await Deno.readTextFile("routes/_app.tsx");
@@ -114,6 +116,24 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   assert(headerBase.length > 0);
   assertFalse(headerBase.includes("backdrop-filter"));
 
+  assertStringIncludes(masterCss, "--header-h: 60px");
+  assertStringIncludes(masterCss, "--header-h: 56px");
+  assert(masterCss.match(/--header-h:/g)?.length === 2);
+  assertStringIncludes(masterCss, "--ease-esmera: cubic-bezier(.16, 1, .3, 1)");
+  assertFalse(masterCss.includes(".esv-header.is-scrolled"));
+  assertFalse(masterCss.includes(".esv-header-nav"));
+  assertFalse(masterCss.includes(".esv-header-menu"));
+  assertFalse(masterCss.includes(".esv-object-taxonomy"));
+
+  assertFalse(commerceCss.includes(".esv-header.is-scrolled"));
+  assertFalse(commerceCss.includes(".esv-header-nav"));
+  assertFalse(commerceCss.includes(".esv-menu-"));
+  assertFalse(commerceCss.includes("--header-h:"));
+
+  assertFalse(finishCss.includes(".esv-header {"));
+  assertFalse(finishCss.includes(".esv-wordmark"));
+  assertFalse(finishCss.includes("--header-h:"));
+
   const catalogIndex = app.indexOf("/esmera-catalog-v2.css");
   const headerIndex = app.indexOf("/esmera-header.css");
   assert(catalogIndex >= 0 && headerIndex > catalogIndex);
@@ -135,6 +155,8 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   assertStringIncludes(headerIsland, 'body.style.position = "fixed"');
   assertStringIncludes(headerIsland, "globalThis.scrollTo");
   assertStringIncludes(headerIsland, "setIsScrolled");
+  assertStringIncludes(headerIsland, "return previous ? y > 8 : y > 24;");
+  assertStringIncludes(headerIsland, "key={cartCount}");
   assertStringIncludes(headerIsland, 'class="esv-cart-quantity"');
   assertStringIncludes(headerIsland, 'class="esv-cart-remove"');
   assertStringIncludes(headerIsland, "<DynamicMenu");

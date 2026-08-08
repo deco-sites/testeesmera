@@ -5,35 +5,290 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
+    env:
+      PAYLOAD_API_URL: https://esmeracms-green.vercel.app
+      PORT: "8000"
     steps:
       - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          deno-version: v2.x
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
 
-      - name: Apply guarded header cleanup
-        run: python3 scripts/header_cleanup.py
+      - name: Format changed files
+        run: >-
+          deno fmt --check
+          components/esmera/ObjectCard.tsx
+          islands/ProductActions.tsx
+          islands/ProductModal.tsx
+          lib/esmera/editorialProps.ts
+          sections/Esmera/Header.tsx
+          sections/Esmera/Hero.tsx
+          sections/Esmera/Manifesto.tsx
+          sections/Esmera/Matter.tsx
+          sections/Esmera/MatterInterlude.tsx
+          sections/Esmera/Provenance.tsx
+          static/esmera-matter-interaction.css
+          static/esmera-product-modal-v2.css
+          tests/editorial/home_editability_test.ts
+          tests/product/product_modal_contract_test.ts
 
-      - name: Verify cleanup diff
+      - name: Generate Deco metadata
+        run: deno task gen
+
+      - name: Verify generated Deco metadata
         shell: bash
         run: |
-          git diff --check
-          git diff --stat
-
-      - name: Commit cleaned header sources
-        shell: bash
-        run: |
-          if git diff --quiet; then
-            echo "No cleanup changes produced"
+          if ! git diff --quiet -- .deco/blocks/esmera.json manifest.gen.ts; then
+            echo "Generated Deco metadata is not committed."
+            git diff -- .deco/blocks/esmera.json manifest.gen.ts
             exit 1
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add static/esmera-master.css static/esmera-commerce-refine.css static/esmera-finish.css islands/EsmeraHeader.tsx
-          git commit -m "refactor(header): remove legacy shell competition"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
+      - name: Lint
+        run: deno lint
+
+      - name: Typecheck
+        run: deno check dev.ts main.ts
+
+      - name: Tests
+        run: deno test -A
+
+      - name: Build
+        run: deno task build
+
+      - name: Start preview
+        shell: bash
+        run: |
+          deno task preview > /tmp/esmera-preview.log 2>&1 &
+          for attempt in $(seq 1 90); do
+            if curl --silent --fail http://127.0.0.1:8000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/esmera-preview.log
+          exit 1
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.54.2
+          npx playwright install --with-deps chromium
+
+      - name: Smoke test desktop and mobile
+        shell: bash
+        run: |
+          mkdir -p smoke-artifacts/videos
+          trap 'rm -f ./.storefront-smoke.mjs' EXIT
+          cat > ./.storefront-smoke.mjs <<'JS'
+          import { mkdir, writeFile } from "node:fs/promises";
+          import { chromium } from "playwright";
+
+          const BASE_URL = "http://127.0.0.1:8000/";
+          const ARTIFACT_DIR = "smoke-artifacts";
+          let currentStep = "initialization";
+
+          await mkdir(`${ARTIFACT_DIR}/videos`, { recursive: true });
+
+          async function step(name, operation) {
+            currentStep = name;
+            console.log(`[smoke:start] ${name}`);
+            const value = await operation();
+            console.log(`[smoke:pass] ${name}`);
+            return value;
+          }
+
+          async function validateMatter(page) {
+            await page.waitForSelector(".esv-territory-panel.is-clickable", {
+              state: "visible",
+              timeout: 20000,
+            });
+            const geometry = await page.locator(".esv-territory-panel.is-clickable").first().evaluate((panel) => {
+              const copy = panel.querySelector(".esv-territory-copy");
+              if (!(copy instanceof HTMLElement)) throw new Error("Matter copy missing");
+              const panelRect = panel.getBoundingClientRect();
+              const copyRect = copy.getBoundingClientRect();
+              return {
+                tag: panel.tagName,
+                panelTop: panelRect.top,
+                panelBottom: panelRect.bottom,
+                copyTop: copyRect.top,
+                copyBottom: copyRect.bottom,
+              };
+            });
+            if (geometry.tag !== "A") {
+              throw new Error(`Matter panel is not a link: ${JSON.stringify(geometry)}`);
+            }
+            if (geometry.copyTop < geometry.panelTop - 1 || geometry.copyBottom > geometry.panelBottom + 1) {
+              throw new Error(`Matter overlay escaped panel: ${JSON.stringify(geometry)}`);
+            }
+            return geometry;
+          }
+
+          async function runViewport(browser, name, viewport, scenario) {
+            const context = await browser.newContext({
+              viewport,
+              recordVideo: {
+                dir: `${ARTIFACT_DIR}/videos`,
+                size: viewport,
+              },
+            });
+            await context.tracing.start({ screenshots: true, snapshots: true, sources: true });
+            const page = await context.newPage();
+
+            try {
+              return await scenario(page);
+            } catch (error) {
+              const stack = error instanceof Error ? error.stack ?? error.message : String(error);
+              console.error(`[smoke:fail] ${currentStep}\n${stack}`);
+              await page.screenshot({
+                path: `${ARTIFACT_DIR}/${name}-failure.png`,
+                fullPage: true,
+              }).catch(() => undefined);
+              await writeFile(
+                `${ARTIFACT_DIR}/${name}-error.txt`,
+                `Step: ${currentStep}\n\n${stack}\n`,
+              );
+              throw error;
+            } finally {
+              await context.tracing.stop({
+                path: `${ARTIFACT_DIR}/${name}-trace.zip`,
+              }).catch((error) => console.error(`[smoke:trace-fail] ${String(error)}`));
+              await context.close();
+            }
+          }
+
+          const browser = await chromium.launch({ headless: true });
+
+          try {
+            const desktopModal = await runViewport(
+              browser,
+              "desktop",
+              { width: 1440, height: 900 },
+              async (desktop) => {
+                await step("desktop: load homepage", () =>
+                  desktop.goto(BASE_URL, { waitUntil: "networkidle", timeout: 120000 })
+                );
+                await step("desktop: find product media trigger", () =>
+                  desktop.waitForSelector(".esv-product-modal-trigger-media", {
+                    state: "visible",
+                    timeout: 20000,
+                  })
+                );
+
+                const initialUrl = desktop.url();
+                const mediaTrigger = desktop.locator(".esv-product-modal-trigger-media").first();
+                await step("desktop: open modal from product media", async () => {
+                  await mediaTrigger.scrollIntoViewIfNeeded();
+                  await mediaTrigger.click();
+                  await desktop.waitForSelector(".esv-product-modal", { state: "visible" });
+                });
+                await step("desktop: confirm product click did not navigate", async () => {
+                  if (desktop.url() !== initialUrl) {
+                    throw new Error(`Product click navigated: ${desktop.url()}`);
+                  }
+                });
+
+                const modal = await step("desktop: validate gallery and buybox layout", async () => {
+                  const metrics = await desktop.locator(".esv-product-modal").evaluate((element) => ({
+                    columns: getComputedStyle(element).gridTemplateColumns,
+                    width: element.getBoundingClientRect().width,
+                  }));
+                  if (metrics.columns.split(" ").length < 2) {
+                    throw new Error(`Desktop modal is not gallery + buybox: ${JSON.stringify(metrics)}`);
+                  }
+                  await desktop.waitForSelector(".esv-product-modal-buybox", { state: "visible" });
+                  const galleryClass = await desktop.locator(".esv-product-modal-gallery").getAttribute("class");
+                  if (!galleryClass?.includes("is-single") && !galleryClass?.includes("is-double")) {
+                    throw new Error(`Adaptive gallery class missing: ${galleryClass}`);
+                  }
+                  return metrics;
+                });
+
+                await step("desktop: open image zoom", async () => {
+                  await desktop.locator(".esv-product-modal-image").first().click();
+                  await desktop.waitForSelector(".esv-product-zoom", { state: "visible" });
+                });
+                await step("desktop: first Escape closes only zoom", async () => {
+                  await desktop.keyboard.press("Escape");
+                  await desktop.waitForSelector(".esv-product-zoom", { state: "detached" });
+                  await desktop.waitForSelector(".esv-product-modal", { state: "visible" });
+                });
+                await step("desktop: second Escape closes modal", async () => {
+                  await desktop.keyboard.press("Escape");
+                  await desktop.waitForSelector(".esv-product-modal", { state: "detached" });
+                });
+
+                await step("desktop: open modal from compact CTA", async () => {
+                  const cta = desktop.locator(".esv-product-actions.is-compact button").first();
+                  await cta.scrollIntoViewIfNeeded();
+                  await cta.click();
+                  await desktop.waitForSelector(".esv-product-modal", { state: "visible" });
+                });
+                await step("desktop: close CTA modal with Escape", async () => {
+                  await desktop.keyboard.press("Escape");
+                  await desktop.waitForSelector(".esv-product-modal", { state: "detached" });
+                });
+                await step("desktop: validate Matter link geometry", () => validateMatter(desktop));
+
+                return modal;
+              },
+            );
+
+            const mobileModal = await runViewport(
+              browser,
+              "mobile",
+              { width: 390, height: 844 },
+              async (mobile) => {
+                await step("mobile: load homepage", () =>
+                  mobile.goto(BASE_URL, { waitUntil: "networkidle", timeout: 120000 })
+                );
+                await step("mobile: validate Matter link geometry", () => validateMatter(mobile));
+                await step("mobile: open modal from product media", async () => {
+                  const mobileTrigger = mobile.locator(".esv-product-modal-trigger-media").first();
+                  await mobileTrigger.scrollIntoViewIfNeeded();
+                  await mobileTrigger.click();
+                  await mobile.waitForSelector(".esv-product-modal", { state: "visible" });
+                });
+                const metrics = await step("mobile: validate full-width modal", async () => {
+                  const result = await mobile.locator(".esv-product-modal").evaluate((element) => ({
+                    width: element.getBoundingClientRect().width,
+                    viewport: window.innerWidth,
+                    display: getComputedStyle(element).display,
+                  }));
+                  if (Math.abs(result.width - result.viewport) > 2) {
+                    throw new Error(`Mobile modal is not full width: ${JSON.stringify(result)}`);
+                  }
+                  return result;
+                });
+                await step("mobile: close modal with Escape", async () => {
+                  await mobile.keyboard.press("Escape");
+                  await mobile.waitForSelector(".esv-product-modal", { state: "detached" });
+                });
+                return metrics;
+              },
+            );
+
+            console.log(JSON.stringify({ desktopModal, mobileModal, status: "passed" }));
+          } finally {
+            await browser.close();
+          }
+          JS
+          node ./.storefront-smoke.mjs
+
+      - name: Upload Playwright evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storefront-smoke-evidence
+          path: smoke-artifacts/
+          if-no-files-found: ignore
+          retention-days: 7

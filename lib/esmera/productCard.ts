@@ -174,16 +174,15 @@ export function esmeraObjectToCardViewModel(
   const price = item.isInquiry
     ? null
     : (item.price ?? item.formattedPrice ?? "").replace(/\s/g, " ") || null;
-  const title = item.category?.trim() || item.subtitle?.trim() || item.title;
-  const distinctPiece = title !== item.title;
 
   return {
     id: item.id,
     slug: item.slug,
-    eyebrow: distinctPiece
-      ? buildEyebrow(item.title, item.material ?? null)
-      : buildEyebrow(item.material ?? "", null),
-    title,
+    // Sem "tipo de peça" confiável no pipeline atual: o título é o NOME da peça
+    // e o eyebrow é só o material. A inversão nome↔pieceType só acontece com o
+    // contrato público (toProductCardViewModel), onde pieceType é confiável.
+    eyebrow: buildEyebrow(item.material ?? "", null),
+    title: item.title,
     status: buildStatus(state, isUnique),
     specs: specsFromAttributes(item.attributes ?? []),
     price,

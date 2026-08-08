@@ -123,7 +123,8 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   assertStringIncludes(commerceCss, ".esv-cart-quantity");
   assertStringIncludes(commerceCss, ".esv-search-field");
 
-  assertStringIncludes(menuIsland, 'createPortal } from "preact/compat"');
+  assertStringIncludes(menuIsland, 'import("preact/compat")');
+  assertFalse(menuIsland.startsWith('import { createPortal } from "preact/compat"'));
   assertStringIncludes(menuIsland, 'pointerType !== "mouse"');
   assertStringIncludes(menuIsland, "}, 120);");
   assertStringIncludes(menuIsland, "key={activeDesktop.id}");

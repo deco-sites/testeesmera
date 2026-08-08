@@ -1,6 +1,10 @@
 import { assertEquals } from "@std/assert";
-import { toProductCardViewModel } from "../../lib/esmera/productCard.ts";
+import {
+  esmeraObjectToCardViewModel,
+  toProductCardViewModel,
+} from "../../lib/esmera/productCard.ts";
 import type { StorefrontProductV2 } from "../../lib/esmera/storefront.ts";
+import type { EsmeraObject } from "../../lib/payload/types.ts";
 
 function product(
   overrides: Partial<StorefrontProductV2> = {},
@@ -126,4 +130,56 @@ Deno.test("altura fracionária e peso abaixo de 1 kg", () => {
     }),
   );
   assertEquals(vm.specs, "18,5 cm · 800 g");
+});
+
+function esmera(overrides: Partial<EsmeraObject> = {}): EsmeraObject {
+  return {
+    id: "42",
+    slug: "gelato",
+    code: "OBJ-021",
+    title: "Gelato",
+    image: "/cover.jpg",
+    alt: "Ponta de Esmeralda",
+    availability: "unique",
+    material: "Rocha de Esmeralda Natural",
+    category: "Ponta de Esmeralda",
+    edition: "Peça única",
+    attributes: [
+      { label: "Altura", value: "18 cm" },
+      { label: "Peso", value: "1,2 kg" },
+    ],
+    gallery: [],
+    priceMode: "fixed",
+    priceCents: 49000,
+    formattedPrice: "R$ 490,00",
+    isInquiry: false,
+    variants: [],
+    seo: {} as EsmeraObject["seo"],
+    price: "R$ 490,00",
+    ...overrides,
+  };
+}
+
+Deno.test("bridge EsmeraObject → ViewModel (sem parcelamento)", () => {
+  const vm = esmeraObjectToCardViewModel(esmera());
+  assertEquals(vm.eyebrow, "GELATO · ROCHA DE ESMERALDA NATURAL");
+  assertEquals(vm.title, "Ponta de Esmeralda");
+  assertEquals(vm.status, "PEÇA ÚNICA · DISPONÍVEL");
+  assertEquals(vm.specs, "18 cm · 1,2 kg");
+  assertEquals(vm.price, "R$ 490,00");
+  assertEquals(vm.installment, null);
+  assertEquals(vm.isPurchasable, true);
+});
+
+Deno.test("bridge: sob consulta não é comprável e esconde preço", () => {
+  const vm = esmeraObjectToCardViewModel(
+    esmera({
+      isInquiry: true,
+      priceMode: "inquiry",
+      priceCents: null,
+      price: undefined,
+    }),
+  );
+  assertEquals(vm.price, null);
+  assertEquals(vm.isPurchasable, false);
 });

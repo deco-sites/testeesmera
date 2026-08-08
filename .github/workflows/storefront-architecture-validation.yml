@@ -24,7 +24,10 @@ jobs:
         run: deno lint
 
       - name: Typecheck
-        run: deno check dev.ts main.ts
+        shell: bash
+        run: |
+          set -o pipefail
+          deno check dev.ts main.ts 2>&1 | sed 's/^/::error::/'
 
       - name: Tests
         run: deno test -A

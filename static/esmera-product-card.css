@@ -1,0 +1,270 @@
+/*
+ * Card de produto Esméra — fonte única do card final (plano §12/§13).
+ * Carregado por último para sobrepor regras legadas de .esv-product-card.
+ * Sem novas fontes: herda Inter do shell.
+ */
+:root {
+  --product-card-bg: #f7f4ee;
+  --product-card-border: rgba(28, 26, 23, 0.1);
+  --product-card-text: #1c1a17;
+  --product-card-muted: #5a554e;
+  --product-card-cta: #1f4438;
+  --product-card-cta-hover: #18372d;
+  --product-card-radius: 14px;
+}
+
+.esv-product-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--product-card-bg);
+  color: var(--product-card-text);
+  border: 1px solid var(--product-card-border);
+  border-radius: var(--product-card-radius);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ---- Mídia 3:4 ---- */
+.esv-product-card .esv-product-media-wrap {
+  position: relative;
+}
+
+.esv-product-card .esv-product-media {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: #ece7dd;
+}
+
+.esv-product-card .esv-product-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.esv-product-card .esv-product-image-detail {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.esv-product-card.has-detail:hover .esv-product-image-detail,
+.esv-product-card.has-detail:focus-within .esv-product-image-detail {
+  opacity: 1;
+}
+
+/* Botão invisível que abre o modal, cobrindo a mídia. */
+.esv-product-card .esv-product-modal-trigger-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 1;
+}
+
+/* ---- Overlay de status ---- */
+.esv-card-status {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 84px);
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(247, 244, 238, 0.92);
+  backdrop-filter: blur(6px);
+  color: var(--product-card-text);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.esv-card-status::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--product-card-cta);
+}
+
+/* ---- Wishlist ---- */
+.esv-card-wishlist {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(247, 244, 238, 0.92);
+  backdrop-filter: blur(6px);
+  color: var(--product-card-text);
+  cursor: pointer;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.esv-card-wishlist:hover {
+  transform: scale(1.06);
+}
+
+.esv-card-wishlist[data-favorited="true"] {
+  color: #9c2b2b;
+}
+
+.esv-card-wishlist:focus-visible {
+  outline: 2px solid var(--product-card-cta);
+  outline-offset: 2px;
+}
+
+/* ---- Conteúdo ---- */
+.esv-product-card-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+}
+
+.esv-card-eyebrow {
+  margin: 0;
+  color: var(--product-card-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  line-height: 1.35;
+}
+
+.esv-card-title {
+  margin: 0;
+  font-size: clamp(1.55rem, 1.2rem + 1.4vw, 1.9rem);
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+}
+
+.esv-card-title .esv-product-modal-trigger-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.esv-card-title .esv-product-modal-trigger-title:focus-visible {
+  outline: 2px solid var(--product-card-cta);
+  outline-offset: 3px;
+}
+
+.esv-card-specs {
+  margin: 0;
+  color: var(--product-card-muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.esv-card-divider {
+  margin: 8px 0;
+  border: 0;
+  border-top: 1px solid var(--product-card-border);
+}
+
+.esv-card-pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.esv-card-price {
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.esv-card-installment {
+  margin: 0;
+  color: var(--product-card-muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.esv-card-installment strong {
+  color: var(--product-card-text);
+  font-weight: 600;
+}
+
+/* ---- CTA COMPRAR ---- */
+.esv-card-cta {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--product-card-cta);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+
+.esv-card-cta:hover {
+  background: var(--product-card-cta-hover);
+}
+
+.esv-card-cta:focus-visible {
+  outline: 2px solid var(--product-card-cta);
+  outline-offset: 2px;
+}
+
+/* CTA alternativo (peças sob consulta) mantém o island compacto existente. */
+.esv-product-card .esv-product-actions.is-compact {
+  margin-top: 12px;
+}
+
+/* ---- Responsivo (plano §18) ---- */
+@media (max-width: 429px) {
+  .esv-product-card-copy {
+    padding: 16px;
+  }
+  .esv-card-title {
+    font-size: clamp(1.5rem, 1.3rem + 2vw, 1.75rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esv-product-card .esv-product-image-detail,
+  .esv-card-wishlist {
+    transition: none;
+  }
+}

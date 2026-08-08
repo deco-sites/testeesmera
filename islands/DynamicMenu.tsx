@@ -1,3 +1,4 @@
+import { createPortal } from "preact/compat";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { NavigationNode } from "../lib/payload/navigation.ts";
 
@@ -84,15 +85,33 @@ function openHeaderControl(selector: string) {
   control?.click();
 }
 
+function normalizedPath(value: string): string {
+  if (!value) return "/";
+  const path = value.split(/[?#]/, 1)[0] || "/";
+  if (path === "/") return path;
+  return path.replace(/\/+$/, "");
+}
+
+function isCurrentPath(href: string, pathname: string): boolean {
+  if (!href || href.startsWith("#") || /^[a-z]+:/i.test(href)) return false;
+  const target = normalizedPath(href);
+  const current = normalizedPath(pathname);
+  if (target === "/") return current === "/";
+  return current === target || current.startsWith(`${target}/`);
+}
+
 export default function DynamicMenu(
   { items, whatsappHref = "", instagramHref = "" }: Props,
 ) {
   const [desktopOpen, setDesktopOpen] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [path, setPath] = useState<string[]>([]);
+  const [pathname, setPathname] = useState("");
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
   const drawerRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeTimer = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
+  const openTimer = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
 
   const desktopItems = useMemo(
     () => filterByVisibility(items, "desktop"),
@@ -111,6 +130,18 @@ export default function DynamicMenu(
     : null;
   const mobileItems = activeMobile?.children ?? mobileRootItems;
 
+  const cancelDesktopOpen = () => {
+    if (openTimer.current) globalThis.clearTimeout(openTimer.current);
+    openTimer.current = null;
+  };
+  const scheduleDesktopOpen = (id: string, pointerType: string) => {
+    if (pointerType !== "mouse") return;
+    cancelDesktopOpen();
+    openTimer.current = globalThis.setTimeout(() => {
+      setDesktopOpen(id);
+      openTimer.current = null;
+    }, 120);
+  };
   const scheduleDesktopClose = () => {
     if (closeTimer.current) globalThis.clearTimeout(closeTimer.current);
     closeTimer.current = globalThis.setTimeout(() => setDesktopOpen(null), 140);
@@ -119,6 +150,19 @@ export default function DynamicMenu(
     if (closeTimer.current) globalThis.clearTimeout(closeTimer.current);
     closeTimer.current = null;
   };
+
+  useEffect(() => {
+    setPortalRoot(document.body);
+    const syncPath = () => setPathname(globalThis.location.pathname);
+    syncPath();
+    globalThis.addEventListener("popstate", syncPath);
+    return () => globalThis.removeEventListener("popstate", syncPath);
+  }, []);
+
+  useEffect(() => () => {
+    cancelDesktopOpen();
+    cancelDesktopClose();
+  }, []);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -178,47 +222,21 @@ export default function DynamicMenu(
 
   useEffect(() => {
     const closeDesktop = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setDesktopOpen(null);
+      if (event.key !== "Escape") return;
+      cancelDesktopOpen();
+      cancelDesktopClose();
+      setDesktopOpen(null);
     };
     globalThis.addEventListener("keydown", closeDesktop);
     return () => globalThis.removeEventListener("keydown", closeDesktop);
   }, []);
 
-  return (
-    <div class="esv-nav-v2-root">
-      <nav
-        class="esv-nav-v2-desktop"
-        aria-label="Navegação principal"
-        onPointerEnter={cancelDesktopClose}
-        onPointerLeave={scheduleDesktopClose}
-        onFocusIn={cancelDesktopClose}
-        onFocusOut={(event) => {
-          const next = event.relatedTarget as Node | null;
-          if (!event.currentTarget.contains(next)) scheduleDesktopClose();
-        }}
-      >
-        {desktopItems.map((item) => (
-          <a
-            key={item.id}
-            class="esv-nav-v2-root-link"
-            href={item.href || undefined}
-            target={item.external ? "_blank" : undefined}
-            rel={item.external ? "noopener noreferrer" : undefined}
-            aria-haspopup={item.children.length > 0 ? "true" : undefined}
-            aria-expanded={item.children.length > 0
-              ? desktopOpen === item.id
-              : undefined}
-            onPointerEnter={() =>
-              item.children.length > 0 && setDesktopOpen(item.id)}
-            onFocus={() => item.children.length > 0 && setDesktopOpen(item.id)}
-          >
-            {item.label}
-          </a>
-        ))}
-      </nav>
-
-      {activeDesktop && activeDesktop.children.length > 0 && (
+  const mega = portalRoot && activeDesktop && activeDesktop.children.length > 0
+    ? createPortal(
+      <>
+        <div class="esv-mega-backdrop" aria-hidden="true" />
         <div
+          key={activeDesktop.id}
           class="esv-mega-v2"
           onPointerEnter={cancelDesktopClose}
           onPointerLeave={scheduleDesktopClose}
@@ -232,8 +250,12 @@ export default function DynamicMenu(
               )}
             </div>
             <div class="esv-mega-v2-columns">
-              {activeDesktop.children.map((group) => (
-                <div class="esv-mega-v2-column" key={group.id}>
+              {activeDesktop.children.map((group, index) => (
+                <div
+                  class="esv-mega-v2-column"
+                  key={group.id}
+                  style={{ animationDelay: `${index * 35}ms` }}
+                >
                   <a
                     class="esv-mega-v2-column-title"
                     href={group.href || undefined}
@@ -284,124 +306,182 @@ export default function DynamicMenu(
             )}
           </div>
         </div>
-      )}
+      </>,
+      portalRoot,
+    )
+    : null;
 
-      <button
-        ref={triggerRef}
-        class="esv-nav-v2-mobile-trigger"
-        type="button"
-        aria-label="Abrir menu"
-        aria-expanded={mobileOpen}
-        onClick={() => setMobileOpen(true)}
-      >
-        <MenuGlyph />
-      </button>
+  const drawer = portalRoot && mobileOpen
+    ? createPortal(
+      <div class="esv-nav-v2-backdrop" onClick={() => setMobileOpen(false)}>
+        <aside
+          ref={drawerRef}
+          class="esv-nav-v2-drawer"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu principal"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <header class="esv-nav-v2-drawer-header">
+            {activeMobile
+              ? (
+                <button
+                  type="button"
+                  class="esv-nav-v2-back"
+                  onClick={() => setPath((current) => current.slice(0, -1))}
+                >
+                  <Chevron direction="left" /> Voltar
+                </button>
+              )
+              : <span class="esv-nav-v2-drawer-title">Menu</span>}
+            <button
+              type="button"
+              aria-label="Fechar menu"
+              onClick={() => setMobileOpen(false)}
+            >
+              <CloseGlyph />
+            </button>
+          </header>
 
-      {mobileOpen && (
-        <div class="esv-nav-v2-backdrop" onClick={() => setMobileOpen(false)}>
-          <aside
-            ref={drawerRef}
-            class="esv-nav-v2-drawer"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Menu principal"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <header class="esv-nav-v2-drawer-header">
-              {activeMobile
-                ? (
-                  <button
-                    type="button"
-                    class="esv-nav-v2-back"
-                    onClick={() => setPath((current) => current.slice(0, -1))}
+          <div class="esv-nav-v2-mobile-level">
+            {activeMobile && (
+              <div class="esv-nav-v2-level-heading">
+                <p class="esv-kicker">{activeMobile.label}</p>
+                {activeMobile.description && <p>{activeMobile.description}</p>}
+                {activeMobile.href && <a href={activeMobile.href}>Ver tudo</a>}
+              </div>
+            )}
+            <div class="esv-nav-v2-mobile-links">
+              {mobileItems.map((item) => (
+                <div class="esv-nav-v2-mobile-row" key={item.id}>
+                  <a
+                    href={item.href || undefined}
+                    target={item.external ? "_blank" : undefined}
+                    rel={item.external ? "noopener noreferrer" : undefined}
+                    aria-current={!item.external && isCurrentPath(item.href, pathname)
+                      ? "page"
+                      : undefined}
+                    onClick={() => item.children.length === 0 && setMobileOpen(false)}
                   >
-                    <Chevron direction="left" /> Voltar
-                  </button>
-                )
-                : <span class="esv-nav-v2-drawer-title">Menu</span>}
-              <button
-                type="button"
-                aria-label="Fechar menu"
-                onClick={() => setMobileOpen(false)}
-              >
-                <CloseGlyph />
-              </button>
-            </header>
-
-            <div class="esv-nav-v2-mobile-level">
-              {activeMobile && (
-                <div class="esv-nav-v2-level-heading">
-                  <p class="esv-kicker">{activeMobile.label}</p>
-                  {activeMobile.description && <p>{activeMobile.description}</p>}
-                  {activeMobile.href && (
-                    <a href={activeMobile.href}>Ver tudo</a>
+                    {item.label}
+                  </a>
+                  {item.children.length > 0 && (
+                    <button
+                      type="button"
+                      aria-label={`Abrir ${item.label}`}
+                      onClick={() => setPath((current) => [...current, item.id])}
+                    >
+                      <Chevron />
+                    </button>
                   )}
                 </div>
-              )}
-              <div class="esv-nav-v2-mobile-links">
-                {mobileItems.map((item) => (
-                  <div class="esv-nav-v2-mobile-row" key={item.id}>
-                    <a
-                      href={item.href || undefined}
-                      target={item.external ? "_blank" : undefined}
-                      rel={item.external ? "noopener noreferrer" : undefined}
-                      onClick={() => item.children.length === 0 && setMobileOpen(false)}
-                    >
-                      {item.label}
-                    </a>
-                    {item.children.length > 0 && (
-                      <button
-                        type="button"
-                        aria-label={`Abrir ${item.label}`}
-                        onClick={() => setPath((current) => [...current, item.id])}
-                      >
-                        <Chevron />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
+          </div>
 
-            <footer class="esv-nav-v2-drawer-footer">
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileOpen(false);
-                  globalThis.setTimeout(
-                    () => openHeaderControl(".esv-search-trigger"),
-                    0,
-                  );
-                }}
-              >
-                Buscar
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileOpen(false);
-                  globalThis.setTimeout(
-                    () => openHeaderControl(".esv-cart-link"),
-                    0,
-                  );
-                }}
-              >
-                Carrinho
-              </button>
-              {whatsappHref && (
-                <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                  WhatsApp
-                </a>
-              )}
-              {instagramHref && (
-                <a href={instagramHref} target="_blank" rel="noopener noreferrer">
-                  Instagram
-                </a>
-              )}
-            </footer>
-          </aside>
-        </div>
-      )}
-    </div>
+          <footer class="esv-nav-v2-drawer-footer">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                globalThis.setTimeout(
+                  () => openHeaderControl(".esv-search-trigger"),
+                  0,
+                );
+              }}
+            >
+              Buscar
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                globalThis.setTimeout(
+                  () => openHeaderControl(".esv-cart-link"),
+                  0,
+                );
+              }}
+            >
+              Carrinho
+            </button>
+            {whatsappHref && (
+              <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+                WhatsApp
+              </a>
+            )}
+            {instagramHref && (
+              <a href={instagramHref} target="_blank" rel="noopener noreferrer">
+                Instagram
+              </a>
+            )}
+          </footer>
+        </aside>
+      </div>,
+      portalRoot,
+    )
+    : null;
+
+  return (
+    <>
+      <div class="esv-nav-v2-root">
+        <nav
+          class="esv-nav-v2-desktop"
+          aria-label="Navegação principal"
+          onPointerEnter={cancelDesktopClose}
+          onPointerLeave={scheduleDesktopClose}
+          onFocusIn={cancelDesktopClose}
+          onFocusOut={(event) => {
+            const next = event.relatedTarget as Node | null;
+            if (!event.currentTarget.contains(next)) scheduleDesktopClose();
+          }}
+        >
+          {desktopItems.map((item) => (
+            <a
+              key={item.id}
+              class="esv-nav-v2-root-link"
+              href={item.href || undefined}
+              target={item.external ? "_blank" : undefined}
+              rel={item.external ? "noopener noreferrer" : undefined}
+              aria-haspopup={item.children.length > 0 ? "true" : undefined}
+              aria-expanded={item.children.length > 0
+                ? desktopOpen === item.id
+                : undefined}
+              aria-current={!item.external && isCurrentPath(item.href, pathname)
+                ? "page"
+                : undefined}
+              onPointerEnter={(event) => {
+                cancelDesktopClose();
+                if (item.children.length > 0) {
+                  scheduleDesktopOpen(item.id, event.pointerType);
+                } else {
+                  cancelDesktopOpen();
+                  scheduleDesktopClose();
+                }
+              }}
+              onPointerLeave={cancelDesktopOpen}
+              onFocus={() => {
+                cancelDesktopOpen();
+                if (item.children.length > 0) setDesktopOpen(item.id);
+              }}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+
+        <button
+          ref={triggerRef}
+          class="esv-nav-v2-mobile-trigger"
+          type="button"
+          aria-label="Abrir menu"
+          aria-expanded={mobileOpen}
+          onClick={() => setMobileOpen(true)}
+        >
+          <MenuGlyph />
+        </button>
+      </div>
+      {mega}
+      {drawer}
+    </>
   );
 }

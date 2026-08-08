@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import ObjectCard from "../components/esmera/ObjectCard.tsx";
 import type { CatalogFilter, CollectionSort } from "../lib/payload/catalog.ts";
-import type { EsmeraObject } from "../lib/payload/types.ts";
+import type { StorefrontProductV2 } from "../lib/esmera/storefront.ts";
 
 export interface CollectionExplorerProps {
-  initialItems: EsmeraObject[];
+  initialItems: StorefrontProductV2[];
   initialTotalDocs: number;
   initialPage: number;
   initialTotalPages: number;
@@ -24,7 +24,7 @@ export interface CollectionExplorerProps {
 }
 
 interface CollectionResponse {
-  items: EsmeraObject[];
+  items: StorefrontProductV2[];
   pagination: {
     page: number;
     totalPages: number;
@@ -139,7 +139,10 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
         serialized ? `?${serialized}` : ""
       }`;
       globalThis.history.replaceState(
-        { ...globalThis.history.state, esmeraCollectionPage: data.pagination.page },
+        {
+          ...globalThis.history.state,
+          esmeraCollectionPage: data.pagination.page,
+        },
         "",
         nextURL,
       );
@@ -174,18 +177,30 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
   const activeFilters = useMemo(() => {
     const chips: Array<{ key: string; label: string; clear: () => void }> = [];
     if (q.length >= 2) {
-      chips.push({ key: "q", label: `Busca: ${q}`, clear: () => setQInput("") });
+      chips.push({
+        key: "q",
+        label: `Busca: ${q}`,
+        clear: () => setQInput(""),
+      });
     }
     if (category) {
-      const label = props.categories.find((item) => item.slug === category)?.title ||
+      const label = props.categories.find((item) =>
+        item.slug === category
+      )?.title ||
         category;
       chips.push({ key: "category", label, clear: () => setCategory("") });
     }
     if (material) {
-      chips.push({ key: "material", label: material, clear: () => setMaterial("") });
+      chips.push({
+        key: "material",
+        label: material,
+        clear: () => setMaterial(""),
+      });
     }
     if (availability) {
-      const label = availabilityOptions.find(([value]) => value === availability)?.[1] ||
+      const label = availabilityOptions.find(([value]) =>
+        value === availability
+      )?.[1] ||
         availability;
       chips.push({
         key: "availability",
@@ -214,8 +229,21 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
         <label class="esv-collection-v2-search">
           <span class="esv-sr-only">Buscar nesta coleção</span>
           <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18">
-            <circle cx="10.5" cy="10.5" r="5.75" fill="none" stroke="currentColor" stroke-width="1.4" />
-            <path d="m15 15 4.25 4.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.4" />
+            <circle
+              cx="10.5"
+              cy="10.5"
+              r="5.75"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+            />
+            <path
+              d="m15 15 4.25 4.25"
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-width="1.4"
+            />
           </svg>
           <input
             type="search"
@@ -233,14 +261,16 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
           aria-controls="esv-collection-filters"
           onClick={() => setFiltersOpen((value) => !value)}
         >
-          Filtros {activeFilters.length > 0 && <span>{activeFilters.length}</span>}
+          Filtros{" "}
+          {activeFilters.length > 0 && <span>{activeFilters.length}</span>}
         </button>
 
         <label class="esv-collection-v2-sort">
           <span>Ordenar</span>
           <select
             value={sort}
-            onChange={(event) => setSort(event.currentTarget.value as CollectionSort)}
+            onChange={(event) =>
+              setSort(event.currentTarget.value as CollectionSort)}
           >
             {sortOptions.map(([value, label]) => (
               <option value={value} key={value}>{label}</option>
@@ -255,16 +285,23 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
       >
         <div class="esv-collection-v2-filter-head">
           <strong>Refinar coleção</strong>
-          <button type="button" onClick={() => setFiltersOpen(false)}>Fechar</button>
+          <button type="button" onClick={() => setFiltersOpen(false)}>
+            Fechar
+          </button>
         </div>
         <div class="esv-collection-v2-filter-fields">
           {props.visibleFilters.includes("category") && (
             <label>
               <span>Categoria</span>
-              <select value={category} onChange={(event) => setCategory(event.currentTarget.value)}>
+              <select
+                value={category}
+                onChange={(event) => setCategory(event.currentTarget.value)}
+              >
                 <option value="">Todas</option>
                 {props.categories.map((item) => (
-                  <option key={item.slug} value={item.slug}>{item.title}</option>
+                  <option key={item.slug} value={item.slug}>
+                    {item.title}
+                  </option>
                 ))}
               </select>
             </label>
@@ -297,7 +334,9 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
         </div>
         <div class="esv-collection-v2-filter-actions">
           <button type="button" onClick={clearAll}>Limpar tudo</button>
-          <button type="button" onClick={() => setFiltersOpen(false)}>Ver resultados</button>
+          <button type="button" onClick={() => setFiltersOpen(false)}>
+            Ver resultados
+          </button>
         </div>
       </div>
 
@@ -308,7 +347,11 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
               {chip.label} <span aria-hidden="true">×</span>
             </button>
           ))}
-          <button type="button" class="esv-collection-v2-clear" onClick={clearAll}>
+          <button
+            type="button"
+            class="esv-collection-v2-clear"
+            onClick={clearAll}
+          >
             Limpar tudo
           </button>
         </div>
@@ -332,7 +375,10 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
         )}
 
       {loading && (
-        <div class="esv-collection-v2-grid esv-collection-v2-skeleton-grid" aria-hidden="true">
+        <div
+          class="esv-collection-v2-grid esv-collection-v2-skeleton-grid"
+          aria-hidden="true"
+        >
           {Array.from({ length: 8 }).map((_, index) => (
             <div class="esv-collection-v2-skeleton" key={index}>
               <span />
@@ -343,10 +389,18 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
         </div>
       )}
 
-      <div ref={sentinelRef} class="esv-collection-v2-sentinel" aria-hidden="true" />
+      <div
+        ref={sentinelRef}
+        class="esv-collection-v2-sentinel"
+        aria-hidden="true"
+      />
       {hasNextPage && (
         <div class="esv-collection-v2-more">
-          <button type="button" disabled={loading} onClick={() => void load(page + 1, true)}>
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => void load(page + 1, true)}
+          >
             {loading ? "Carregando…" : "Carregar mais"}
           </button>
           <span>Página {page} de {totalPages}</span>

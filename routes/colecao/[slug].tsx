@@ -12,7 +12,8 @@ import {
   listProductsByCategory,
 } from "../../lib/payload/loaders.ts";
 import { getPageChrome } from "../../lib/payload/pageData.ts";
-import type { EsmeraObject, SEOModel } from "../../lib/payload/types.ts";
+import type { StorefrontProductV2 } from "../../lib/esmera/storefront.ts";
+import type { SEOModel } from "../../lib/payload/types.ts";
 import Collection from "../../sections/Esmera/Collection.tsx";
 
 interface Data {
@@ -22,7 +23,7 @@ interface Data {
     description: string;
     seo: SEOModel;
   } | null;
-  products: EsmeraObject[];
+  products: StorefrontProductV2[];
   chrome: Awaited<ReturnType<typeof getPageChrome>>;
   seo: SEOModel;
   visibleFilters: CatalogFilter[];
@@ -47,7 +48,11 @@ export const handler: Handlers<Data> = {
         category: null,
         products: [],
         chrome,
-        seo: { title: "Categoria não encontrada", description: "", noindex: true },
+        seo: {
+          title: "Categoria não encontrada",
+          description: "",
+          noindex: true,
+        },
         visibleFilters: [],
         query: buildCatalogQuery(url, [], []),
         totalDocs: 0,
@@ -61,11 +66,13 @@ export const handler: Handlers<Data> = {
       collectionPage?.visibleFilters,
     ).filter((filter) => filter !== "category");
     const query = buildCatalogQuery(url, visibleFilters, chrome.categories);
-    const products = await listProductsByCategory(category.id, {
+    const products = await listProductsByCategory(category.slug, {
       limit: 24,
       page: query.page,
       sort: query.payloadSort,
-      where: query.where,
+      q: query.q.length >= 2 ? query.q : undefined,
+      material: query.material || undefined,
+      availability: query.availability || undefined,
     });
     const categorySEO = {
       ...category.seo,
@@ -104,7 +111,9 @@ export default function CategoryRoute({ data }: PageProps<Data>) {
             products={data.products}
             totalDocs={data.totalDocs}
             hasNextPage={data.hasNextPage}
-            endpoint={`/api/esmera-collection?slug=${encodeURIComponent(data.slug)}`}
+            endpoint={`/api/esmera-collection?slug=${
+              encodeURIComponent(data.slug)
+            }`}
             filters={{
               visible: data.visibleFilters,
               categories: [],

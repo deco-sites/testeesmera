@@ -2,20 +2,51 @@ import ProductActions from "../../islands/ProductActions.tsx";
 import WishlistButton from "../../islands/WishlistButton.tsx";
 import BuyButton from "../../islands/BuyButton.tsx";
 import type { EsmeraObject } from "../../lib/payload/types.ts";
-import { esmeraObjectToCardViewModel } from "../../lib/esmera/productCard.ts";
+import type { StorefrontProductV2 } from "../../lib/esmera/storefront.ts";
+import {
+  formatPriceCents,
+  toProductCardViewModel,
+} from "../../lib/esmera/productCard.ts";
 import { EsmeraImage } from "./ResponsiveMedia.tsx";
 
 export interface Props {
-  item: EsmeraObject;
+  item: StorefrontProductV2;
   motionOrder?: number;
 }
 
 export default function ObjectCard({ item, motionOrder = 0 }: Props) {
-  const vm = esmeraObjectToCardViewModel(item);
+  const vm = toProductCardViewModel(item);
+  // Compatibilidade temporária apenas com o modal legado; a apresentação do
+  // card acima usa exclusivamente o contrato Storefront enriquecido.
+  const modalProduct: EsmeraObject = {
+    id: item.id,
+    slug: item.slug,
+    code: item.code ?? "",
+    title: item.identity?.name ?? item.title,
+    image: item.image?.url ?? "",
+    alt: item.image?.alt ?? item.title,
+    availability: item.availability === "unique"
+      ? "unique"
+      : item.state ?? "available",
+    category: item.pieceType ?? undefined,
+    material: item.material ?? undefined,
+    subtitle: item.subtitle ?? undefined,
+    detailImage: item.hoverImage?.url ?? undefined,
+    gallery: [],
+    attributes: [],
+    priceMode: item.pricing?.mode ?? "inquiry",
+    priceCents: item.pricing?.priceCents ?? item.price ?? null,
+    formattedPrice: formatPriceCents(
+      item.pricing?.priceCents ?? item.price ?? null,
+    ) ?? "",
+    isInquiry: item.pricing?.mode !== "fixed",
+    variants: [],
+    seo: { title: "", description: "", noindex: false },
+  };
 
   return (
     <article
-      class={`esv-product-card${item.detailImage ? " has-detail" : ""}`}
+      class={`esv-product-card${vm.hoverImage ? " has-detail" : ""}`}
       role="listitem"
       data-product-id={vm.id}
     >
@@ -27,7 +58,7 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
           data-motion-order={String(motionOrder)}
         >
           <EsmeraImage
-            class={item.detailImage
+            class={vm.hoverImage
               ? "esv-product-image-primary"
               : "esv-product-image-static"}
             src={vm.image ?? ""}
@@ -66,7 +97,7 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
         <ProductActions
           productId={vm.id}
           productTitle={vm.title}
-          product={item}
+          product={modalProduct}
           presentation="media"
         />
       </div>
@@ -82,7 +113,7 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
           <ProductActions
             productId={vm.id}
             productTitle={vm.title}
-            product={item}
+            product={modalProduct}
             presentation="title"
           />
         </h3>
@@ -110,14 +141,14 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
               productId={vm.id}
               productSlug={vm.slug}
               productTitle={vm.title}
-              product={item}
+              product={modalProduct}
             />
           )
           : (
             <ProductActions
               productId={vm.id}
               productTitle={vm.title}
-              product={item}
+              product={modalProduct}
               compact
               emphasized
             />

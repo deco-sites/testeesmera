@@ -40,7 +40,7 @@ Deno.test("shell renders the header controls and DynamicMenu as the sole navigat
     </>,
   );
 
-  assertStringIncludes(html, 'class="esv-header"');
+  assertStringIncludes(html, '<header class="esv-header');
   assertStringIncludes(html, '<nav class="esv-nav-v2-desktop"');
   assertStringIncludes(html, 'href="/"');
   assertStringIncludes(html, 'href="/colecao"');

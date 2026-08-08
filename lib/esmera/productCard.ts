@@ -174,12 +174,16 @@ export function esmeraObjectToCardViewModel(
   const price = item.isInquiry
     ? null
     : (item.price ?? item.formattedPrice ?? "").replace(/\s/g, " ") || null;
+  const title = item.category?.trim() || item.subtitle?.trim() || item.title;
+  const distinctPiece = title !== item.title;
 
   return {
     id: item.id,
     slug: item.slug,
-    eyebrow: buildEyebrow(item.title, item.material ?? null),
-    title: item.category?.trim() || item.subtitle?.trim() || item.title,
+    eyebrow: distinctPiece
+      ? buildEyebrow(item.title, item.material ?? null)
+      : buildEyebrow(item.material ?? "", null),
+    title,
     status: buildStatus(state, isUnique),
     specs: specsFromAttributes(item.attributes ?? []),
     price,
@@ -199,11 +203,16 @@ export function toProductCardViewModel(
   const material = product.identity?.material ?? product.material ?? null;
   const pieceType = product.identity?.pieceType ?? product.pieceType ?? null;
   const priceCents = product.pricing?.priceCents ?? product.price ?? null;
+  // Só inclui o nome no eyebrow quando o título é o tipo da peça (nome distinto);
+  // senão o eyebrow repetiria o título. Sem tipo → eyebrow = só material.
+  const distinctPiece = Boolean(pieceType && pieceType !== name);
 
   return {
     id: product.id,
     slug: product.slug,
-    eyebrow: buildEyebrow(name, material),
+    eyebrow: distinctPiece
+      ? buildEyebrow(name, material)
+      : buildEyebrow(material ?? "", null),
     // Título é o tipo da peça ("Ponta de Esmeralda"); cai para o nome quando não há.
     title: pieceType || name,
     status: buildStatus(product.state, product.isUnique),

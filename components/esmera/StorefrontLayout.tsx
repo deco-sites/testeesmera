@@ -51,8 +51,6 @@ export default function StorefrontLayout(
       />
       <Header
         logo={shell.siteName}
-        navigation={shell.navigation}
-        categories={shell.categories}
         menu={shell.menu}
         whatsappHref={shell.footer.whatsappHref}
         instagramHref={shell.instagramHref}

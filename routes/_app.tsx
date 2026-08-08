@@ -45,6 +45,7 @@ export default defineApp(async (_req, ctx) => {
           href={asset("/esmera-matter-interaction.css")}
         />
         <link rel="stylesheet" href={asset("/esmera-catalog-v2.css")} />
+        <link rel="stylesheet" href={asset("/esmera-header.css")} />
 
         <link rel="manifest" href={asset("/site.webmanifest")} />
         <link rel="icon" href={asset("/favicon.ico")} />

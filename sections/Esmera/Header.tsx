@@ -1,7 +1,5 @@
 import type { HeaderVariant } from "../../lib/esmera/shellData.ts";
 import type { NavigationNode } from "../../lib/payload/navigation.ts";
-import type { NavigationLink } from "../../lib/payload/types.ts";
-import DynamicMenu from "../../islands/DynamicMenu.tsx";
 import EsmeraHeader from "../../islands/EsmeraHeader.tsx";
 import EsmeraMotion from "../../islands/EsmeraMotion.tsx";
 import EsmeraScrollScenes from "../../islands/EsmeraScrollScenes.tsx";
@@ -10,8 +8,6 @@ import ProductModal from "../../islands/ProductModal.tsx";
 export interface Props {
   logo?: string;
   enquiryLabel?: string;
-  navigation?: NavigationLink[];
-  categories?: NavigationLink[];
   menu?: NavigationNode[];
   whatsappHref?: string;
   instagramHref?: string;
@@ -32,13 +28,10 @@ export default function Header({
       <EsmeraHeader
         logo={logo.trim() || "ESMÉRA"}
         enquiryLabel={enquiryLabel}
-        whatsappHref={whatsappHref}
-        variant={variant}
-      />
-      <DynamicMenu
-        items={menu}
+        menu={menu}
         whatsappHref={whatsappHref}
         instagramHref={instagramHref}
+        variant={variant}
       />
       <ProductModal />
       <EsmeraMotion />

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
+import DynamicMenu from "./DynamicMenu.tsx";
 import type { HeaderVariant } from "../lib/esmera/shellData.ts";
+import type { NavigationNode } from "../lib/payload/navigation.ts";
 import type { EsmeraObject, EsmeraVariant } from "../lib/payload/types.ts";
 
 type Overlay = "search" | "enquiry" | null;
@@ -32,6 +34,8 @@ export interface Props {
   logo: string;
   enquiryLabel: string;
   whatsappHref: string;
+  menu?: NavigationNode[];
+  instagramHref?: string;
   variant?: HeaderVariant;
 }
 
@@ -128,6 +132,8 @@ export default function EsmeraHeader({
   logo,
   enquiryLabel,
   whatsappHref,
+  menu = [],
+  instagramHref = "",
   variant = "solid",
 }: Props) {
   const [overlay, setOverlay] = useState<Overlay>(null);
@@ -389,7 +395,7 @@ export default function EsmeraHeader({
     hasInquiry ? "Itens sob consulta serão confirmados pela curadoria." : "",
   ].filter(Boolean).join("\n");
   const sendHref = checkoutHref(whatsappHref, message);
-  const headerSolid = variant === "solid" || isScrolled || overlay !== null;
+  const isSolid = variant === "solid" || isScrolled || overlay !== null;
   const overlayTitle = overlay === "search" ? "Busca" : "Carrinho";
 
   const openSearchProduct = (product: EsmeraObject) => {
@@ -406,7 +412,16 @@ export default function EsmeraHeader({
 
   return (
     <>
-      <header class={`esv-header${headerSolid ? " is-scrolled" : ""}`}>
+      <header
+        class={`esv-header${isSolid ? " is-solid" : ""}`}
+        data-header-variant={variant}
+        data-header-state={isSolid ? "solid" : "transparent"}
+      >
+        <DynamicMenu
+          items={menu}
+          whatsappHref={whatsappHref}
+          instagramHref={instagramHref}
+        />
         <a class="esv-wordmark" aria-label={`${logo} — início`} href="/">
           {logo}
         </a>

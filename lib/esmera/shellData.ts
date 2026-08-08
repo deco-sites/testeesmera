@@ -17,7 +17,7 @@ import type {
 } from "../payload/types.ts";
 import { defaultHome } from "./homeBaseline.ts";
 
-export type HeaderVariant = "over-hero" | "solid";
+export type HeaderVariant = "transparent" | "solid";
 
 export interface ShellFooter {
   siteName: string;

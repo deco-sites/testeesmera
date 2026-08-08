@@ -20,7 +20,6 @@ import type {
   PayloadSiteSettings,
 } from "../payload/types.ts";
 import type { Props as FooterProps } from "../../sections/Esmera/Footer.tsx";
-import type { Props as HeaderProps } from "../../sections/Esmera/Header.tsx";
 import type { Props as HeroProps } from "../../sections/Esmera/Hero.tsx";
 import type { Props as ManifestoProps } from "../../sections/Esmera/Manifesto.tsx";
 import type {
@@ -35,7 +34,7 @@ import type {
 } from "../../sections/Esmera/Provenance.tsx";
 import type { Props as SelectedObjectsProps } from "../../sections/Esmera/SelectedObjects.tsx";
 import type { Props as SignatureObjectProps } from "../../sections/Esmera/SignatureObject.tsx";
-import { defaultHome } from "./homeBaseline.ts";
+import { defaultHome, type HomeHeaderBaseline } from "./homeBaseline.ts";
 
 export interface PublicCategoryLink {
   title: string;
@@ -73,7 +72,7 @@ export type HomeSectionSourceMap = {
 };
 
 export interface ResolvedHome {
-  header: HeaderProps;
+  header: HomeHeaderBaseline;
   hero: HeroProps | null;
   manifesto: ManifestoProps | null;
   selectedObjects: SelectedObjectsProps | null;
@@ -225,7 +224,7 @@ export function resolveHome({
       external: false,
     })),
   ]);
-  const header: HeaderProps = {
+  const header: HomeHeaderBaseline = {
     ...defaultHome.header,
     logo: present(siteSettings?.siteName, defaultHome.header.logo ?? "ESMÉRA"),
     navigation: navigationLinks,

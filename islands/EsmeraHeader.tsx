@@ -174,7 +174,10 @@ export default function EsmeraHeader({
     let frame = 0;
     const update = () => {
       frame = 0;
-      setIsScrolled((globalThis.scrollY || 0) > 14);
+      setIsScrolled((previous) => {
+        const y = globalThis.scrollY || 0;
+        return previous ? y > 8 : y > 24;
+      });
     };
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(update);
@@ -443,7 +446,7 @@ export default function EsmeraHeader({
             onClick={(event) => openOverlay("enquiry", event.currentTarget)}
           >
             <span>{enquiryLabel}</span>
-            <sup aria-live="polite">{cartCount}</sup>
+            <sup key={cartCount} aria-live="polite">{cartCount}</sup>
           </button>
         </div>
       </header>

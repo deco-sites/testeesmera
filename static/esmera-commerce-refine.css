@@ -44,143 +44,34 @@ main {
   overflow-anchor: none;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Header                                                                     */
-/* -------------------------------------------------------------------------- */
 
-.esv-header {
-  position: fixed;
-  z-index: 120;
-  inset: 0 0 auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  width: 100%;
-  height: calc(var(--header-h) + env(safe-area-inset-top));
-  min-height: 0;
-  padding: env(safe-area-inset-top) var(--page-x) 0;
-  border-bottom: 1px solid transparent;
-  background: transparent;
-  color: var(--ink-inverse);
-  isolation: isolate;
-  transition:
-    background-color 220ms var(--ease-esmera),
-    border-color 220ms var(--ease-esmera),
-    color 220ms var(--ease-esmera),
-    backdrop-filter 220ms var(--ease-esmera);
-}
 
-.esv-header.is-scrolled {
-  border-color: var(--line);
-  background: rgba(243, 240, 232, .96);
-  color: var(--ink);
-  backdrop-filter: blur(12px);
-}
 
-.esv-header-nav {
-  display: flex;
-  align-items: center;
-  justify-self: start;
-  gap: clamp(20px, 2.1vw, 34px);
-  min-width: 0;
-}
 
-.esv-header-nav a,
-.esv-wordmark,
-.esv-header-icon,
-.esv-enquiry-link {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  text-decoration: none;
-}
 
-.esv-header-nav a,
-.esv-enquiry-link {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding: 0;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1;
-  letter-spacing: .035em;
-  white-space: nowrap;
-}
 
-.esv-header-nav a::after,
-.esv-enquiry-link::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 8px;
-  left: 0;
-  height: 1px;
-  background: currentColor;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 220ms var(--ease-esmera);
-}
 
-.esv-wordmark {
-  justify-self: center;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: .18em;
-  white-space: nowrap;
-}
 
-.esv-header-actions {
-  display: flex;
-  align-items: center;
-  justify-self: end;
-  gap: 4px;
-  min-width: 0;
-}
 
-.esv-header-icon {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 44px;
-  padding: 0;
-  cursor: pointer;
-}
 
-.esv-header-icon svg {
-  display: block;
-}
 
-.esv-header-menu {
-  display: none;
-  justify-self: start;
-}
 
-.esv-enquiry-link {
-  justify-content: flex-end;
-  gap: 7px;
-  min-width: 76px;
-  cursor: pointer;
-}
 
-.esv-enquiry-link sup {
-  min-width: 12px;
-  font-size: 9px;
-  line-height: 1;
-  text-align: center;
-}
+
+
+
+
+
+
+
+
+
+
+
+
 
 @media (hover: hover) and (pointer: fine) {
-  .esv-header-nav a:hover::after,
-  .esv-enquiry-link:hover::after {
-    transform: scaleX(1);
-  }
+
 }
 
 /* -------------------------------------------------------------------------- */
@@ -205,9 +96,7 @@ main {
   justify-content: flex-end;
 }
 
-.esv-header-overlay-menu {
-  justify-content: flex-start;
-}
+
 
 .esv-header-panel {
   position: relative;
@@ -228,12 +117,7 @@ main {
   animation: esv-panel-in-right 320ms var(--ease-esmera) both;
 }
 
-.esv-header-panel-menu {
-  width: min(92vw, 560px);
-  border-right: 1px solid var(--line);
-  box-shadow: 24px 0 70px rgba(17, 18, 16, .12);
-  animation-name: esv-panel-in-left;
-}
+
 
 .esv-panel-header {
   position: relative;
@@ -299,116 +183,31 @@ main {
   to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
-/* -------------------------------------------------------------------------- */
-/* Mobile navigation                                                          */
-/* -------------------------------------------------------------------------- */
 
-.esv-menu-v2 {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
-  margin: 0;
-}
 
-.esv-menu-label {
-  margin: 0 0 16px;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 500;
-  line-height: 1.3;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
 
-.esv-menu-primary-links {
-  border-top: 1px solid var(--line);
-}
 
-.esv-menu-primary-links > a {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 20px;
-  align-items: center;
-  min-height: 66px;
-  padding: 11px 0;
-  border-bottom: 1px solid var(--line);
-  color: var(--ink);
-  text-decoration: none;
-}
 
-.esv-menu-primary-links > a > span {
-  overflow: hidden;
-  font-size: clamp(27px, 4.1vw, 40px);
-  font-weight: 300;
-  line-height: 1;
-  letter-spacing: -.035em;
-  text-overflow: ellipsis;
-}
 
-.esv-menu-primary-links > a > sup {
-  color: var(--muted);
-  font-size: 9px;
-  letter-spacing: .08em;
-}
 
-.esv-menu-collection {
-  margin-top: clamp(34px, 6vh, 54px);
-}
 
-.esv-menu-subnav {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 22px;
-  border-top: 1px solid var(--line);
-}
 
-.esv-menu-subnav a {
-  display: flex;
-  align-items: center;
-  min-height: 44px;
-  border-bottom: 1px solid var(--line);
-  color: var(--ink);
-  font-size: 12px;
-  line-height: 1.3;
-  text-decoration: none;
-}
 
-.esv-menu-subnav a::before {
-  content: "—";
-  margin-right: 8px;
-  color: var(--muted);
-}
 
-.esv-menu-footer {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0 16px;
-  margin-top: auto;
-  padding-top: clamp(42px, 8vh, 72px);
-}
 
-.esv-menu-footer button,
-.esv-menu-footer a {
-  appearance: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 44px;
-  padding: 0;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  background: transparent;
-  color: var(--ink);
-  font-size: 11px;
-  text-align: left;
-  text-decoration: none;
-  cursor: pointer;
-}
 
-.esv-menu-footer button span {
-  color: var(--muted);
-}
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* -------------------------------------------------------------------------- */
 /* Search                                                                     */
@@ -774,8 +573,8 @@ main {
 
 @media (hover: hover) and (pointer: fine) {
   .esv-whatsapp-sticky:hover {
-    transform: translateY(-2px);
-  }
+  opacity: .86;
+}
 }
 
 /* -------------------------------------------------------------------------- */
@@ -858,28 +657,15 @@ main {
 /* -------------------------------------------------------------------------- */
 
 @media (max-width: 1023px) {
-  .esv-header {
-    padding-inline: clamp(18px, 3.2vw, 32px);
-  }
 
-  .esv-header-nav {
-    display: none;
-  }
 
-  .esv-header-menu {
-    display: grid;
-  }
 
-  .esv-wordmark {
-    position: static;
-    left: auto;
-    justify-self: center;
-    transform: none;
-  }
 
-  .esv-header-actions {
-    gap: 0;
-  }
+
+
+
+
+
 
   .esv-footer-main {
     grid-template-columns: repeat(8, minmax(0, 1fr));
@@ -892,62 +678,29 @@ main {
 }
 
 @media (max-width: 767px) {
-  .esv-header {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    padding-inline: 10px 12px;
-  }
 
-  .esv-header-icon {
-    width: 40px;
-  }
 
-  .esv-wordmark {
-    font-size: 11px;
-    letter-spacing: .16em;
-  }
 
-  .esv-enquiry-link {
-    min-width: 66px;
-    font-size: 11px;
-  }
 
-  .esv-enquiry-link sup {
-    min-width: 10px;
-    font-size: 8px;
-  }
 
-  .esv-header-panel,
-  .esv-header-panel-menu {
-    width: 100%;
-    max-width: none;
-    padding:
-      max(14px, env(safe-area-inset-top))
-      clamp(18px, 5vw, 24px)
-      max(24px, env(safe-area-inset-bottom));
-    border: 0;
-    box-shadow: none;
-  }
+
+
+
+
+
+
 
   .esv-panel-header {
     margin-bottom: clamp(28px, 6vh, 48px);
   }
 
-  .esv-menu-primary-links > a {
-    min-height: 60px;
-  }
 
-  .esv-menu-primary-links > a > span {
-    font-size: clamp(25px, 8vw, 32px);
-  }
 
-  .esv-menu-subnav {
-    grid-template-columns: 1fr;
-  }
 
-  .esv-menu-footer {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
+
+
+
+
 
   .esv-panel-intro h2 {
     font-size: clamp(34px, 10vw, 44px);
@@ -1046,9 +799,7 @@ main {
     display: none;
   }
 
-  .esv-enquiry-link {
-    min-width: 62px;
-  }
+
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -28,7 +28,7 @@ const menu: NavigationNode[] = [
   },
 ];
 
-Deno.test("shared header owns navigation and preserves Menu → Logo → Search → Cart order", () => {
+Deno.test("shared header owns root navigation and preserves Menu → Logo → Search → Cart order", () => {
   const html = renderToString(
     <EsmeraHeader
       logo="ESMÉRA"
@@ -38,8 +38,9 @@ Deno.test("shared header owns navigation and preserves Menu → Logo → Search 
     />,
   );
 
-  const headerStart = html.indexOf('<header class="esv-header');
+  const headerStart = html.indexOf("<header");
   const headerEnd = html.indexOf("</header>", headerStart);
+  const headerClass = html.indexOf('class="esv-header', headerStart);
   const navStart = html.indexOf('<nav class="esv-nav-v2-desktop"', headerStart);
   const wordmarkStart = html.indexOf('class="esv-wordmark"', headerStart);
   const searchStart = html.indexOf('aria-label="Buscar objetos"', headerStart);
@@ -47,6 +48,7 @@ Deno.test("shared header owns navigation and preserves Menu → Logo → Search 
 
   assert(headerStart >= 0);
   assert(headerEnd > headerStart);
+  assert(headerClass > headerStart && headerClass < headerEnd);
   assert(navStart > headerStart && navStart < headerEnd);
   assert(wordmarkStart > navStart && wordmarkStart < headerEnd);
   assert(searchStart > wordmarkStart && searchStart < headerEnd);
@@ -80,23 +82,57 @@ Deno.test("transparent is explicit and solid remains the SSR default", () => {
   assertFalse(transparent.includes("is-solid"));
 });
 
-Deno.test("unified header stylesheet is authoritative and loaded last", async () => {
+Deno.test("unified header stylesheet owns shell layers without trapping fixed menu surfaces", async () => {
+  const masterCss = await Deno.readTextFile("static/esmera-master.css");
   const commerceCss = await Deno.readTextFile("static/esmera-commerce-refine.css");
+  const finishCss = await Deno.readTextFile("static/esmera-finish.css");
   const headerCss = await Deno.readTextFile("static/esmera-header.css");
   const headerCssWithoutComments = headerCss.replace(/\/\*[\s\S]*?\*\//g, "");
   const app = await Deno.readTextFile("routes/_app.tsx");
   const headerIsland = await Deno.readTextFile("islands/EsmeraHeader.tsx");
+  const menuIsland = await Deno.readTextFile("islands/DynamicMenu.tsx");
   const headerSection = await Deno.readTextFile("sections/Esmera/Header.tsx");
   const shellData = await Deno.readTextFile("lib/esmera/shellData.ts");
 
-  assertStringIncludes(headerCss, ".esv-header.is-solid");
+  assertStringIncludes(headerCss, ".esv-header.esv-header");
+  assertStringIncludes(headerCss, ".esv-header.esv-header.is-solid");
   assertStringIncludes(headerCss, '[data-header-variant="transparent"]');
   assertStringIncludes(headerCss, ".esv-header .esv-nav-v2-desktop");
   assertStringIncludes(headerCss, ".esv-header .esv-nav-v2-mobile-trigger");
-  assertStringIncludes(headerCss, ".esv-header .esv-mega-v2");
-  assertStringIncludes(headerCss, ".esv-header .esv-nav-v2-drawer");
-  assertStringIncludes(headerCss, "position: static;");
+  assertStringIncludes(headerCss, ".esv-mega-v2.esv-mega-v2");
+  assertStringIncludes(headerCss, ".esv-mega-backdrop.esv-mega-backdrop");
+  assertStringIncludes(headerCss, ".esv-nav-v2-backdrop.esv-nav-v2-backdrop");
+  assertStringIncludes(headerCss, ".esv-nav-v2-drawer.esv-nav-v2-drawer");
+  assertStringIncludes(headerCss, "--esv-layer-mega: 110");
+  assertStringIncludes(headerCss, "--esv-layer-header: 120");
+  assertStringIncludes(headerCss, "--esv-layer-overlay: 200");
+  assertStringIncludes(headerCss, "--esv-layer-drawer: 210");
+  assertStringIncludes(headerCss, ".esv-header.esv-header::before");
+  assertStringIncludes(headerCss, "backdrop-filter: blur(12px)");
+  assertStringIncludes(headerCss, "@keyframes esv-mega-v2-in");
   assertFalse(headerCssWithoutComments.includes("body:has("));
+
+  const headerBase = headerCss.match(/\.esv-header\.esv-header\s*\{([^}]*)\}/)?.[1] ?? "";
+  assert(headerBase.length > 0);
+  assertFalse(headerBase.includes("backdrop-filter"));
+
+  assertStringIncludes(masterCss, "--header-h: 60px");
+  assertStringIncludes(masterCss, "--header-h: 56px");
+  assert(masterCss.match(/--header-h:/g)?.length === 2);
+  assertStringIncludes(masterCss, "--ease-esmera: cubic-bezier(.16, 1, .3, 1)");
+  assertFalse(masterCss.includes(".esv-header.is-scrolled"));
+  assertFalse(masterCss.includes(".esv-header-nav"));
+  assertFalse(masterCss.includes(".esv-header-menu"));
+  assertFalse(masterCss.includes(".esv-object-taxonomy"));
+
+  assertFalse(commerceCss.includes(".esv-header.is-scrolled"));
+  assertFalse(commerceCss.includes(".esv-header-nav"));
+  assertFalse(commerceCss.includes(".esv-menu-"));
+  assertFalse(commerceCss.includes("--header-h:"));
+
+  assertFalse(finishCss.includes(".esv-header {"));
+  assertFalse(finishCss.includes(".esv-wordmark"));
+  assertFalse(finishCss.includes("--header-h:"));
 
   const catalogIndex = app.indexOf("/esmera-catalog-v2.css");
   const headerIndex = app.indexOf("/esmera-header.css");
@@ -107,9 +143,20 @@ Deno.test("unified header stylesheet is authoritative and loaded last", async ()
   assertStringIncludes(commerceCss, ".esv-cart-quantity");
   assertStringIncludes(commerceCss, ".esv-search-field");
 
+  assertStringIncludes(menuIsland, 'import("preact/compat")');
+  assertFalse(menuIsland.startsWith('import { createPortal } from "preact/compat"'));
+  assertStringIncludes(menuIsland, 'pointerType !== "mouse"');
+  assertStringIncludes(menuIsland, "}, 120);");
+  assertStringIncludes(menuIsland, "key={activeDesktop.id}");
+  assertStringIncludes(menuIsland, 'class="esv-mega-backdrop"');
+  assertStringIncludes(menuIsland, "aria-current");
+  assertStringIncludes(menuIsland, "animationDelay");
+
   assertStringIncludes(headerIsland, 'body.style.position = "fixed"');
   assertStringIncludes(headerIsland, "globalThis.scrollTo");
   assertStringIncludes(headerIsland, "setIsScrolled");
+  assertStringIncludes(headerIsland, "return previous ? y > 8 : y > 24;");
+  assertStringIncludes(headerIsland, "key={cartCount}");
   assertStringIncludes(headerIsland, 'class="esv-cart-quantity"');
   assertStringIncludes(headerIsland, 'class="esv-cart-remove"');
   assertStringIncludes(headerIsland, "<DynamicMenu");

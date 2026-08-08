@@ -1,6 +1,7 @@
-import { createPortal } from "preact/compat";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { NavigationNode } from "../lib/payload/navigation.ts";
+
+type CreatePortal = typeof import("preact/compat").createPortal;
 
 export interface Props {
   items: NavigationNode[];
@@ -108,6 +109,7 @@ export default function DynamicMenu(
   const [path, setPath] = useState<string[]>([]);
   const [pathname, setPathname] = useState("");
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
+  const [createPortalFn, setCreatePortalFn] = useState<CreatePortal | null>(null);
   const drawerRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeTimer = useRef<ReturnType<typeof globalThis.setTimeout> | null>(null);
@@ -152,11 +154,19 @@ export default function DynamicMenu(
   };
 
   useEffect(() => {
-    setPortalRoot(document.body);
+    let active = true;
     const syncPath = () => setPathname(globalThis.location.pathname);
     syncPath();
     globalThis.addEventListener("popstate", syncPath);
-    return () => globalThis.removeEventListener("popstate", syncPath);
+    void import("preact/compat").then(({ createPortal }) => {
+      if (!active) return;
+      setCreatePortalFn(() => createPortal);
+      setPortalRoot(document.body);
+    });
+    return () => {
+      active = false;
+      globalThis.removeEventListener("popstate", syncPath);
+    };
   }, []);
 
   useEffect(() => () => {
@@ -231,8 +241,9 @@ export default function DynamicMenu(
     return () => globalThis.removeEventListener("keydown", closeDesktop);
   }, []);
 
-  const mega = portalRoot && activeDesktop && activeDesktop.children.length > 0
-    ? createPortal(
+  const mega = portalRoot && createPortalFn && activeDesktop &&
+      activeDesktop.children.length > 0
+    ? createPortalFn(
       <>
         <div class="esv-mega-backdrop" aria-hidden="true" />
         <div
@@ -311,8 +322,8 @@ export default function DynamicMenu(
     )
     : null;
 
-  const drawer = portalRoot && mobileOpen
-    ? createPortal(
+  const drawer = portalRoot && createPortalFn && mobileOpen
+    ? createPortalFn(
       <div class="esv-nav-v2-backdrop" onClick={() => setMobileOpen(false)}>
         <aside
           ref={drawerRef}

@@ -1,1 +1,1 @@
-temporary trigger for guarded header cleanup script workflow; remove before final validation
+temporary trigger for publishing validated header cleanup; remove before final validation

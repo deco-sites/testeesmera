@@ -87,37 +87,6 @@
   margin-top: var(--space-16);
 }
 
-.esv-product-card {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.esv-product-card-copy {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-}
-
-.esv-product-meta-line {
-  color: var(--muted);
-  font-size: 10px;
-  letter-spacing: .075em;
-}
-
-.esv-product-commercial {
-  margin-top: auto;
-  padding-top: var(--space-4);
-}
-
-.esv-product-state {
-  color: var(--accent);
-}
-
-.esv-product-actions.is-compact {
-  margin-top: var(--space-3);
-}
-
 /* -------------------------------------------------------------------------- */
 /* 07 — Proveniência: preserve zig-zag, standardize vertical rhythm           */
 /* -------------------------------------------------------------------------- */
@@ -332,32 +301,6 @@
   .esv-product-shelf {
     margin-top: var(--space-12);
     gap: var(--space-8);
-  }
-
-  .esv-product-card + .esv-product-card {
-    margin-top: 0;
-  }
-
-  .esv-product-card-copy {
-    padding-top: 12px;
-  }
-
-  .esv-product-meta-line {
-    font-size: 11px;
-  }
-
-  .esv-product-subtitle {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
-    font-size: 13px;
-    line-height: 1.45;
-  }
-
-  .esv-product-actions button {
-    min-height: 44px;
-    font-size: 12px;
   }
 
   .esv-territory-panel {

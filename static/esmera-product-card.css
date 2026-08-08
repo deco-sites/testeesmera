@@ -15,9 +15,13 @@
 }
 
 /* ---- Container: sem caixa, a peça respira sobre o fundo ---- */
-.esv-product-card {
+.esv-product-card,
+.esv-collection-v2-grid > .esv-product-card,
+.esv-product-shelf > .esv-product-card {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  height: 100%;
   background: transparent;
   color: var(--product-card-text);
   border: 0;
@@ -149,8 +153,11 @@
 }
 
 /* ---- Conteúdo ---- */
-.esv-product-card-copy {
+.esv-product-card-copy,
+.esv-collection-v2-grid .esv-product-card-copy,
+.esv-product-shelf .esv-product-card-copy {
   display: flex;
+  flex: 1;
   flex-direction: column;
   padding: 20px 2px 0;
 }
@@ -236,7 +243,9 @@
 }
 
 /* ---- CTA fantasma → preenche verde no hover ---- */
-.esv-card-cta {
+.esv-card-cta,
+.esv-collection-v2-grid .esv-card-cta,
+.esv-product-shelf .esv-card-cta {
   margin-top: 20px;
   display: inline-flex;
   align-items: center;
@@ -256,7 +265,9 @@
   transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-.esv-card-cta:hover {
+.esv-card-cta:hover,
+.esv-collection-v2-grid .esv-card-cta:hover,
+.esv-product-shelf .esv-card-cta:hover {
   background: var(--product-card-cta);
   border-color: var(--product-card-cta);
   color: var(--product-card-bone);
@@ -272,9 +283,38 @@
   margin-top: 18px;
 }
 
+.esv-product-card .esv-product-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: var(--product-card-text);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.esv-product-card .esv-product-actions svg {
+  transition: transform 200ms var(--ease-esmera);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .esv-product-card .esv-product-actions button:hover svg {
+    transform: translate3d(3px, -2px, 0);
+  }
+}
+
 /* ---- Responsivo (plano §18) ---- */
 @media (max-width: 429px) {
-  .esv-product-card-copy {
+  .esv-product-card-copy,
+  .esv-collection-v2-grid .esv-product-card-copy,
+  .esv-product-shelf .esv-product-card-copy {
     padding: 18px 0 0;
   }
 }

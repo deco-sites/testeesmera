@@ -15,7 +15,9 @@ import { getPageChrome } from "../../lib/payload/pageData.ts";
 import type { StorefrontProductV2 } from "../../lib/esmera/storefront.ts";
 import type { SEOModel } from "../../lib/payload/types.ts";
 import MaterialFacets, {
+  expandMaterialFilters,
   type MaterialFacet,
+  resolveMaterialFilterKeys,
 } from "../../loaders/Esmera/MaterialFacets.ts";
 import Collection from "../../sections/Esmera/Collection.tsx";
 
@@ -72,12 +74,15 @@ export const handler: Handlers<Data> = {
       collectionPage?.visibleFilters,
     ).filter((filter) => filter !== "category");
     const query = buildCatalogQuery(url, visibleFilters, chrome.categories);
+    const materialQueryValues = expandMaterialFilters(query.materials, materials);
     const products = await listProductsByCategory(category.slug, {
       limit: 24,
       page: query.page,
       sort: query.payloadSort,
       q: query.q.length >= 2 ? query.q : undefined,
-      material: query.material || undefined,
+      material: materialQueryValues.length
+        ? materialQueryValues.join(",")
+        : undefined,
       availability: query.availability || undefined,
     });
     const categorySEO = {
@@ -127,7 +132,10 @@ export default function CategoryRoute({ data }: PageProps<Data>) {
               materials: data.materials,
               q: data.query.q,
               category: "",
-              material: data.query.material,
+              materialValues: resolveMaterialFilterKeys(
+                data.query.materials,
+                data.materials,
+              ),
               availability: data.query.availability,
               sort: data.query.sort,
             }}

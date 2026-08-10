@@ -16,7 +16,9 @@ import type {
   SEOModel,
 } from "../../lib/payload/types.ts";
 import MaterialFacets, {
+  expandMaterialFilters,
   type MaterialFacet,
+  resolveMaterialFilterKeys,
 } from "../../loaders/Esmera/MaterialFacets.ts";
 import Collection from "../../sections/Esmera/Collection.tsx";
 
@@ -44,13 +46,16 @@ export const handler: Handlers<Data> = {
     const visibleFilters = normalizeVisibleFilters(page?.visibleFilters);
     const url = new URL(req.url);
     const query = buildCatalogQuery(url, visibleFilters, chrome.categories);
+    const materialQueryValues = expandMaterialFilters(query.materials, materials);
     const products = await listProducts({
       limit: 24,
       page: query.page,
       sort: query.payloadSort,
       q: query.q.length >= 2 ? query.q : undefined,
       category: query.category || undefined,
-      material: query.material || undefined,
+      material: materialQueryValues.length
+        ? materialQueryValues.join(",")
+        : undefined,
       availability: query.availability || undefined,
     });
     const seo = toSEO(page?.seo, chrome.settings);
@@ -95,7 +100,10 @@ export default function CollectionRoute({ data }: PageProps<Data>) {
           materials: data.materials,
           q: data.query.q,
           category: data.query.category,
-          material: data.query.material,
+          materialValues: resolveMaterialFilterKeys(
+            data.query.materials,
+            data.materials,
+          ),
           availability: data.query.availability,
           sort: data.query.sort,
         }}

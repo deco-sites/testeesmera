@@ -26,7 +26,7 @@ export interface Props {
     materials: MaterialFacet[];
     q: string;
     category: string;
-    material: string;
+    materialValues: string[];
     availability: string;
     sort: CollectionSort;
   };
@@ -66,7 +66,7 @@ export default function Collection({
     materials: [],
     q: "",
     category: "",
-    material: "",
+    materialValues: [],
     availability: "",
     sort: "editorial" as CollectionSort,
   };
@@ -105,7 +105,7 @@ export default function Collection({
           initial={{
             q: collectionFilters.q,
             category: collectionFilters.category,
-            material: collectionFilters.material,
+            materials: collectionFilters.materialValues,
             availability: collectionFilters.availability,
             sort: collectionFilters.sort,
           }}

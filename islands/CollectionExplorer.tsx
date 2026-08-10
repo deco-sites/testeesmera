@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import ObjectCard from "../components/esmera/ObjectCard.tsx";
 import type { CatalogFilter, CollectionSort } from "../lib/payload/catalog.ts";
 import type { StorefrontProductV2 } from "../lib/esmera/storefront.ts";
+import type { MaterialFacet } from "../loaders/Esmera/MaterialFacets.ts";
 
 export interface CollectionExplorerProps {
   initialItems: StorefrontProductV2[];
@@ -12,6 +13,7 @@ export interface CollectionExplorerProps {
   endpoint: string;
   visibleFilters: CatalogFilter[];
   categories: Array<{ title: string; slug: string }>;
+  materials: MaterialFacet[];
   initial: {
     q: string;
     category: string;
@@ -48,6 +50,125 @@ const sortOptions: Array<[CollectionSort, string]> = [
   ["price-desc", "Maior preço"],
   ["name", "Nome"],
 ];
+
+interface FacetSelectProps {
+  id: string;
+  value: string;
+  options: ReadonlyArray<readonly [string, string]>;
+  ariaLabel: string;
+  onChange: (value: string) => void;
+}
+
+function FacetSelect({
+  id,
+  value,
+  options,
+  ariaLabel,
+  onChange,
+}: FacetSelectProps) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const selectedIndex = Math.max(
+    0,
+    options.findIndex(([optionValue]) => optionValue === value),
+  );
+  const selectedLabel = options[selectedIndex]?.[1] ?? options[0]?.[1] ?? "";
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setOpen(false);
+      triggerRef.current?.focus();
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    const timer = globalThis.setTimeout(
+      () => optionRefs.current[selectedIndex]?.focus(),
+      0,
+    );
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+      globalThis.clearTimeout(timer);
+    };
+  }, [open, selectedIndex]);
+
+  const selectOption = (nextValue: string) => {
+    onChange(nextValue);
+    setOpen(false);
+    triggerRef.current?.focus();
+  };
+
+  const focusOption = (index: number) => {
+    const nextIndex = (index + options.length) % options.length;
+    optionRefs.current[nextIndex]?.focus();
+  };
+
+  return (
+    <div class="esv-facet-select" ref={rootRef}>
+      <button
+        ref={triggerRef}
+        type="button"
+        class="esv-facet-select-trigger"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={`${id}-listbox`}
+        onClick={() => setOpen((current) => !current)}
+        onKeyDown={(event) => {
+          if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+          event.preventDefault();
+          setOpen(true);
+        }}
+      >
+        <span>{selectedLabel}</span>
+        <svg aria-hidden="true" viewBox="0 0 12 8" width="12" height="8">
+          <path d="m1 1.25 5 5 5-5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1" />
+        </svg>
+      </button>
+      {open && (
+        <div id={`${id}-listbox`} class="esv-facet-select-list" role="listbox" aria-label={ariaLabel}>
+          {options.map(([optionValue, label], index) => (
+            <button
+              key={optionValue || "all"}
+              ref={(element) => {
+                optionRefs.current[index] = element;
+              }}
+              type="button"
+              role="option"
+              aria-selected={optionValue === value}
+              class={optionValue === value ? "is-selected" : ""}
+              onClick={() => selectOption(optionValue)}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown") {
+                  event.preventDefault();
+                  focusOption(index + 1);
+                } else if (event.key === "ArrowUp") {
+                  event.preventDefault();
+                  focusOption(index - 1);
+                } else if (event.key === "Home") {
+                  event.preventDefault();
+                  focusOption(0);
+                } else if (event.key === "End") {
+                  event.preventDefault();
+                  focusOption(options.length - 1);
+                }
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function paramsFromState(state: {
   q: string;
@@ -222,7 +343,9 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
   return (
     <div class="esv-collection-v2" aria-busy={loading ? "true" : "false"}>
       <div class="esv-collection-v2-count" aria-live="polite">
-        Mostrando {items.length} de {totalDocs} itens
+        {activeFilters.length === 0 && items.length === totalDocs
+          ? `${totalDocs} peças`
+          : `${items.length} de ${totalDocs}`}
       </div>
 
       <div class="esv-collection-v2-controls">
@@ -265,18 +388,16 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
           {activeFilters.length > 0 && <span>{activeFilters.length}</span>}
         </button>
 
-        <label class="esv-collection-v2-sort">
+        <div class="esv-collection-v2-sort">
           <span>Ordenar</span>
-          <select
+          <FacetSelect
+            id="esv-sort"
+            ariaLabel="Ordenar coleção"
             value={sort}
-            onChange={(event) =>
-              setSort(event.currentTarget.value as CollectionSort)}
-          >
-            {sortOptions.map(([value, label]) => (
-              <option value={value} key={value}>{label}</option>
-            ))}
-          </select>
-        </label>
+            options={sortOptions}
+            onChange={(value) => setSort(value as CollectionSort)}
+          />
+        </div>
       </div>
 
       <div
@@ -291,50 +412,64 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
         </div>
         <div class="esv-collection-v2-filter-fields">
           {props.visibleFilters.includes("category") && (
-            <label>
+            <div class="esv-collection-v2-filter-field">
               <span>Categoria</span>
-              <select
+              <FacetSelect
+                id="esv-category"
+                ariaLabel="Filtrar por categoria"
                 value={category}
-                onChange={(event) => setCategory(event.currentTarget.value)}
-              >
-                <option value="">Todas</option>
-                {props.categories.map((item) => (
-                  <option key={item.slug} value={item.slug}>
-                    {item.title}
-                  </option>
-                ))}
-              </select>
-            </label>
+                options={[
+                  ["", "Todas"],
+                  ...props.categories.map((item) =>
+                    [item.slug, item.title] as const
+                  ),
+                ]}
+                onChange={setCategory}
+              />
+            </div>
           )}
           {props.visibleFilters.includes("material") && (
-            <label>
+            <div class="esv-collection-v2-filter-field esv-collection-v2-material-field">
               <span>Matéria</span>
-              <input
-                value={material}
-                maxlength={80}
-                placeholder="Ex.: pedra, vidro"
-                onInput={(event) => setMaterial(event.currentTarget.value)}
-              />
-            </label>
+              <div class="esv-collection-v2-materials" role="group" aria-label="Filtrar por matéria">
+                {props.materials.map((item) => (
+                  <button
+                    type="button"
+                    key={item.value}
+                    class={material === item.value ? "is-selected" : ""}
+                    aria-pressed={material === item.value}
+                    aria-label={`${item.label}, ${item.count} peças`}
+                    onClick={() =>
+                      setMaterial((current) =>
+                        current === item.value ? "" : item.value
+                      )}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
           {props.visibleFilters.includes("availability") && (
-            <label>
+            <div class="esv-collection-v2-filter-field">
               <span>Disponibilidade</span>
-              <select
+              <FacetSelect
+                id="esv-availability"
+                ariaLabel="Filtrar por disponibilidade"
                 value={availability}
-                onChange={(event) => setAvailability(event.currentTarget.value)}
-              >
-                <option value="">Todas</option>
-                {availabilityOptions.map(([value, label]) => (
-                  <option value={value} key={value}>{label}</option>
-                ))}
-              </select>
-            </label>
+                options={[["", "Todas"], ...availabilityOptions]}
+                onChange={setAvailability}
+              />
+            </div>
           )}
         </div>
         <div class="esv-collection-v2-filter-actions">
           <button type="button" onClick={clearAll}>Limpar tudo</button>
-          <button type="button" onClick={() => setFiltersOpen(false)}>
+          <button
+            class="esv-collection-v2-results-action"
+            type="button"
+            onClick={() => setFiltersOpen(false)}
+          >
             Ver resultados
           </button>
         </div>

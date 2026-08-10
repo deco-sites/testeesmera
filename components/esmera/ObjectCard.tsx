@@ -91,7 +91,7 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
             <EsmeraImage
               class="esv-product-image-detail"
               src={vm.hoverImage}
-              alt=""
+              alt={vm.hoverImageAlt}
               loading="lazy"
               decoding="async"
               width={900}

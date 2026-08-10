@@ -14,6 +14,9 @@ import {
 import { getPageChrome } from "../../lib/payload/pageData.ts";
 import type { StorefrontProductV2 } from "../../lib/esmera/storefront.ts";
 import type { SEOModel } from "../../lib/payload/types.ts";
+import MaterialFacets, {
+  type MaterialFacet,
+} from "../../loaders/Esmera/MaterialFacets.ts";
 import Collection from "../../sections/Esmera/Collection.tsx";
 
 interface Data {
@@ -33,14 +36,16 @@ interface Data {
   hasNextPage: boolean;
   baseHref: string;
   slug: string;
+  materials: MaterialFacet[];
 }
 
 export const handler: Handlers<Data> = {
   async GET(req, ctx) {
-    const [category, chrome, collectionPage] = await Promise.all([
+    const [category, chrome, collectionPage, materials] = await Promise.all([
       getCategoryBySlug(ctx.params.slug),
       getPageChrome(),
       getCollectionPage(),
+      MaterialFacets({ slug: ctx.params.slug }),
     ]);
     const url = new URL(req.url);
     if (!category) {
@@ -60,6 +65,7 @@ export const handler: Handlers<Data> = {
         hasNextPage: false,
         baseHref: url.pathname,
         slug: ctx.params.slug,
+        materials: [],
       }, { status: 404 });
     }
     const visibleFilters = normalizeVisibleFilters(
@@ -95,6 +101,7 @@ export const handler: Handlers<Data> = {
       hasNextPage: products.hasNextPage,
       baseHref: `${url.pathname}${url.search}`,
       slug: ctx.params.slug,
+      materials,
     });
   },
 };
@@ -117,6 +124,7 @@ export default function CategoryRoute({ data }: PageProps<Data>) {
             filters={{
               visible: data.visibleFilters,
               categories: [],
+              materials: data.materials,
               q: data.query.q,
               category: "",
               material: data.query.material,

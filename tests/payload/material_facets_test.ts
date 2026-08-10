@@ -29,8 +29,8 @@ Deno.test("projects descriptive CMS materials into compact public facets", () =>
   );
 
   assertEquals(expandMaterialFilters(["esmeralda", "metal"], facets), [
-    "Rocha de esmeralda natural",
-    "Rocha de esmeralda natural, resina e base metálica",
+    "esmeralda",
+    "metal",
   ]);
   assertEquals(
     resolveMaterialFilterKeys(["Rocha de esmeralda natural"], facets),

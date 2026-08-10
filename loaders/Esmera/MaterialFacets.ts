@@ -4,12 +4,14 @@ import {
 } from "../../lib/esmera/storefront.ts";
 
 export interface MaterialFacet {
-  /** Stable value exposed in the collection URL/UI. */
+  /** Stable value exposed in the collection URL/UI and sent to Storefront V2. */
   value: string;
   label: string;
   count: number;
-  /** Raw CMS facet values that this public material represents. */
+  /** Values sent to the public API for this facet. Kept as an array for compatibility. */
   queryValues: string[];
+  /** Original free-text values returned by the current CMS facets. */
+  sourceValues: string[];
 }
 
 export interface Props {
@@ -101,7 +103,7 @@ export function normalizeMaterials(
 
   const grouped = new Map<
     string,
-    { label: string; count: number; queryValues: Set<string> }
+    { label: string; count: number; sourceValues: Set<string> }
   >();
 
   for (const item of value) {
@@ -118,10 +120,10 @@ export function normalizeMaterials(
       const current = grouped.get(bucket.value) ?? {
         label: bucket.label,
         count: 0,
-        queryValues: new Set<string>(),
+        sourceValues: new Set<string>(),
       };
       current.count += count;
-      current.queryValues.add(rawValue);
+      current.sourceValues.add(rawValue);
       grouped.set(bucket.value, current);
     }
   }
@@ -131,7 +133,8 @@ export function normalizeMaterials(
       value,
       label: item.label,
       count: item.count,
-      queryValues: [...item.queryValues],
+      queryValues: [value],
+      sourceValues: [...item.sourceValues],
     }))
     .sort((left, right) => {
       const leftOrder = MATERIAL_ORDER.get(left.value) ?? Number.MAX_SAFE_INTEGER;
@@ -143,7 +146,7 @@ export function normalizeMaterials(
     .slice(0, Math.max(1, limit));
 }
 
-/** Converts public/canonical material keys into the raw values understood by CMS V2. */
+/** Converts selected public material keys into Storefront V2 query values. */
 export function expandMaterialFilters(
   selected: string[],
   facets: MaterialFacet[],
@@ -163,7 +166,7 @@ export function resolveMaterialFilterKeys(
   const keys = selected.flatMap((value) => {
     const direct = facets.find((item) => item.value === value);
     if (direct) return [direct.value];
-    const legacy = facets.filter((item) => item.queryValues.includes(value));
+    const legacy = facets.filter((item) => item.sourceValues.includes(value));
     return legacy.length ? legacy.map((item) => item.value) : [value];
   });
   return [...new Set(keys)];

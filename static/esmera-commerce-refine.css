@@ -811,6 +811,39 @@ main {
 
 }
 
+@media (max-width: 520px) {
+  .esv-footer-main {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .esv-footer-wordmark,
+  .esv-footer-contact,
+  .esv-footer-statement,
+  .esv-footer-main > p {
+    grid-column: 1;
+  }
+
+  .esv-footer-wordmark {
+    width: min(180px, 58vw);
+  }
+
+  .esv-footer-contact {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .esv-footer-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .esv-footer-bottom nav,
+  .esv-footer-bottom > span:last-child {
+    grid-column: 1;
+    justify-self: start;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .esv-header,
   .esv-header-overlay,

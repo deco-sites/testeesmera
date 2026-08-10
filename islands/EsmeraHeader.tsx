@@ -438,8 +438,8 @@ export default function EsmeraHeader({
             class="esv-brand-image esv-header-logo-image"
             src="/esmera-logo.png"
             alt=""
-            width="1369"
-            height="305"
+            width="1225"
+            height="369"
             loading="eager"
             decoding="async"
           />
@@ -492,8 +492,8 @@ export default function EsmeraHeader({
                   class="esv-brand-image esv-panel-logo-image"
                   src="/esmera-logo.png"
                   alt=""
-                  width="1369"
-                  height="305"
+                  width="1225"
+                  height="369"
                   decoding="async"
                 />
               </a>

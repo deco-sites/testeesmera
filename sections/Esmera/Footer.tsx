@@ -42,8 +42,8 @@ export default function Footer(
                 class="esv-brand-image esv-footer-logo-image"
                 src="/esmera-logo.png"
                 alt=""
-                width="1369"
-                height="305"
+                width="1225"
+                height="369"
                 loading="lazy"
                 decoding="async"
               />

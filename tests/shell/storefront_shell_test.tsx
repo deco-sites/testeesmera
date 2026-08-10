@@ -165,6 +165,10 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
     headerIsland,
     'class="esv-brand-image esv-header-logo-image"',
   );
+  assertStringIncludes(headerIsland, 'width="1225"');
+  assertStringIncludes(headerIsland, 'height="369"');
+  assertStringIncludes(headerCss, "width: clamp(108px, 30vw, 126px)");
+  assertStringIncludes(commerceCss, "@media (max-width: 520px)");
   assertStringIncludes(headerIsland, "<DynamicMenu");
   assertFalse(headerIsland.includes("is-scrolled"));
 

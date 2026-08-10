@@ -187,6 +187,8 @@
 .esv-product-card-copy,
 .esv-collection-v2-grid .esv-product-card-copy,
 .esv-product-shelf .esv-product-card-copy {
+  position: relative;
+  z-index: 3;
   display: flex;
   flex: 1;
   flex-direction: column;

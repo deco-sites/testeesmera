@@ -35,6 +35,8 @@ Deno.test("product card stylesheet is the only owner of card presentation", asyn
   );
   assertStringIncludes(card, ".esv-card-value-row");
   assertStringIncludes(card, ".esv-card-action-slot");
+  assertStringIncludes(card, ".esv-product-card-copy");
+  assertStringIncludes(card, "z-index: 3;");
   assertStringIncludes(card, ".esv-product-card:hover .esv-card-wishlist");
   assertStringIncludes(card, "@media (max-width: 639px)");
   assertStringIncludes(card, "height: 2.34em");
@@ -65,6 +67,6 @@ Deno.test("product card stylesheet is the only owner of card presentation", asyn
   assert(cardIndex > headerIndex);
   assertStringIncludes(
     app,
-    'storefrontStyleRevision = "2026-08-10-luxury-grid-v4"',
+    'storefrontStyleRevision = "2026-08-10-luxury-grid-v5"',
   );
 });

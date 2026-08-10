@@ -111,22 +111,24 @@
   z-index: 3;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
+  min-height: 24px;
   max-width: calc(100% - 76px);
-  padding: 7px 11px 7px 10px;
+  padding: 5px 10px 5px 9px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.34);
   border-radius: 999px;
-  background: rgba(27, 27, 24, 0.5);
+  background: rgba(25, 25, 22, 0.48);
   color: var(--product-card-bone);
-  font-size: 8px;
-  font-weight: 450;
-  letter-spacing: 0.15em;
+  font-size: 7.75px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
   line-height: 1.2;
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
-  backdrop-filter: blur(14px) saturate(0.85);
+  box-shadow: 0 4px 18px rgba(19, 18, 15, 0.08);
+  backdrop-filter: blur(16px) saturate(0.82);
 }
 
 .esv-card-status::before {
@@ -190,21 +192,25 @@
 }
 
 .esv-card-eyebrow {
-  min-height: 1.35em;
+  display: -webkit-box;
+  height: 2.8em;
   margin: 0;
   overflow: hidden;
-  color: #8b867d;
-  font-size: 8.5px;
+  color: #817c73;
+  font-size: 8.25px;
   font-weight: 400;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.11em;
   line-height: 1.4;
-  text-overflow: ellipsis;
   text-transform: uppercase;
-  white-space: nowrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .esv-card-title {
+  height: 2.34em;
   min-height: 2.34em;
+  max-height: 2.34em;
   margin: 6px 0 0;
   font-size: clamp(1.02rem, 0.93rem + 0.22vw, 1.16rem);
   font-weight: 400;
@@ -276,9 +282,24 @@
 }
 
 .esv-card-installment {
+  height: 1.4em;
   min-height: 1.4em;
   margin-top: 3px;
   text-align: right;
+}
+
+.esv-card-installment.is-empty {
+  visibility: hidden;
+}
+
+.esv-card-action-slot {
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.esv-card-action-slot > .esv-card-cta,
+.esv-card-action-slot > .esv-product-actions.is-compact {
+  margin-top: 0;
 }
 
 .esv-card-installment strong {
@@ -295,7 +316,7 @@
   justify-content: space-between;
   width: 100%;
   min-height: 44px;
-  margin-top: 14px;
+  margin-top: 0;
   padding: 0 1px;
   border: 0;
   border-top: 1px solid var(--product-card-line);
@@ -339,7 +360,7 @@
 
 /* Inquiry and direct purchase share the same visual grammar. */
 .esv-product-card .esv-product-actions.is-compact {
-  margin-top: 14px;
+  margin-top: 0;
 }
 
 .esv-product-card .esv-product-actions.is-emphasized button {

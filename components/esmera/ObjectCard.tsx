@@ -123,7 +123,9 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
         data-motion="reveal"
         data-motion-order={String(motionOrder + 2)}
       >
-        {vm.eyebrow && <p class="esv-card-eyebrow">{vm.eyebrow}</p>}
+        <p class="esv-card-eyebrow" title={vm.eyebrow || undefined}>
+          {vm.eyebrow || <span aria-hidden="true">&nbsp;</span>}
+        </p>
 
         <h3 class="esv-card-title">
           <ProductActions
@@ -139,32 +141,41 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
           {vm.price && <span class="esv-card-price">{vm.price}</span>}
         </div>
 
-        {vm.installment && (
-          <p class="esv-card-installment">
-            {vm.installment.prefix}
-            <strong>{vm.installment.emphasis}</strong>
-            {vm.installment.suffix}
-          </p>
-        )}
+        <p
+          class={`esv-card-installment${vm.installment ? "" : " is-empty"}`}
+          aria-hidden={vm.installment ? undefined : "true"}
+        >
+          {vm.installment
+            ? (
+              <>
+                {vm.installment.prefix}
+                <strong>{vm.installment.emphasis}</strong>
+                {vm.installment.suffix}
+              </>
+            )
+            : <>&nbsp;</>}
+        </p>
 
-        {vm.isPurchasable
-          ? (
-            <BuyButton
-              productId={vm.id}
-              productSlug={vm.slug}
-              productTitle={vm.title}
-              product={modalProduct}
-            />
-          )
-          : (
-            <ProductActions
-              productId={vm.id}
-              productTitle={vm.title}
-              product={modalProduct}
-              compact
-              emphasized
-            />
-          )}
+        <div class="esv-card-action-slot">
+          {vm.isPurchasable
+            ? (
+              <BuyButton
+                productId={vm.id}
+                productSlug={vm.slug}
+                productTitle={vm.title}
+                product={modalProduct}
+              />
+            )
+            : (
+              <ProductActions
+                productId={vm.id}
+                productTitle={vm.title}
+                product={modalProduct}
+                compact
+                emphasized
+              />
+            )}
+        </div>
       </div>
     </article>
   );

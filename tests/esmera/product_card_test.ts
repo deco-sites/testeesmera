@@ -44,8 +44,8 @@ function product(
 
 Deno.test("reproduz o card do mockup", () => {
   const vm = toProductCardViewModel(product());
-  assertEquals(vm.eyebrow, "GELATO · ROCHA DE ESMERALDA NATURAL");
-  assertEquals(vm.title, "Ponta de Esmeralda");
+  assertEquals(vm.eyebrow, "PONTA DE ESMERALDA");
+  assertEquals(vm.title, "Gelato");
   assertEquals(vm.status, "PEÇA ÚNICA · DISPONÍVEL");
   assertEquals(vm.specs, "18 cm · 1,2 kg");
   assertEquals(vm.price, "R$ 490,00");
@@ -58,7 +58,7 @@ Deno.test("reproduz o card do mockup", () => {
   assertEquals(vm.isPurchasable, true);
 });
 
-Deno.test("título cai para o nome quando não há pieceType", () => {
+Deno.test("título é sempre o nome, mesmo quando há pieceType", () => {
   const vm = toProductCardViewModel(
     product({
       pieceType: null,
@@ -68,7 +68,7 @@ Deno.test("título cai para o nome quando não há pieceType", () => {
   assertEquals(vm.title, "Gelato");
 });
 
-Deno.test("sem tipo de peça, eyebrow mostra só o material (não repete o nome)", () => {
+Deno.test("sem tipo de peça, eyebrow mostra o material", () => {
   const vm = toProductCardViewModel(
     product({
       pieceType: null,
@@ -175,17 +175,42 @@ function esmera(overrides: Partial<EsmeraObject> = {}): EsmeraObject {
   };
 }
 
-Deno.test("bridge EsmeraObject → ViewModel: título = nome, eyebrow = material", () => {
+Deno.test("bridge EsmeraObject → ViewModel usa categoria, nome e parcelamento", () => {
   const vm = esmeraObjectToCardViewModel(esmera());
-  // No pipeline atual não há tipo de peça confiável: o nome é o título e o
-  // eyebrow mostra só o material (nunca a coleção/categoria como título).
   assertEquals(vm.title, "Gelato");
-  assertEquals(vm.eyebrow, "ROCHA DE ESMERALDA NATURAL");
+  assertEquals(vm.eyebrow, "PONTA DE ESMERALDA");
   assertEquals(vm.status, "PEÇA ÚNICA · DISPONÍVEL");
   assertEquals(vm.specs, "18 cm · 1,2 kg");
   assertEquals(vm.price, "R$ 490,00");
-  assertEquals(vm.installment, null);
+  assertEquals(vm.installment, {
+    prefix: "ou ",
+    emphasis: "12x de R$ 40,83",
+    suffix: " sem juros",
+  });
   assertEquals(vm.isPurchasable, true);
+});
+
+Deno.test("Storefront e EsmeraObject geram a mesma identidade visual", () => {
+  const storefront = toProductCardViewModel(product());
+  const legacy = esmeraObjectToCardViewModel(esmera());
+  assertEquals(
+    {
+      eyebrow: legacy.eyebrow,
+      title: legacy.title,
+      status: legacy.status,
+      specs: legacy.specs,
+      price: legacy.price,
+      installment: legacy.installment,
+    },
+    {
+      eyebrow: storefront.eyebrow,
+      title: storefront.title,
+      status: storefront.status,
+      specs: storefront.specs,
+      price: storefront.price,
+      installment: storefront.installment,
+    },
+  );
 });
 
 Deno.test("bridge: sob consulta não é comprável e esconde preço", () => {

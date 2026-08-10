@@ -95,7 +95,7 @@ export function buildStatus(
   return isUnique ? `PEÇA ÚNICA · ${stateLabel}` : stateLabel;
 }
 
-/** "GELATO · ROCHA DE ESMERALDA NATURAL" — nome + material, em caixa alta. */
+/** Junta rótulos editoriais em caixa alta com separador consistente. */
 export function buildEyebrow(
   name: string,
   material: string | null | undefined,
@@ -105,6 +105,19 @@ export function buildEyebrow(
     .filter(Boolean)
     .join(" · ")
     .toLocaleUpperCase("pt-BR");
+}
+
+/** Categoria curta quando disponível; material é o fallback editorial. */
+export function buildCardEyebrow(
+  name: string,
+  pieceType: string | null | undefined,
+  material: string | null | undefined,
+): string {
+  const category = (pieceType ?? "").trim();
+  return buildEyebrow(
+    category && fold(category) !== fold(name) ? category : material ?? "",
+    null,
+  );
 }
 
 /** "18 cm · 1,2 kg" | "18 cm" | null (plano §19: sem peso → só dimensão). */
@@ -129,6 +142,19 @@ export function buildInstallment(
     emphasis: `${installment.count}x de ${amount}`,
     suffix: installment.interestFree ? " sem juros" : "",
   };
+}
+
+function buildFallbackInstallment(
+  priceCents: number | null | undefined,
+): ProductCardInstallment | null {
+  if (
+    typeof priceCents !== "number" || !Number.isFinite(priceCents) ||
+    priceCents <= 0
+  ) return null;
+  const amount = formatPriceCents(Math.floor(priceCents / 12));
+  return amount
+    ? { prefix: "ou ", emphasis: `12x de ${amount}`, suffix: " sem juros" }
+    : null;
 }
 
 function fold(value: string | null | undefined): string {
@@ -162,8 +188,8 @@ function specsFromAttributes(
 
 /**
  * Ponte a partir do `EsmeraObject` atual (pipeline Payload direto), enquanto a
- * coleção não migra para a Storefront API. Enriquecimento é best-effort: o
- * parcelamento só existe via contrato público (fica nulo aqui).
+ * coleção não migra para a Storefront API. Enriquecimento é best-effort e o
+ * parcelamento padrão mantém a apresentação consistente entre superfícies.
  */
 export function esmeraObjectToCardViewModel(
   item: EsmeraObject,
@@ -178,15 +204,18 @@ export function esmeraObjectToCardViewModel(
   return {
     id: item.id,
     slug: item.slug,
-    // Sem "tipo de peça" confiável no pipeline atual: o título é o NOME da peça
-    // e o eyebrow é só o material. A inversão nome↔pieceType só acontece com o
-    // contrato público (toProductCardViewModel), onde pieceType é confiável.
-    eyebrow: buildEyebrow(item.material ?? "", null),
+    eyebrow: buildCardEyebrow(
+      item.title,
+      item.category ?? null,
+      item.material ?? null,
+    ),
     title: item.title,
     status: buildStatus(state, isUnique),
     specs: specsFromAttributes(item.attributes ?? []),
     price,
-    installment: null,
+    installment: item.isInquiry
+      ? null
+      : buildFallbackInstallment(item.priceCents),
     image: item.image || null,
     imageAlt: item.alt || item.title,
     hoverImage: item.detailImage || null,
@@ -202,18 +231,12 @@ export function toProductCardViewModel(
   const material = product.identity?.material ?? product.material ?? null;
   const pieceType = product.identity?.pieceType ?? product.pieceType ?? null;
   const priceCents = product.pricing?.priceCents ?? product.price ?? null;
-  // Só inclui o nome no eyebrow quando o título é o tipo da peça (nome distinto);
-  // senão o eyebrow repetiria o título. Sem tipo → eyebrow = só material.
-  const distinctPiece = Boolean(pieceType && pieceType !== name);
 
   return {
     id: product.id,
     slug: product.slug,
-    eyebrow: distinctPiece
-      ? buildEyebrow(name, material)
-      : buildEyebrow(material ?? "", null),
-    // Título é o tipo da peça ("Ponta de Esmeralda"); cai para o nome quando não há.
-    title: pieceType || name,
+    eyebrow: buildCardEyebrow(name, pieceType, material),
+    title: name,
     status: buildStatus(product.state, product.isUnique),
     specs: buildSpecs(product),
     price: product.pricing?.mode === "inquiry"

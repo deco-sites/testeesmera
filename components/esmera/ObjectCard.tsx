@@ -1,6 +1,5 @@
 import ProductActions from "../../islands/ProductActions.tsx";
 import WishlistButton from "../../islands/WishlistButton.tsx";
-import BuyButton from "../../islands/BuyButton.tsx";
 import type { EsmeraObject } from "../../lib/payload/types.ts";
 import type { StorefrontProductV2 } from "../../lib/esmera/storefront.ts";
 import {
@@ -19,6 +18,10 @@ function isEsmeraObject(
   item: StorefrontProductV2 | EsmeraObject,
 ): item is EsmeraObject {
   return typeof item.image === "string";
+}
+
+function compactCardStatus(status: string): string {
+  return status === "PEÇA ÚNICA · DISPONÍVEL" ? "PEÇA ÚNICA" : status;
 }
 
 export default function ObjectCard({ item, motionOrder = 0 }: Props) {
@@ -65,7 +68,7 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
       <div class="esv-product-media-wrap">
         <figure
           class="esv-product-media"
-          style={{ aspectRatio: "3 / 4" }}
+          style={{ aspectRatio: "4 / 3" }}
           data-motion="media-reveal"
           data-motion-order={String(motionOrder)}
         >
@@ -77,9 +80,9 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
             alt={vm.imageAlt}
             loading="lazy"
             decoding="async"
-            width={900}
-            height={1200}
-            sizes="(max-width: 429px) calc(100vw - 36px), (max-width: 767px) calc(100vw - 44px), (max-width: 1023px) 46vw, 24vw"
+            width={1200}
+            height={900}
+            sizes="(max-width: 429px) calc(100vw - 36px), (max-width: 767px) calc(100vw - 44px), (max-width: 1023px) 46vw, 32vw"
           />
           {vm.hoverImage && (
             <EsmeraImage
@@ -88,21 +91,12 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
               alt=""
               loading="lazy"
               decoding="async"
-              width={900}
-              height={1200}
-              sizes="(max-width: 429px) calc(100vw - 36px), (max-width: 767px) calc(100vw - 44px), (max-width: 1023px) 46vw, 24vw"
+              width={1200}
+              height={900}
+              sizes="(max-width: 429px) calc(100vw - 36px), (max-width: 767px) calc(100vw - 44px), (max-width: 1023px) 46vw, 32vw"
             />
           )}
         </figure>
-
-        {vm.status && (
-          <span
-            class="esv-card-status"
-            data-unique={vm.status.includes("PEÇA ÚNICA") ? "true" : "false"}
-          >
-            {vm.status}
-          </span>
-        )}
 
         <WishlistButton productId={vm.id} productTitle={vm.title} />
 
@@ -134,37 +128,20 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
 
         <hr class="esv-card-divider" aria-hidden="true" />
 
-        {vm.price && (
-          <div class="esv-card-pricing">
-            <span class="esv-card-price">{vm.price}</span>
-            {vm.installment && (
-              <p class="esv-card-installment">
-                {vm.installment.prefix}
-                <strong>{vm.installment.emphasis}</strong>
-                {vm.installment.suffix}
-              </p>
-            )}
-          </div>
-        )}
-
-        {vm.isPurchasable
-          ? (
-            <BuyButton
-              productId={vm.id}
-              productSlug={vm.slug}
-              productTitle={vm.title}
-              product={modalProduct}
-            />
-          )
-          : (
-            <ProductActions
-              productId={vm.id}
-              productTitle={vm.title}
-              product={modalProduct}
-              compact
-              emphasized
-            />
+        <div class="esv-card-footer">
+          {vm.status && (
+            <span
+              class="esv-card-status"
+              data-unique={vm.status.includes("PEÇA ÚNICA") ? "true" : "false"}
+            >
+              {compactCardStatus(vm.status)}
+            </span>
           )}
+
+          <span class={`esv-card-price${vm.price ? "" : " is-inquiry"}`}>
+            {vm.price ?? "Sob consulta"}
+          </span>
+        </div>
       </div>
     </article>
   );

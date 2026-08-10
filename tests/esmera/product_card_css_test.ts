@@ -41,6 +41,10 @@ Deno.test("product card stylesheet is the only owner of card presentation", asyn
   assertStringIncludes(card, "border-top: 1px solid var(--product-card-line)");
 
   assertStringIncludes(component, 'style={{ aspectRatio: "4 / 5" }}');
+  assertStringIncludes(
+    component,
+    "text-[10px] font-light uppercase tracking-[0.15em] text-neutral-400",
+  );
   assertStringIncludes(component, 'class="esv-card-value-row"');
   assertStringIncludes(component, 'class="esv-card-action-slot"');
   assertStringIncludes(component, "compactCardStatus(vm.status)");

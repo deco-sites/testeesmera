@@ -123,9 +123,12 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
         data-motion="reveal"
         data-motion-order={String(motionOrder + 2)}
       >
-        <p class="esv-card-eyebrow" title={vm.eyebrow || undefined}>
+        <span
+          class="esv-card-eyebrow block mb-1.5 truncate text-[10px] font-light uppercase tracking-[0.15em] text-neutral-400"
+          title={vm.eyebrow || undefined}
+        >
           {vm.eyebrow || <span aria-hidden="true">&nbsp;</span>}
-        </p>
+        </span>
 
         <h3 class="esv-card-title">
           <ProductActions

@@ -17,6 +17,7 @@
 .esv-product-card,
 .esv-collection-v2-grid > .esv-product-card,
 .esv-product-shelf > .esv-product-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -29,6 +30,12 @@
   box-shadow: none;
   color: var(--product-card-text);
   font-family: "Inter", sans-serif;
+  cursor: pointer;
+}
+
+.esv-collection-v2-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(56px, 6vw, 88px) clamp(28px, 3.5vw, 56px);
 }
 
 /* The native 4:5 crop gives the photography the scale of an editorial plate. */
@@ -99,45 +106,30 @@
 }
 
 .esv-product-card .esv-product-modal-trigger-media:focus-visible {
-  outline: 1px solid var(--product-card-bone);
-  outline-offset: -5px;
+  outline: 1px solid var(--product-card-text);
+  outline-offset: 4px;
 }
 
-/* Availability reads as a discreet museum label over the photograph. */
+/* Only the commercial exception is shown; availability is otherwise silent. */
 .esv-card-status {
   position: absolute;
   top: 16px;
   left: 16px;
   z-index: 3;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 24px;
+  display: block;
   max-width: calc(100% - 76px);
-  padding: 5px 10px 5px 9px;
+  padding: 0;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  border-radius: 999px;
-  background: rgba(25, 25, 22, 0.48);
-  color: var(--product-card-bone);
-  font-size: 7.75px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  line-height: 1.2;
+  border: 0;
+  background: transparent;
+  color: var(--product-card-muted);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
   text-overflow: ellipsis;
-  text-transform: uppercase;
+  text-transform: none;
   white-space: nowrap;
-  box-shadow: 0 4px 18px rgba(19, 18, 15, 0.08);
-  backdrop-filter: blur(16px) saturate(0.82);
-}
-
-.esv-card-status::before {
-  flex: none;
-  width: 12px;
-  height: 1px;
-  border-radius: 0;
-  background: #d8c7aa;
-  content: "";
 }
 
 /* Comfortably tappable while visually quiet. */
@@ -157,9 +149,19 @@
   background: rgba(244, 241, 234, 0.76);
   color: var(--product-card-text);
   cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
   backdrop-filter: blur(10px);
-  transition: background-color 220ms ease, color 220ms ease,
-    transform 220ms ease;
+  transition: opacity 220ms ease, background-color 220ms ease,
+    color 220ms ease, transform 220ms ease;
+}
+
+.esv-product-card:hover .esv-card-wishlist,
+.esv-product-card:focus-within .esv-card-wishlist {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .esv-card-wishlist:hover {
@@ -207,6 +209,7 @@
 }
 
 .esv-card-title {
+  display: -webkit-box;
   height: 2.34em;
   min-height: 2.34em;
   max-height: 2.34em;
@@ -215,6 +218,10 @@
   font-weight: 400;
   letter-spacing: -0.015em;
   line-height: 1.17;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 /* Large canvases retain image scale instead of shrinking the collection to four columns. */
@@ -224,76 +231,45 @@
   }
 }
 
-.esv-card-title .esv-product-modal-trigger-title {
-  display: -webkit-box;
-  width: 100%;
-  padding: 0;
-  overflow: hidden;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  letter-spacing: inherit;
-  text-align: left;
-  cursor: pointer;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+@media (max-width: 1023px) {
+  .esv-collection-v2-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 56px clamp(20px, 3vw, 32px);
+  }
 }
 
-.esv-card-title .esv-product-modal-trigger-title:focus-visible {
-  outline: 1px solid var(--product-card-cta);
-  outline-offset: 3px;
+@media (max-width: 639px) {
+  .esv-collection-v2-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 58px;
+  }
 }
 
 .esv-card-value-row {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   min-height: 1.45em;
   margin-top: 12px;
 }
 
-.esv-card-specs,
-.esv-card-installment {
-  margin: 0;
-  color: var(--product-card-muted);
-  font-size: 10.5px;
-  font-weight: 400;
-  letter-spacing: 0.015em;
-  line-height: 1.4;
-}
-
-.esv-card-specs {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .esv-card-price {
   flex: none;
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: 0.9rem;
+  font-weight: 400;
   letter-spacing: -0.015em;
   line-height: 1.2;
   white-space: nowrap;
 }
 
-.esv-card-installment {
-  height: 1.4em;
-  min-height: 1.4em;
-  margin-top: 3px;
-  text-align: right;
-}
-
-.esv-card-installment.is-empty {
-  visibility: hidden;
-}
-
 .esv-card-action-slot {
+  position: relative;
+  z-index: 4;
   margin-top: auto;
-  padding-top: 14px;
+  padding-top: 12px;
+  pointer-events: auto;
+  transition: opacity 220ms ease, transform 280ms ease;
 }
 
 .esv-card-action-slot > .esv-card-cta,
@@ -301,12 +277,7 @@
   margin-top: 0;
 }
 
-.esv-card-installment strong {
-  color: var(--product-card-text);
-  font-weight: 500;
-}
-
-/* Hairlines make the acquisition action present without a heavy button box. */
+/* Acquisition remains textual and only gains emphasis after intent. */
 .esv-card-cta,
 .esv-collection-v2-grid .esv-card-cta,
 .esv-product-shelf .esv-card-cta {
@@ -314,21 +285,19 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  min-height: 44px;
+  min-height: 36px;
   margin-top: 0;
   padding: 0 1px;
   border: 0;
-  border-top: 1px solid var(--product-card-line);
-  border-bottom: 1px solid var(--product-card-line-strong);
   border-radius: 0;
   background: transparent;
-  color: var(--product-card-text);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.19em;
+  color: var(--product-card-muted);
+  font-size: 9.5px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: border-color 240ms ease, color 240ms ease;
+  transition: color 240ms ease;
 }
 
 .esv-card-cta svg {
@@ -343,7 +312,6 @@
 .esv-card-cta:hover,
 .esv-collection-v2-grid .esv-card-cta:hover,
 .esv-product-shelf .esv-card-cta:hover {
-  border-color: var(--product-card-cta);
   background: transparent;
   color: var(--product-card-cta);
 }
@@ -367,15 +335,13 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  min-height: 44px;
+  min-height: 36px;
   padding: 0 1px;
   border: 0;
-  border-top: 1px solid var(--product-card-line);
-  border-bottom: 1px solid var(--product-card-line-strong);
   background: transparent;
-  color: var(--product-card-text);
-  font-size: 10px;
-  font-weight: 500;
+  color: var(--product-card-muted);
+  font-size: 9.5px;
+  font-weight: 400;
   letter-spacing: 0.12em;
   line-height: 1.2;
   text-transform: uppercase;
@@ -387,8 +353,20 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .esv-card-action-slot {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px);
+  }
+
+  .esv-product-card:hover .esv-card-action-slot,
+  .esv-product-card:focus-within .esv-card-action-slot {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
   .esv-product-card .esv-product-actions.is-emphasized button:hover {
-    border-color: var(--product-card-cta);
     color: var(--product-card-cta);
   }
 
@@ -417,7 +395,8 @@
   .esv-product-card .esv-product-media img,
   .esv-card-wishlist,
   .esv-card-cta,
-  .esv-card-cta svg {
+  .esv-card-cta svg,
+  .esv-card-action-slot {
     transition: none;
   }
 
@@ -425,7 +404,8 @@
   .esv-product-card:hover .esv-product-image-static,
   .esv-product-card.has-detail:hover .esv-product-image-detail,
   .esv-card-wishlist:hover,
-  .esv-card-cta:hover svg {
+  .esv-card-cta:hover svg,
+  .esv-card-action-slot {
     transform: none;
   }
 }

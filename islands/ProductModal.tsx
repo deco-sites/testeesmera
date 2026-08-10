@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { getAvailabilityMeta } from "../components/esmera/availability.ts";
+import { buildInstallmentFromPriceCents } from "../lib/esmera/productCard.ts";
 import type { EsmeraObject, EsmeraVariant } from "../lib/payload/types.ts";
 
 interface ProductModalImage {
@@ -274,6 +275,15 @@ export default function ProductModal() {
 
   const availability = getAvailabilityMeta(product.availability);
   const activePrice = selectedVariant?.formattedPrice ?? product.formattedPrice;
+  const activePriceCents = selectedVariant
+    ? selectedVariant.priceCents
+    : product.priceCents;
+  const activeIsInquiry = selectedVariant
+    ? selectedVariant.isInquiry
+    : product.isInquiry;
+  const installment = activeIsInquiry
+    ? null
+    : buildInstallmentFromPriceCents(activePriceCents);
   const zoomImage = zoomIndex === null ? null : images[zoomIndex];
 
   const addToCart = () => {
@@ -357,6 +367,13 @@ export default function ProductModal() {
               )}
               {activePrice && (
                 <strong class="esv-product-modal-price">{activePrice}</strong>
+              )}
+              {installment && (
+                <p class="esv-product-modal-installment">
+                  {installment.prefix}
+                  <strong>{installment.emphasis}</strong>
+                  {installment.suffix}
+                </p>
               )}
             </div>
 

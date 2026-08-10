@@ -144,7 +144,7 @@ export function buildInstallment(
   };
 }
 
-function buildFallbackInstallment(
+export function buildInstallmentFromPriceCents(
   priceCents: number | null | undefined,
 ): ProductCardInstallment | null {
   if (
@@ -215,7 +215,7 @@ export function esmeraObjectToCardViewModel(
     price,
     installment: item.isInquiry
       ? null
-      : buildFallbackInstallment(item.priceCents),
+      : buildInstallmentFromPriceCents(item.priceCents),
     image: item.image || null,
     imageAlt: item.alt || item.title,
     hoverImage: item.detailImage || null,

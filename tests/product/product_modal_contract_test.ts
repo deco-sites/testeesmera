@@ -92,9 +92,12 @@ Deno.test("cards and Conhecer a peça share the modal and never navigate", async
 
   assertFalse(card.includes("/produto/"));
   assertStringIncludes(card, 'presentation="media"');
-  assertStringIncludes(card, 'presentation="title"');
+  assertFalse(card.includes('presentation="title"'));
+  assertFalse(card.includes("esv-card-installment"));
   assertStringIncludes(actions, 'dispatch("esmera:open-product"');
   assertStringIncludes(modal, 'class="esv-product-modal-buybox"');
+  assertStringIncludes(modal, 'class="esv-product-modal-installment"');
+  assertStringIncludes(modal, "buildInstallmentFromPriceCents");
   assertStringIncludes(
     modal,
     'images.length === 1 ? "is-single" : "is-double"',

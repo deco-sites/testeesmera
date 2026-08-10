@@ -63,6 +63,7 @@ html:root {
   display: inline-flex;
   align-items: center;
   justify-self: center;
+  grid-column: 2;
   min-height: 44px;
   padding: 0;
   border: 0;
@@ -82,6 +83,7 @@ html:root {
   display: flex;
   align-items: center;
   justify-self: end;
+  grid-column: 3;
   gap: 4px;
   min-width: 0;
   color: inherit;
@@ -175,6 +177,7 @@ html:root {
   z-index: auto;
   min-width: 0;
   justify-self: start;
+  grid-column: 1;
   color: inherit;
 }
 
@@ -184,7 +187,7 @@ html:root {
   inset: auto;
   display: flex;
   align-items: center;
-  gap: clamp(15px, 1.55vw, 28px);
+  gap: clamp(10px, 1vw, 14px);
   width: auto;
   max-width: 100%;
   height: var(--header-h);
@@ -202,10 +205,10 @@ html:root {
   align-items: center;
   min-height: 44px;
   color: inherit;
-  font-size: 10px;
-  font-weight: 500;
+  font-size: 9px;
+  font-weight: 400;
   line-height: 1;
-  letter-spacing: .105em;
+  letter-spacing: .09em;
   text-decoration: none;
   text-transform: uppercase;
   white-space: nowrap;

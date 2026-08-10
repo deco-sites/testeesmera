@@ -35,19 +35,23 @@ Deno.test("product card stylesheet is the only owner of card presentation", asyn
   );
   assertStringIncludes(card, ".esv-card-value-row");
   assertStringIncludes(card, ".esv-card-action-slot");
+  assertStringIncludes(card, ".esv-product-card:hover .esv-card-wishlist");
+  assertStringIncludes(card, "@media (max-width: 639px)");
   assertStringIncludes(card, "height: 2.34em");
   assertStringIncludes(card, ".esv-product-actions.is-emphasized");
   assertStringIncludes(card, "background: transparent");
-  assertStringIncludes(card, "border-top: 1px solid var(--product-card-line)");
+  assertFalse(card.includes("border-top: 1px solid var(--product-card-line)"));
 
-  assertStringIncludes(component, 'style={{ aspectRatio: "4 / 5" }}');
+  assertFalse(component.includes("esv-card-installment"));
+  assertFalse(component.includes("style={{ aspectRatio"));
+  assertFalse(component.includes("compactCardStatus"));
+  assertStringIncludes(component, 'vm.status.includes("SOB ENCOMENDA")');
   assertStringIncludes(
     component,
     "text-[10px] font-light uppercase tracking-[0.15em] text-neutral-400",
   );
   assertStringIncludes(component, 'class="esv-card-value-row"');
   assertStringIncludes(component, 'class="esv-card-action-slot"');
-  assertStringIncludes(component, "compactCardStatus(vm.status)");
   assertStringIncludes(component, 'from "../../islands/BuyButton.tsx"');
   assertFalse(component.includes('class="esv-card-footer"'));
 

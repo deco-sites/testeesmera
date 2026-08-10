@@ -21,10 +21,6 @@ function isEsmeraObject(
   return typeof item.image === "string";
 }
 
-function compactCardStatus(status: string): string {
-  return status === "PEÇA ÚNICA · DISPONÍVEL" ? "PEÇA ÚNICA" : status;
-}
-
 export default function ObjectCard({ item, motionOrder = 0 }: Props) {
   const legacyItem = isEsmeraObject(item);
   const vm = legacyItem
@@ -66,10 +62,16 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
       role="listitem"
       data-product-id={vm.id}
     >
+      <ProductActions
+        productId={vm.id}
+        productTitle={vm.title}
+        product={modalProduct}
+        presentation="media"
+      />
+
       <div class="esv-product-media-wrap">
         <figure
           class="esv-product-media"
-          style={{ aspectRatio: "4 / 5" }}
           data-motion="media-reveal"
           data-motion-order={String(motionOrder)}
         >
@@ -83,7 +85,7 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
             decoding="async"
             width={900}
             height={1125}
-            sizes="(max-width: 429px) calc(100vw - 36px), (max-width: 767px) calc(100vw - 44px), (max-width: 1023px) 46vw, 32vw"
+            sizes="(max-width: 639px) calc(100vw - 44px), (max-width: 1023px) 46vw, 31vw"
           />
           {vm.hoverImage && (
             <EsmeraImage
@@ -94,28 +96,16 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
               decoding="async"
               width={900}
               height={1125}
-              sizes="(max-width: 429px) calc(100vw - 36px), (max-width: 767px) calc(100vw - 44px), (max-width: 1023px) 46vw, 32vw"
+              sizes="(max-width: 639px) calc(100vw - 44px), (max-width: 1023px) 46vw, 31vw"
             />
           )}
         </figure>
 
-        {vm.status && (
-          <span
-            class="esv-card-status"
-            data-unique={vm.status.includes("PEÇA ÚNICA") ? "true" : "false"}
-          >
-            {compactCardStatus(vm.status)}
-          </span>
+        {vm.status.includes("SOB ENCOMENDA") && (
+          <span class="esv-card-status">Sob encomenda</span>
         )}
 
         <WishlistButton productId={vm.id} productTitle={vm.title} />
-
-        <ProductActions
-          productId={vm.id}
-          productTitle={vm.title}
-          product={modalProduct}
-          presentation="media"
-        />
       </div>
 
       <div
@@ -130,34 +120,11 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
           {vm.eyebrow || <span aria-hidden="true">&nbsp;</span>}
         </span>
 
-        <h3 class="esv-card-title">
-          <ProductActions
-            productId={vm.id}
-            productTitle={vm.title}
-            product={modalProduct}
-            presentation="title"
-          />
-        </h3>
+        <h3 class="esv-card-title">{vm.title}</h3>
 
         <div class="esv-card-value-row">
-          {vm.specs && <p class="esv-card-specs">{vm.specs}</p>}
           {vm.price && <span class="esv-card-price">{vm.price}</span>}
         </div>
-
-        <p
-          class={`esv-card-installment${vm.installment ? "" : " is-empty"}`}
-          aria-hidden={vm.installment ? undefined : "true"}
-        >
-          {vm.installment
-            ? (
-              <>
-                {vm.installment.prefix}
-                <strong>{vm.installment.emphasis}</strong>
-                {vm.installment.suffix}
-              </>
-            )
-            : <>&nbsp;</>}
-        </p>
 
         <div class="esv-card-action-slot">
           {vm.isPurchasable

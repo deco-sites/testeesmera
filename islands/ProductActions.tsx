@@ -89,24 +89,17 @@ export default function ProductActions(
 
   if (compact) {
     return (
-      <div class="esv-product-actions is-compact">
+      <div
+        class={`esv-product-actions is-compact${
+          emphasized ? " is-emphasized" : ""
+        }`}
+      >
         <button
           type="button"
           aria-label={`Conhecer a peça ${productTitle}`}
           {...commonWarmup}
           onClick={(event) =>
             dispatch("esmera:open-product", event.currentTarget)}
-          style={emphasized
-            ? {
-              width: "100%",
-              minHeight: "46px",
-              justifyContent: "space-between",
-              padding: "0 2px",
-              borderTop: "1px solid var(--line)",
-              borderBottom: "1px solid rgba(38, 39, 36, .48)",
-              fontWeight: 500,
-            }
-            : undefined}
         >
           Conhecer a peça <Arrow size={14} />
         </button>

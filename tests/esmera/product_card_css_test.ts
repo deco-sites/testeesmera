@@ -22,17 +22,20 @@ Deno.test("product card stylesheet is the only owner of card presentation", asyn
     ".esv-collection-v2-grid > .esv-product-card",
   );
   assertStringIncludes(card, ".esv-product-shelf > .esv-product-card");
-  assertStringIncludes(card, "background: var(--product-card-ground)");
-  assertStringIncludes(card, "border-radius: var(--product-card-radius)");
-  assertStringIncludes(card, "aspect-ratio: 4 / 3");
-  assertStringIncludes(card, ".esv-card-footer");
-  assertStringIncludes(card, ".esv-card-status::before");
-  assertFalse(card.includes(".esv-card-cta"));
+  assertStringIncludes(card, ".esv-collection-v2-grid .esv-card-cta");
+  assertStringIncludes(card, ".esv-product-shelf .esv-card-cta");
+  assertStringIncludes(card, 'font-family: "Inter", sans-serif');
+  assertStringIncludes(card, "aspect-ratio: 4 / 3 !important");
+  assertStringIncludes(card, ".esv-card-value-row");
+  assertStringIncludes(card, ".esv-product-actions.is-emphasized");
+  assertStringIncludes(card, "background: transparent");
+  assertStringIncludes(card, "border-top: 1px solid var(--product-card-line)");
 
   assertStringIncludes(component, 'style={{ aspectRatio: "4 / 3" }}');
-  assertStringIncludes(component, 'class="esv-card-footer"');
+  assertStringIncludes(component, 'class="esv-card-value-row"');
   assertStringIncludes(component, "compactCardStatus(vm.status)");
-  assertFalse(component.includes("BuyButton"));
+  assertStringIncludes(component, 'from "../../islands/BuyButton.tsx"');
+  assertFalse(component.includes('class="esv-card-footer"'));
 
   const cardIndex = app.indexOf(
     "/esmera-product-card.css?revision=${revision}",

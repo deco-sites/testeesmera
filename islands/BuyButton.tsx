@@ -33,7 +33,10 @@ export default function BuyButton(
           }),
         )}
     >
-      Adquirir
+      <span>Adquirir</span>
+      <svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true">
+        <path d="M3.75 9h10.5M10 4.75 14.25 9 10 13.25" />
+      </svg>
     </button>
   );
 }

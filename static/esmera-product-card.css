@@ -1,20 +1,19 @@
 /*
- * Card de produto Esméra — referência premium editorial.
- * Fonte única do card final; carregado por último para sobrepor regras legadas.
- * Mantém Inter e transforma o card em uma peça compacta, clara e silenciosa:
- * imagem horizontal, corpo marfim, hierarquia curta e rodapé disponibilidade/preço.
+ * Product card v3 — editorial commerce for collectible stone objects.
+ * Inter is the only type family. The composition follows a gallery label:
+ * image first, provenance second, transaction last.
  */
 :root {
-  --product-card-ground: #f4f1ea;
-  --product-card-text: #292620;
-  --product-card-muted: #8c877e;
-  --product-card-accent: #a58b76;
-  --product-card-line: rgba(41, 38, 32, 0.12);
-  --product-card-dot: #4a4138;
-  --product-card-radius: 7px;
+  --product-card-ground: #eee9de;
+  --product-card-text: #24231f;
+  --product-card-muted: #777268;
+  --product-card-line: rgba(36, 35, 31, 0.18);
+  --product-card-line-strong: rgba(36, 35, 31, 0.48);
+  --product-card-cta: #1f4438;
+  --product-card-bone: #f4f1ea;
 }
 
-/* ---- Container: caixa editorial muito discreta ---- */
+/* The object, not a white container, is the visual focus. */
 .esv-product-card,
 .esv-collection-v2-grid > .esv-product-card,
 .esv-product-shelf > .esv-product-card {
@@ -22,28 +21,39 @@
   flex-direction: column;
   min-width: 0;
   height: 100%;
-  overflow: hidden;
+  overflow: visible;
   isolation: isolate;
-  background: var(--product-card-ground);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   color: var(--product-card-text);
-  border: 1px solid rgba(41, 38, 32, 0.07);
-  border-radius: var(--product-card-radius);
-  box-shadow: 0 8px 28px rgba(40, 34, 27, 0.035);
+  font-family: "Inter", sans-serif;
 }
 
-/* ---- Mídia 4:3, como no mockup de referência ---- */
+/* A landscape crop follows the photography and keeps the card deliberately slim. */
 .esv-product-card .esv-product-media-wrap {
   position: relative;
   overflow: hidden;
-  background: #ddd7cb;
+  background: var(--product-card-ground);
 }
 
 .esv-product-card .esv-product-media {
   position: relative;
   margin: 0;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 4 / 3 !important;
   overflow: hidden;
-  background: #ddd7cb;
+  background: #e5dfd3;
+}
+
+.esv-product-card .esv-product-media::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(180deg, rgba(20, 20, 17, 0.09), transparent 22%);
+  opacity: 0.55;
 }
 
 .esv-product-card .esv-product-media img {
@@ -53,99 +63,138 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 1s cubic-bezier(0.2, 0.6, 0.2, 1);
-}
-
-.esv-product-card:hover .esv-product-image-primary,
-.esv-product-card:hover .esv-product-image-static,
-.esv-product-card:focus-within .esv-product-image-static {
-  transform: scale(1.028);
+  object-position: center 42%;
+  transform: scale(1.001);
+  transition: transform 900ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 520ms ease;
 }
 
 .esv-product-card .esv-product-image-detail {
   opacity: 0;
-  transition: opacity 0.5s ease, transform 1s cubic-bezier(0.2, 0.6, 0.2, 1);
 }
 
-.esv-product-card.has-detail:hover .esv-product-image-detail,
-.esv-product-card.has-detail:focus-within .esv-product-image-detail {
-  opacity: 1;
-  transform: scale(1.028);
+@media (hover: hover) and (pointer: fine) {
+  .esv-product-card:hover .esv-product-image-primary,
+  .esv-product-card:hover .esv-product-image-static,
+  .esv-product-card:focus-within .esv-product-image-static {
+    transform: scale(1.025);
+  }
+
+  .esv-product-card.has-detail:hover .esv-product-image-detail,
+  .esv-product-card.has-detail:focus-within .esv-product-image-detail {
+    opacity: 1;
+    transform: scale(1.025);
+  }
 }
 
 .esv-product-card .esv-product-modal-trigger-media {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   height: 100%;
-  padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
 }
 
-/* ---- Wishlist sobre a fotografia ---- */
+.esv-product-card .esv-product-modal-trigger-media:focus-visible {
+  outline: 1px solid var(--product-card-bone);
+  outline-offset: -5px;
+}
+
+/* Availability reads like a gallery annotation, not a promotional badge. */
+.esv-card-status {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: calc(100% - 76px);
+  padding: 7px 10px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: rgba(244, 241, 234, 0.86);
+  color: var(--product-card-text);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.17em;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+}
+
+.esv-card-status::before {
+  flex: none;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--product-card-cta);
+  content: "";
+}
+
+/* Comfortably tappable while visually quiet. */
 .esv-card-wishlist {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 2;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.48);
+  border: 0;
   border-radius: 50%;
-  background: rgba(30, 26, 21, 0.16);
-  color: #fff;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(244, 241, 234, 0.76);
+  color: var(--product-card-text);
   cursor: pointer;
-  transition: background 0.25s ease, border-color 0.25s ease,
-    transform 0.25s ease;
+  backdrop-filter: blur(10px);
+  transition: background-color 220ms ease, color 220ms ease,
+    transform 220ms ease;
 }
 
 .esv-card-wishlist:hover {
-  border-color: rgba(255, 255, 255, 0.72);
-  background: rgba(30, 26, 21, 0.28);
-  transform: translateY(-1px);
+  background: rgba(244, 241, 234, 0.96);
+  transform: scale(1.04);
 }
 
 .esv-card-wishlist[data-favorited="true"] {
-  background: rgba(30, 26, 21, 0.36);
-  color: #fff;
+  color: var(--product-card-cta);
 }
 
 .esv-card-wishlist:focus-visible {
-  outline: 1px solid #fff;
+  outline: 1px solid var(--product-card-cta);
   outline-offset: 2px;
 }
 
 .esv-card-wishlist svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
-/* ---- Conteúdo compacto integrado ao card ---- */
+/* Compact hierarchy: material, name, facts/value, action. */
 .esv-product-card-copy,
 .esv-collection-v2-grid .esv-product-card-copy,
 .esv-product-shelf .esv-product-card-copy {
   display: flex;
   flex: 1;
   flex-direction: column;
-  min-width: 0;
-  padding: 16px 17px 15px;
-  background: var(--product-card-ground);
+  padding: 15px 1px 0;
 }
 
 .esv-card-eyebrow {
+  min-height: 1.35em;
   margin: 0;
   overflow: hidden;
-  color: var(--product-card-accent);
-  font-size: 10px;
+  color: var(--product-card-muted);
+  font-size: 9.5px;
   font-weight: 500;
   letter-spacing: 0.16em;
   line-height: 1.35;
@@ -155,12 +204,12 @@
 }
 
 .esv-card-title {
-  margin: 8px 0 0;
-  color: var(--product-card-text);
-  font-size: clamp(17px, 1.25vw, 20px);
+  min-height: 2.34em;
+  margin: 7px 0 0;
+  font-size: clamp(1.02rem, 0.93rem + 0.22vw, 1.16rem);
   font-weight: 400;
-  line-height: 1.22;
-  letter-spacing: -0.018em;
+  letter-spacing: -0.015em;
+  line-height: 1.17;
 }
 
 .esv-card-title .esv-product-modal-trigger-title {
@@ -174,141 +223,187 @@
   font: inherit;
   letter-spacing: inherit;
   text-align: left;
+  cursor: pointer;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
-  cursor: pointer;
 }
 
 .esv-card-title .esv-product-modal-trigger-title:focus-visible {
-  outline: 1px solid var(--product-card-text);
+  outline: 1px solid var(--product-card-cta);
   outline-offset: 3px;
 }
 
-.esv-card-specs {
-  margin: 7px 0 0;
+.esv-card-value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 1.45em;
+  margin-top: 12px;
+}
+
+.esv-card-specs,
+.esv-card-installment {
+  margin: 0;
   color: var(--product-card-muted);
-  font-size: 12.5px;
+  font-size: 10.5px;
   font-weight: 400;
-  letter-spacing: 0.005em;
+  letter-spacing: 0.015em;
   line-height: 1.4;
 }
 
-.esv-card-divider {
-  width: 100%;
-  height: 1px;
-  margin: 14px 0 13px;
-  border: 0;
-  background: var(--product-card-line);
-}
-
-/* ---- Rodapé: disponibilidade à esquerda, preço à direita ---- */
-.esv-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-width: 0;
-  margin-top: auto;
-}
-
-.esv-card-status {
-  display: inline-flex;
-  min-width: 0;
-  align-items: center;
-  gap: 9px;
+.esv-card-specs {
   overflow: hidden;
-  color: var(--product-card-text);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.13em;
-  line-height: 1.25;
   text-overflow: ellipsis;
-  text-transform: uppercase;
   white-space: nowrap;
-}
-
-.esv-card-status::before {
-  content: "";
-  flex: none;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--product-card-dot);
 }
 
 .esv-card-price {
   flex: none;
-  color: var(--product-card-text);
-  font-size: 16.5px;
-  font-weight: 400;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
   line-height: 1.2;
-  letter-spacing: -0.018em;
   white-space: nowrap;
 }
 
-.esv-card-price.is-inquiry {
-  color: var(--product-card-muted);
-  font-size: 10.5px;
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.esv-card-installment {
+  min-height: 1.4em;
+  margin-top: 3px;
+  text-align: right;
 }
 
-/* ---- Responsivo ---- */
-@media (max-width: 767px) {
-  .esv-product-card-copy,
-  .esv-collection-v2-grid .esv-product-card-copy,
-  .esv-product-shelf .esv-product-card-copy {
-    padding: 15px 15px 14px;
+.esv-card-installment strong {
+  color: var(--product-card-text);
+  font-weight: 500;
+}
+
+/* Hairlines make the acquisition action present without a heavy button box. */
+.esv-card-cta,
+.esv-collection-v2-grid .esv-card-cta,
+.esv-product-shelf .esv-card-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 14px;
+  padding: 0 1px;
+  border: 0;
+  border-top: 1px solid var(--product-card-line);
+  border-bottom: 1px solid var(--product-card-line-strong);
+  border-radius: 0;
+  background: transparent;
+  color: var(--product-card-text);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 240ms ease, color 240ms ease;
+}
+
+.esv-card-cta svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.25;
+  transition: transform 240ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.esv-card-cta:hover,
+.esv-collection-v2-grid .esv-card-cta:hover,
+.esv-product-shelf .esv-card-cta:hover {
+  border-color: var(--product-card-cta);
+  background: transparent;
+  color: var(--product-card-cta);
+}
+
+.esv-card-cta:hover svg {
+  transform: translateX(4px);
+}
+
+.esv-card-cta:focus-visible {
+  outline: 1px solid var(--product-card-cta);
+  outline-offset: 3px;
+}
+
+/* Inquiry and direct purchase share the same visual grammar. */
+.esv-product-card .esv-product-actions.is-compact {
+  margin-top: 14px;
+}
+
+.esv-product-card .esv-product-actions.is-emphasized button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 1px;
+  border: 0;
+  border-top: 1px solid var(--product-card-line);
+  border-bottom: 1px solid var(--product-card-line-strong);
+  background: transparent;
+  color: var(--product-card-text);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.esv-product-card .esv-product-actions.is-emphasized svg {
+  transition: transform 220ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .esv-product-card .esv-product-actions.is-emphasized button:hover {
+    border-color: var(--product-card-cta);
+    color: var(--product-card-cta);
   }
 
-  .esv-card-wishlist {
-    top: 12px;
-    right: 12px;
-    width: 38px;
-    height: 38px;
+  .esv-product-card .esv-product-actions.is-emphasized button:hover svg {
+    transform: translate3d(3px, -2px, 0);
   }
 }
 
 @media (max-width: 429px) {
+  .esv-product-card-copy,
+  .esv-collection-v2-grid .esv-product-card-copy,
+  .esv-product-shelf .esv-product-card-copy {
+    padding-top: 13px;
+  }
+
   .esv-card-title {
-    font-size: 17px;
+    font-size: 1rem;
   }
 
-  .esv-card-specs {
-    font-size: 12px;
-  }
-
-  .esv-card-footer {
-    gap: 10px;
-  }
-
-  .esv-card-status {
-    font-size: 9.5px;
-    letter-spacing: 0.11em;
-  }
-
-  .esv-card-price {
-    font-size: 15.5px;
+  .esv-card-value-row {
+    align-items: flex-end;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .esv-product-card .esv-product-media img,
-  .esv-card-wishlist {
+  .esv-card-wishlist,
+  .esv-card-cta,
+  .esv-card-cta svg {
     transition: none;
   }
 
   .esv-product-card:hover .esv-product-image-primary,
   .esv-product-card:hover .esv-product-image-static,
   .esv-product-card.has-detail:hover .esv-product-image-detail,
-  .esv-card-wishlist:hover {
+  .esv-card-wishlist:hover,
+  .esv-card-cta:hover svg {
     transform: none;
   }
 }
 
-/* ---- Aviso do fluxo de compra (PR5) ---- */
+/* Transaction feedback remains global because it is emitted by the card CTA. */
 .esv-buy-flow {
   position: fixed;
   left: 50%;
@@ -325,15 +420,15 @@
   margin: 0;
   padding: 14px 18px;
   background: var(--product-card-text);
-  color: var(--product-card-ground);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
+  color: var(--product-card-bone);
   font-size: 13.5px;
   letter-spacing: 0.01em;
   line-height: 1.45;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
 }
 
 .esv-buy-flow-msg.is-success {
-  background: #2d6a63;
+  background: var(--product-card-cta);
 }
 
 .esv-buy-flow-msg.is-sold {

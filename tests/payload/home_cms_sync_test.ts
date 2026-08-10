@@ -19,7 +19,7 @@ Deno.test("accepts Payload grouped hero media with a public relative URL", () =>
         alt: "Objeto mineral em composição editorial",
       },
     }],
-  } as PayloadHome;
+  } as unknown as PayloadHome;
 
   const validation = validatePayloadContract("home", home);
 

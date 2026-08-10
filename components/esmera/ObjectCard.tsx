@@ -1,5 +1,6 @@
 import ProductActions from "../../islands/ProductActions.tsx";
 import WishlistButton from "../../islands/WishlistButton.tsx";
+import BuyButton from "../../islands/BuyButton.tsx";
 import type { EsmeraObject } from "../../lib/payload/types.ts";
 import type { StorefrontProductV2 } from "../../lib/esmera/storefront.ts";
 import {
@@ -98,6 +99,15 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
           )}
         </figure>
 
+        {vm.status && (
+          <span
+            class="esv-card-status"
+            data-unique={vm.status.includes("PEÇA ÚNICA") ? "true" : "false"}
+          >
+            {compactCardStatus(vm.status)}
+          </span>
+        )}
+
         <WishlistButton productId={vm.id} productTitle={vm.title} />
 
         <ProductActions
@@ -124,24 +134,37 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
           />
         </h3>
 
-        {vm.specs && <p class="esv-card-specs">{vm.specs}</p>}
-
-        <hr class="esv-card-divider" aria-hidden="true" />
-
-        <div class="esv-card-footer">
-          {vm.status && (
-            <span
-              class="esv-card-status"
-              data-unique={vm.status.includes("PEÇA ÚNICA") ? "true" : "false"}
-            >
-              {compactCardStatus(vm.status)}
-            </span>
-          )}
-
-          <span class={`esv-card-price${vm.price ? "" : " is-inquiry"}`}>
-            {vm.price ?? "Sob consulta"}
-          </span>
+        <div class="esv-card-value-row">
+          {vm.specs && <p class="esv-card-specs">{vm.specs}</p>}
+          {vm.price && <span class="esv-card-price">{vm.price}</span>}
         </div>
+
+        {vm.installment && (
+          <p class="esv-card-installment">
+            {vm.installment.prefix}
+            <strong>{vm.installment.emphasis}</strong>
+            {vm.installment.suffix}
+          </p>
+        )}
+
+        {vm.isPurchasable
+          ? (
+            <BuyButton
+              productId={vm.id}
+              productSlug={vm.slug}
+              productTitle={vm.title}
+              product={modalProduct}
+            />
+          )
+          : (
+            <ProductActions
+              productId={vm.id}
+              productTitle={vm.title}
+              product={modalProduct}
+              compact
+              emphasized
+            />
+          )}
       </div>
     </article>
   );

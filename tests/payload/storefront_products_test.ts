@@ -51,10 +51,10 @@ Deno.test("requests the enriched root catalog with filters", async () => {
   }
 });
 
-Deno.test("ObjectCard consumes the Storefront ViewModel directly", async () => {
+Deno.test("ObjectCard consumes Storefront and keeps the resolved Home fallback", async () => {
   const source = await Deno.readTextFile(
     new URL("../../components/esmera/ObjectCard.tsx", import.meta.url),
   );
   assertEquals(source.includes("toProductCardViewModel(item)"), true);
-  assertEquals(source.includes("esmeraObjectToCardViewModel(item)"), false);
+  assertEquals(source.includes("esmeraObjectToCardViewModel(item)"), true);
 });

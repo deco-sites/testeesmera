@@ -50,6 +50,9 @@ export interface PayloadCTA {
   label?: string | null;
   href?: string | null;
   kind?: "internal" | "external" | "whatsapp" | null;
+  destinationType?: "internal" | "external" | "whatsapp" | null;
+  path?: string | null;
+  url?: string | null;
 }
 
 export interface PayloadCategory {
@@ -208,8 +211,15 @@ export interface PayloadHome {
     | Array<{
       title?: string | null;
       copy?: string | null;
-      image?: Relationship<PayloadMedia>;
+      image?:
+        | Relationship<PayloadMedia>
+        | {
+          image?: Relationship<PayloadMedia>;
+          alt?: string | null;
+          caption?: string | null;
+        };
       alt?: string | null;
+      link?: PayloadCTA | null;
     }>
     | null;
   provenanceCallToAction?: PayloadCTA | null;

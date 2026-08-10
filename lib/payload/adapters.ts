@@ -189,12 +189,14 @@ export function resolveCallToAction(
   cta?: PayloadCTA | null,
 ): NavigationLink | null {
   const label = cta?.label?.trim();
-  const href = sanitizePublicHref(cta?.href);
+  const destinationType = cta?.kind ?? cta?.destinationType;
+  const rawHref = cta?.href ?? (destinationType === "internal" ? cta?.path : cta?.url);
+  const href = sanitizePublicHref(rawHref);
   if (!label || !href) return null;
   return {
     label,
     href,
-    external: cta?.kind === "external" || /^https?:\/\//i.test(href),
+    external: destinationType === "external" || /^https?:\/\//i.test(href),
   };
 }
 
@@ -352,11 +354,14 @@ export function toProvenance(home: PayloadHome, baseURL = getPayloadBaseURL()) {
   const overview = resolveImageField(home.provenanceImage, baseURL, "wide");
   const stages = (home.provenanceSteps ?? []).map((stage) => {
     const image = resolveImageField(stage.image, baseURL, "wide", stage.alt);
+    const link = resolveCallToAction(stage.link);
     return {
       title: cleanText(stage.title),
       text: cleanText(stage.copy),
       image: image?.url,
       alt: image?.alt || cleanText(stage.alt),
+      linkLabel: link?.label,
+      linkHref: link?.href,
     };
   });
   const result = {

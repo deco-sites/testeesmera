@@ -103,9 +103,10 @@ export function buildCatalogQuery(
     : "";
   const categoryID = fixedCategoryID ||
     categories.find((item) => item.slug === category)?.id;
-  const sort = visibleFilters.includes("sort")
-    ? normalizeCollectionSort(url.searchParams.get("sort"))
-    : "editorial";
+  // Sorting is a collection control rendered independently from the optional
+  // refinement fields. If it is visible in the UI, its query must always be
+  // honored by SSR and by /api/esmera-collection.
+  const sort = normalizeCollectionSort(url.searchParams.get("sort"));
   const searchCondition = q.length >= 2
     ? whereOr(
       whereContains("title", q),

@@ -69,7 +69,7 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
       <div class="esv-product-media-wrap">
         <figure
           class="esv-product-media"
-          style={{ aspectRatio: "4 / 3" }}
+          style={{ aspectRatio: "4 / 5" }}
           data-motion="media-reveal"
           data-motion-order={String(motionOrder)}
         >
@@ -81,8 +81,8 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
             alt={vm.imageAlt}
             loading="lazy"
             decoding="async"
-            width={1200}
-            height={900}
+            width={900}
+            height={1125}
             sizes="(max-width: 429px) calc(100vw - 36px), (max-width: 767px) calc(100vw - 44px), (max-width: 1023px) 46vw, 32vw"
           />
           {vm.hoverImage && (
@@ -92,8 +92,8 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
               alt=""
               loading="lazy"
               decoding="async"
-              width={1200}
-              height={900}
+              width={900}
+              height={1125}
               sizes="(max-width: 429px) calc(100vw - 36px), (max-width: 767px) calc(100vw - 44px), (max-width: 1023px) 46vw, 32vw"
             />
           )}

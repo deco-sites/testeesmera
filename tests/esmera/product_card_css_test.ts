@@ -1,14 +1,17 @@
 import { assert, assertFalse, assertStringIncludes } from "@std/assert";
 
 Deno.test("product card stylesheet is the only owner of card presentation", async () => {
-  const [catalog, finish, master, card, app, component] = await Promise.all([
-    Deno.readTextFile("static/esmera-catalog-v2.css"),
-    Deno.readTextFile("static/esmera-finish.css"),
-    Deno.readTextFile("static/esmera-master.css"),
-    Deno.readTextFile("static/esmera-product-card.css"),
-    Deno.readTextFile("routes/_app.tsx"),
-    Deno.readTextFile("components/esmera/ObjectCard.tsx"),
-  ]);
+  const [catalog, finish, master, card, app, component, buyButton, header] =
+    await Promise.all([
+      Deno.readTextFile("static/esmera-catalog-v2.css"),
+      Deno.readTextFile("static/esmera-finish.css"),
+      Deno.readTextFile("static/esmera-master.css"),
+      Deno.readTextFile("static/esmera-product-card.css"),
+      Deno.readTextFile("routes/_app.tsx"),
+      Deno.readTextFile("components/esmera/ObjectCard.tsx"),
+      Deno.readTextFile("islands/BuyButton.tsx"),
+      Deno.readTextFile("islands/EsmeraHeader.tsx"),
+    ]);
 
   for (const legacy of [catalog, finish, master]) {
     assertFalse(legacy.includes(".esv-product-card"));
@@ -25,17 +28,24 @@ Deno.test("product card stylesheet is the only owner of card presentation", asyn
   assertStringIncludes(card, ".esv-collection-v2-grid .esv-card-cta");
   assertStringIncludes(card, ".esv-product-shelf .esv-card-cta");
   assertStringIncludes(card, 'font-family: "Inter", sans-serif');
-  assertStringIncludes(card, "aspect-ratio: 4 / 3 !important");
+  assertStringIncludes(card, "aspect-ratio: 4 / 5 !important");
+  assertStringIncludes(
+    card,
+    "grid-template-columns: repeat(3, minmax(0, 1fr))",
+  );
   assertStringIncludes(card, ".esv-card-value-row");
   assertStringIncludes(card, ".esv-product-actions.is-emphasized");
   assertStringIncludes(card, "background: transparent");
   assertStringIncludes(card, "border-top: 1px solid var(--product-card-line)");
 
-  assertStringIncludes(component, 'style={{ aspectRatio: "4 / 3" }}');
+  assertStringIncludes(component, 'style={{ aspectRatio: "4 / 5" }}');
   assertStringIncludes(component, 'class="esv-card-value-row"');
   assertStringIncludes(component, "compactCardStatus(vm.status)");
   assertStringIncludes(component, 'from "../../islands/BuyButton.tsx"');
   assertFalse(component.includes('class="esv-card-footer"'));
+
+  assertStringIncludes(buyButton, 'new CustomEvent("esmera:add-to-enquiry"');
+  assertStringIncludes(header, 'setOverlay("enquiry")');
 
   const cardIndex = app.indexOf(
     "/esmera-product-card.css?revision=${revision}",

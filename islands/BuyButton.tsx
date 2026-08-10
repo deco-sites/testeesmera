@@ -4,14 +4,12 @@ export interface BuyButtonProps {
   productId: string;
   productSlug: string;
   productTitle: string;
-  product?: EsmeraObject;
+  product: EsmeraObject;
 }
 
 /**
- * CTA transacional do card (plano §15/16). Emite `esmera:buy`; o fluxo real de
- * reserva/checkout é conectado no PR5. O botão só é renderizado para peças
- * compráveis (preço fixo + estado disponível), então nunca promete o que o
- * backend não consegue cumprir.
+ * Adiciona a peça ao carrinho global. O cabeçalho escuta este mesmo evento,
+ * persiste o item e abre o drawer em toda adição.
  */
 export default function BuyButton(
   { productId, productSlug, productTitle, product }: BuyButtonProps,
@@ -23,7 +21,7 @@ export default function BuyButton(
       aria-label={`Adquirir ${productTitle}`}
       onClick={(event) =>
         globalThis.dispatchEvent(
-          new CustomEvent("esmera:buy", {
+          new CustomEvent("esmera:add-to-enquiry", {
             detail: {
               productId,
               productSlug,

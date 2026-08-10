@@ -32,6 +32,16 @@ Deno.test("applies only CMS-enabled catalogue filters", () => {
   });
 });
 
+Deno.test("keeps sorting functional independently from optional filters", () => {
+  const query = buildCatalogQuery(
+    new URL("https://store.example/colecao?sort=price-asc"),
+    ["material", "availability"],
+    [],
+  );
+  assertEquals(query.sort, "price-asc");
+  assertEquals(query.payloadSort, "basePriceCents,title");
+});
+
 Deno.test("ignores unsupported query values", () => {
   const query = buildCatalogQuery(
     new URL(

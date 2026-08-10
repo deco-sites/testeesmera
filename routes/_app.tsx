@@ -8,7 +8,7 @@ export default defineApp(async (_req, ctx) => {
   // Static CSS can outlive a branch deploy in Deco's CDN when the release
   // revision remains stable. Bump this token whenever the storefront chrome
   // changes so preview environments cannot mix new JSX with stale styles.
-  const storefrontStyleRevision = "2026-08-10-brand-mobile-v7";
+  const storefrontStyleRevision = "2026-08-10-collection-controls-v8";
   return (
     <>
       <Theme colorScheme="any" />
@@ -50,7 +50,10 @@ export default defineApp(async (_req, ctx) => {
           rel="stylesheet"
           href={asset("/esmera-matter-interaction.css")}
         />
-        <link rel="stylesheet" href={asset("/esmera-catalog-v2.css")} />
+        <link
+          rel="stylesheet"
+          href={asset(`/esmera-catalog-v2.css?v=${storefrontStyleRevision}`)}
+        />
         <link
           rel="stylesheet"
           href={asset(`/esmera-header.css?v=${storefrontStyleRevision}`)}

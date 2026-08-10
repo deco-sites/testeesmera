@@ -69,13 +69,26 @@ export interface CatalogQueryState {
   sort: CollectionSort;
   payloadSort: string;
   category: string;
-  material: string;
+  materials: string[];
   availability: string;
   where?: Record<string, unknown>;
 }
 
 export function normalizeCollectionSort(value?: string | null): CollectionSort {
   return sortAliases[value?.trim() ?? ""] ?? "editorial";
+}
+
+function queryValues(
+  params: URLSearchParams,
+  name: string,
+  maxItems = 12,
+): string[] {
+  return [...new Set(
+    params.getAll(name)
+      .flatMap((value) => value.split(","))
+      .map((value) => value.trim().slice(0, 80))
+      .filter(Boolean),
+  )].slice(0, maxItems);
 }
 
 export function buildCatalogQuery(
@@ -86,9 +99,9 @@ export function buildCatalogQuery(
 ): CatalogQueryState {
   const page = Math.max(1, Number(url.searchParams.get("page")) || 1);
   const q = url.searchParams.get("q")?.trim().slice(0, 80) ?? "";
-  const material = visibleFilters.includes("material")
-    ? (url.searchParams.get("material")?.trim().slice(0, 80) ?? "")
-    : "";
+  const materials = visibleFilters.includes("material")
+    ? queryValues(url.searchParams, "material")
+    : [];
   const availabilityCandidate = visibleFilters.includes("availability")
     ? (url.searchParams.get("availability")?.trim() ?? "")
     : "";
@@ -116,9 +129,17 @@ export function buildCatalogQuery(
       whereContains("searchTerms.term", q),
     )
     : null;
+  const materialConditions = materials.map((material) =>
+    whereContains("material", material)
+  );
+  const materialCondition = materialConditions.length === 0
+    ? null
+    : materialConditions.length === 1
+    ? materialConditions[0]
+    : whereOr(...materialConditions);
   const conditions = [
     categoryID ? whereContains("categories", categoryID) : null,
-    material ? whereContains("material", material) : null,
+    materialCondition,
     availability ? whereEquals("availability", availability) : null,
     searchCondition,
   ].filter((condition): condition is Record<string, unknown> =>
@@ -130,7 +151,7 @@ export function buildCatalogQuery(
     sort,
     payloadSort: payloadSortByCollectionSort[sort],
     category,
-    material,
+    materials,
     availability,
     where: conditions.length === 0
       ? undefined
@@ -142,7 +163,7 @@ export function buildCatalogQuery(
 
 export function hasCollectionRefinements(query: CatalogQueryState): boolean {
   return query.page > 1 || query.q.length >= 2 || Boolean(
-    query.category || query.material || query.availability ||
+    query.category || query.materials.length || query.availability ||
       query.sort !== "editorial",
   );
 }

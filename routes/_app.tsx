@@ -5,6 +5,10 @@ import { Context } from "@deco/deco";
 
 export default defineApp(async (_req, ctx) => {
   const revision = await Context.active().release?.revision();
+  // Static CSS can outlive a branch deploy in Deco's CDN when the release
+  // revision remains stable. Bump this token whenever the storefront chrome
+  // changes so preview environments cannot mix new JSX with stale styles.
+  const storefrontStyleRevision = "2026-08-10-luxury-grid-v4";
   return (
     <>
       <Theme colorScheme="any" />
@@ -38,17 +42,24 @@ export default defineApp(async (_req, ctx) => {
         />
         <link
           rel="stylesheet"
-          href={asset("/esmera-product-modal-v2.css")}
+          href={asset(
+            `/esmera-product-modal-v2.css?v=${storefrontStyleRevision}`,
+          )}
         />
         <link
           rel="stylesheet"
           href={asset("/esmera-matter-interaction.css")}
         />
         <link rel="stylesheet" href={asset("/esmera-catalog-v2.css")} />
-        <link rel="stylesheet" href={asset("/esmera-header.css")} />
         <link
           rel="stylesheet"
-          href={asset(`/esmera-product-card.css?revision=${revision}`)}
+          href={asset(`/esmera-header.css?v=${storefrontStyleRevision}`)}
+        />
+        <link
+          rel="stylesheet"
+          href={asset(
+            `/esmera-product-card.css?v=${storefrontStyleRevision}`,
+          )}
         />
 
         <link rel="manifest" href={asset("/site.webmanifest")} />

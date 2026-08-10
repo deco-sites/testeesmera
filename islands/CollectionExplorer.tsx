@@ -211,6 +211,10 @@ function countLabel(total: number): string {
   return `${total} ${total === 1 ? "peça" : "peças"}`;
 }
 
+function loadedCountLabel(loaded: number, total: number): string {
+  return loaded < total ? `${loaded} de ${countLabel(total)}` : countLabel(total);
+}
+
 export default function CollectionExplorer(props: CollectionExplorerProps) {
   const [items, setItems] = useState(props.initialItems);
   const [totalDocs, setTotalDocs] = useState(props.initialTotalDocs);
@@ -409,26 +413,34 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
     );
   };
 
+  const renderActiveChips = () =>
+    activeFilters.map((chip) => (
+      <button type="button" key={chip.key} onClick={chip.clear}>
+        {chip.label}
+        <span aria-hidden="true">×</span>
+      </button>
+    ));
+
   return (
     <div class="esv-collection-v2" aria-busy={loading ? "true" : "false"}>
       <div class="esv-collection-v2-count" aria-live="polite">
-        {countLabel(totalDocs)}
+        {loadedCountLabel(items.length, totalDocs)}
       </div>
 
       <div class="esv-collection-v2-controls">
         <label class="esv-collection-v2-search">
           <span class="esv-sr-only">Buscar nesta coleção</span>
-          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22">
             <circle
               cx="10.5"
               cy="10.5"
-              r="5.75"
+              r="6.2"
               fill="none"
               stroke="currentColor"
               stroke-width="1.4"
             />
             <path
-              d="m15 15 4.25 4.25"
+              d="m15.25 15.25 4.25 4.25"
               fill="none"
               stroke="currentColor"
               stroke-linecap="round"
@@ -444,43 +456,68 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
           />
         </label>
 
-        <button
-          class={`esv-collection-v2-filter-trigger${filtersOpen ? " is-active" : ""}`}
-          type="button"
-          aria-expanded={filtersOpen}
-          aria-controls="esv-collection-filters"
-          onClick={() => setFiltersOpen((value) => !value)}
-        >
-          Filtros
-          {refinementCount > 0 && (
-            <span class="esv-collection-v2-filter-count">{refinementCount}</span>
-          )}
-          <svg
-            class="esv-collection-v2-filter-chevron"
-            aria-hidden="true"
-            viewBox="0 0 12 8"
-            width="11"
-            height="7"
+        <div class="esv-collection-v2-toolbar">
+          <button
+            class={`esv-collection-v2-filter-trigger${filtersOpen ? " is-active" : ""}`}
+            type="button"
+            aria-expanded={filtersOpen}
+            aria-controls="esv-collection-filters"
+            onClick={() => setFiltersOpen((value) => !value)}
           >
-            <path
-              d="m1 1.25 5 5 5-5"
-              fill="none"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-width="1"
-            />
-          </svg>
-        </button>
+            <svg
+              class="esv-collection-v2-filter-icon"
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+            >
+              <path
+                d="M4 6h16M4 12h16M4 18h16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.25"
+              />
+              <circle
+                cx="14.5"
+                cy="6"
+                r="1.75"
+                fill="var(--bg)"
+                stroke="currentColor"
+                stroke-width="1.25"
+              />
+              <circle
+                cx="9"
+                cy="12"
+                r="1.75"
+                fill="var(--bg)"
+                stroke="currentColor"
+                stroke-width="1.25"
+              />
+              <circle
+                cx="15.5"
+                cy="18"
+                r="1.75"
+                fill="var(--bg)"
+                stroke="currentColor"
+                stroke-width="1.25"
+              />
+            </svg>
+            <span class="esv-collection-v2-filter-label">Filtros</span>
+            {refinementCount > 0 && (
+              <span class="esv-collection-v2-filter-count">{refinementCount}</span>
+            )}
+          </button>
 
-        <div class="esv-collection-v2-sort">
-          <span>Ordenar</span>
-          <FacetSelect
-            id="esv-sort"
-            ariaLabel="Ordenar coleção"
-            value={sort}
-            options={sortOptions}
-            onChange={(value) => setSort(value as CollectionSort)}
-          />
+          <div class="esv-collection-v2-sort">
+            <span class="esv-collection-v2-sort-label">Ordenar por</span>
+            <FacetSelect
+              id="esv-sort"
+              ariaLabel="Ordenar coleção"
+              value={sort}
+              options={sortOptions}
+              onChange={(value) => setSort(value as CollectionSort)}
+            />
+          </div>
         </div>
       </div>
 
@@ -498,30 +535,19 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
         class={`esv-collection-v2-filters${filtersOpen ? " is-open" : ""}`}
       >
         <div class="esv-collection-v2-filter-head">
-          <strong>Refinar</strong>
-          <div class="esv-collection-v2-filter-head-actions">
-            {refinementCount > 0 && (
-              <button
-                class="esv-collection-v2-filter-clear-desktop"
-                type="button"
-                onClick={clearRefinements}
-              >
-                Limpar
-              </button>
-            )}
-            <button
-              class="esv-collection-v2-filter-close"
-              type="button"
-              onClick={() => setFiltersOpen(false)}
-            >
-              Fechar
-            </button>
-          </div>
+          <strong>Filtros</strong>
+          <button
+            class="esv-collection-v2-filter-close"
+            type="button"
+            onClick={() => setFiltersOpen(false)}
+          >
+            Fechar
+          </button>
         </div>
 
         <div class="esv-collection-v2-filter-fields">
           {props.visibleFilters.includes("category") && (
-            <div class="esv-collection-v2-filter-field">
+            <div class="esv-collection-v2-filter-field esv-collection-v2-category-field">
               <span>Categoria</span>
               <FacetSelect
                 id="esv-category"
@@ -558,7 +584,6 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
                       onClick={() => toggleMaterial(item.value)}
                     >
                       {item.label}
-                      {selected && <span aria-hidden="true">✓</span>}
                     </button>
                   );
                 })}
@@ -569,29 +594,57 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
           {props.visibleFilters.includes("availability") && (
             <div class="esv-collection-v2-filter-field esv-collection-v2-availability-field">
               <span>Disponibilidade</span>
-              <div
-                class="esv-collection-v2-availability"
-                role="group"
-                aria-label="Filtrar por disponibilidade"
+              <FacetSelect
+                id="esv-availability"
+                ariaLabel="Filtrar por disponibilidade"
+                value={availability}
+                options={[["", "Todas"], ...availabilityOptions]}
+                onChange={setAvailability}
+              />
+              <button
+                class="esv-collection-v2-clear-inline"
+                type="button"
+                disabled={activeFilters.length === 0}
+                onClick={clearAllFilters}
               >
-                {availabilityOptions.map(([value, label]) => {
-                  const selected = availability === value;
-                  return (
-                    <button
-                      type="button"
-                      key={value}
-                      class={selected ? "is-selected" : ""}
-                      aria-pressed={selected}
-                      onClick={() => setAvailability(selected ? "" : value)}
-                    >
-                      {label}
-                      {selected && <span aria-hidden="true">✓</span>}
-                    </button>
-                  );
-                })}
-              </div>
+                Limpar tudo
+              </button>
             </div>
           )}
+        </div>
+
+        <div class="esv-collection-v2-active-strip">
+          <div class="esv-collection-v2-active-strip-main">
+            <span class="esv-collection-v2-active-label">Filtros ativos</span>
+            <div
+              class="esv-collection-v2-active-chips"
+              aria-label="Filtros aplicados"
+            >
+              {activeFilters.length > 0
+                ? renderActiveChips()
+                : (
+                  <span class="esv-collection-v2-active-empty">
+                    Nenhum filtro aplicado
+                  </span>
+                )}
+            </div>
+          </div>
+          <button
+            type="button"
+            class="esv-collection-v2-hide-filters"
+            onClick={() => setFiltersOpen(false)}
+          >
+            Ocultar filtros
+            <svg aria-hidden="true" viewBox="0 0 12 8" width="11" height="7">
+              <path
+                d="m1 6.75 5-5 5 5"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-width="1"
+              />
+            </svg>
+          </button>
         </div>
 
         <div class="esv-collection-v2-filter-actions">
@@ -612,13 +665,9 @@ export default function CollectionExplorer(props: CollectionExplorerProps) {
         </div>
       </div>
 
-      {activeFilters.length > 0 && (
+      {!filtersOpen && activeFilters.length > 0 && (
         <div class="esv-collection-v2-chips" aria-label="Filtros aplicados">
-          {activeFilters.map((chip) => (
-            <button type="button" key={chip.key} onClick={chip.clear}>
-              {chip.label} <span aria-hidden="true">×</span>
-            </button>
-          ))}
+          {renderActiveChips()}
           <button
             type="button"
             class="esv-collection-v2-clear"

@@ -33,7 +33,21 @@ export default function Footer(
       <div class="esv-shell">
         <div class="esv-footer-main">
           {source.siteName && (
-            <a class="esv-footer-wordmark" href="/">{source.siteName}</a>
+            <a
+              class="esv-footer-wordmark"
+              href="/"
+              aria-label={`${source.siteName} — início`}
+            >
+              <img
+                class="esv-brand-image esv-footer-logo-image"
+                src="/esmera-logo.png"
+                alt=""
+                width="1369"
+                height="305"
+                loading="lazy"
+                decoding="async"
+              />
+            </a>
           )}
           {source.statement && (
             <p class="esv-footer-statement">{source.statement}</p>

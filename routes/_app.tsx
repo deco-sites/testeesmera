@@ -8,7 +8,7 @@ export default defineApp(async (_req, ctx) => {
   // Static CSS can outlive a branch deploy in Deco's CDN when the release
   // revision remains stable. Bump this token whenever the storefront chrome
   // changes so preview environments cannot mix new JSX with stale styles.
-  const storefrontStyleRevision = "2026-08-10-luxury-grid-v5";
+  const storefrontStyleRevision = "2026-08-10-brand-logo-v6";
   return (
     <>
       <Theme colorScheme="any" />

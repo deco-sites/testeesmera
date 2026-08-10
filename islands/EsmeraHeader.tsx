@@ -217,7 +217,9 @@ export default function EsmeraHeader({
 
     const dialog = panelRef.current;
     const focusables = () =>
-      Array.from(dialog?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR) ?? [])
+      Array.from(
+        dialog?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR) ?? [],
+      )
         .filter((element) =>
           !element.hasAttribute("disabled") && element.offsetParent !== null
         );
@@ -324,7 +326,10 @@ export default function EsmeraHeader({
         : undefined,
     }));
     try {
-      globalThis.localStorage?.setItem(CART_STORAGE_KEY, JSON.stringify(stored));
+      globalThis.localStorage?.setItem(
+        CART_STORAGE_KEY,
+        JSON.stringify(stored),
+      );
     } catch {
       // Ignore quota/privacy errors.
     }
@@ -381,7 +386,8 @@ export default function EsmeraHeader({
   const subtotal = cart.reduce(
     (total, item) =>
       total +
-      ((item.variant?.priceCents ?? item.product.priceCents) ?? 0) * item.quantity,
+      ((item.variant?.priceCents ?? item.product.priceCents) ?? 0) *
+        item.quantity,
     0,
   );
   const hasInquiry = cart.some((item) =>
@@ -404,7 +410,9 @@ export default function EsmeraHeader({
   const openSearchProduct = (product: EsmeraObject) => {
     setOverlay(null);
     globalThis.setTimeout(() => {
-      const trigger = document.querySelector<HTMLElement>(".esv-search-trigger");
+      const trigger = document.querySelector<HTMLElement>(
+        ".esv-search-trigger",
+      );
       globalThis.dispatchEvent(
         new CustomEvent("esmera:open-product", {
           detail: { product, trigger: trigger ?? undefined },
@@ -426,7 +434,15 @@ export default function EsmeraHeader({
           instagramHref={instagramHref}
         />
         <a class="esv-wordmark" aria-label={`${logo} — início`} href="/">
-          {logo}
+          <img
+            class="esv-brand-image esv-header-logo-image"
+            src="/esmera-logo.png"
+            alt=""
+            width="1369"
+            height="305"
+            loading="eager"
+            decoding="async"
+          />
         </a>
         <div class="esv-header-actions">
           <button
@@ -466,8 +482,20 @@ export default function EsmeraHeader({
             onClick={(event) => event.stopPropagation()}
           >
             <div class="esv-panel-header">
-              <a class="esv-panel-wordmark" href="/" onClick={closeAll}>
-                {logo}
+              <a
+                class="esv-panel-wordmark"
+                href="/"
+                aria-label={`${logo} — início`}
+                onClick={closeAll}
+              >
+                <img
+                  class="esv-brand-image esv-panel-logo-image"
+                  src="/esmera-logo.png"
+                  alt=""
+                  width="1369"
+                  height="305"
+                  decoding="async"
+                />
               </a>
               <span id="esv-overlay-title" class="esv-sr-only">
                 {overlayTitle}
@@ -497,7 +525,8 @@ export default function EsmeraHeader({
                     ref={searchInput}
                     id="esv-search-input"
                     value={query}
-                    onInput={(event) => setQuery(event.currentTarget.value)}
+                    onInput={(event) =>
+                      setQuery(event.currentTarget.value)}
                     autocomplete="off"
                     inputmode="search"
                     placeholder="Nome, código ou material"
@@ -578,13 +607,19 @@ export default function EsmeraHeader({
                               </a>
                               <span class="esv-cart-item-copy">
                                 <strong>{item.product.title}</strong>
-                                {item.variant?.label && <small>{item.variant.label}</small>}
+                                {item.variant?.label && (
+                                  <small>{item.variant.label}</small>
+                                )}
                                 <em class="esv-cart-item-price">
-                                  {item.variant?.formattedPrice ?? item.product.formattedPrice}
+                                  {item.variant?.formattedPrice ??
+                                    item.product.formattedPrice}
                                 </em>
                               </span>
                               <div class="esv-cart-item-actions">
-                                <div class="esv-cart-quantity" aria-label="Quantidade">
+                                <div
+                                  class="esv-cart-quantity"
+                                  aria-label="Quantidade"
+                                >
                                   <button
                                     type="button"
                                     aria-label={`Diminuir quantidade de ${item.product.title}`}
@@ -595,7 +630,10 @@ export default function EsmeraHeader({
                                           cartItemKey(candidate) === key
                                             ? {
                                               ...candidate,
-                                              quantity: Math.max(1, candidate.quantity - 1),
+                                              quantity: Math.max(
+                                                1,
+                                                candidate.quantity - 1,
+                                              ),
                                             }
                                             : candidate
                                         )
@@ -611,7 +649,10 @@ export default function EsmeraHeader({
                                       setCart((current) =>
                                         current.map((candidate) =>
                                           cartItemKey(candidate) === key
-                                            ? { ...candidate, quantity: candidate.quantity + 1 }
+                                            ? {
+                                              ...candidate,
+                                              quantity: candidate.quantity + 1,
+                                            }
                                             : candidate
                                         )
                                       )}
@@ -644,7 +685,8 @@ export default function EsmeraHeader({
                           </div>
                         )}
                         <p>
-                          A disponibilidade e os detalhes finais são confirmados pela curadoria.
+                          A disponibilidade e os detalhes finais são confirmados
+                          pela curadoria.
                         </p>
                       </div>
                       {sendHref

@@ -597,11 +597,19 @@ main {
 
 .esv-footer-wordmark {
   grid-column: 1 / span 2;
+  display: block;
+  width: clamp(170px, 15vw, 230px);
   color: var(--ink);
   font-size: 13px;
   font-weight: 500;
   letter-spacing: .18em;
   text-decoration: none;
+}
+
+.esv-footer-logo-image {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .esv-footer-statement,
@@ -760,6 +768,7 @@ main {
 
   .esv-footer-wordmark {
     grid-column: 1;
+    width: min(190px, 48vw);
   }
 
   .esv-footer-contact {

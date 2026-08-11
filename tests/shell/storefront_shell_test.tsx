@@ -118,7 +118,7 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   assert(headerBase.length > 0);
   assert(megaBase.length > 0);
   assertFalse(headerBase.includes("backdrop-filter"));
-  assertFalse(megaBase.includes("border-top"));
+  assertStringIncludes(megaBase, "border-top: 0");
 
   assertStringIncludes(masterCss, "--header-h: 60px");
   assertStringIncludes(masterCss, "--header-h: 56px");

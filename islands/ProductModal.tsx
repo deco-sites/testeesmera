@@ -1,12 +1,30 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import ProductMediaViewer from "../components/esmera/ProductMediaViewer.tsx";
 import { getAvailabilityMeta } from "../components/esmera/availability.ts";
+import {
+  getTwoImagePresentation,
+  type TwoImagePresentation,
+} from "../lib/esmera/productMediaPresentation.ts";
 import { buildInstallmentFromPriceCents } from "../lib/esmera/productCard.ts";
 import type { EsmeraObject, EsmeraVariant } from "../lib/payload/types.ts";
 
 interface ProductModalImage {
   src: string;
+  fullSrc?: string;
   alt: string;
+  width?: number;
+  height?: number;
+  fullWidth?: number;
+  fullHeight?: number;
 }
+
+type RuntimeGalleryMedia = EsmeraObject["gallery"][number] & {
+  width?: number;
+  height?: number;
+  fullUrl?: string;
+  fullWidth?: number;
+  fullHeight?: number;
+};
 
 interface ProductFact {
   label: string;
@@ -35,26 +53,55 @@ function formatImagePosition(value: number): string {
   return String(value).padStart(2, "0");
 }
 
+function toModalImage(
+  src: string,
+  alt: string,
+  media?: RuntimeGalleryMedia,
+): ProductModalImage {
+  return {
+    src,
+    fullSrc: normalized(media?.fullUrl) || src,
+    alt,
+    width: media?.width,
+    height: media?.height,
+    fullWidth: media?.fullWidth,
+    fullHeight: media?.fullHeight,
+  };
+}
+
 export function getProductModalImages(
   product: EsmeraObject,
 ): ProductModalImage[] {
+  const gallery = product.gallery as RuntimeGalleryMedia[];
+  const byUrl = new Map(
+    gallery.map((media) => [normalized(media.url), media] as const),
+  );
+  const primarySrc = normalized(product.image);
   const candidates: ProductModalImage[] = [
-    { src: normalized(product.image), alt: normalized(product.alt) },
+    toModalImage(
+      primarySrc,
+      normalized(product.alt),
+      byUrl.get(primarySrc),
+    ),
   ];
 
   if (product.detailImage) {
-    candidates.push({
-      src: normalized(product.detailImage),
-      alt: `${product.title} — detalhe`,
-    });
+    const detailSrc = normalized(product.detailImage);
+    candidates.push(toModalImage(
+      detailSrc,
+      `${product.title} — detalhe`,
+      byUrl.get(detailSrc),
+    ));
   }
 
-  for (const media of product.gallery) {
+  for (const media of gallery) {
     if (media.role === "cover") continue;
-    candidates.push({
-      src: normalized(media.url),
-      alt: normalized(media.alt) || `${product.title} — ${media.role}`,
-    });
+    const src = normalized(media.url);
+    candidates.push(toModalImage(
+      src,
+      normalized(media.alt) || `${product.title} — ${media.role}`,
+      media,
+    ));
   }
 
   const seen = new Set<string>();
@@ -125,11 +172,13 @@ export default function ProductModal() {
   >();
   const [activeIndex, setActiveIndex] = useState(0);
   const [zoomIndex, setZoomIndex] = useState<number | null>(null);
+  const [gallerySize, setGallerySize] = useState({ width: 0, height: 0 });
   const zoomIndexRef = useRef<number | null>(null);
   const modalRef = useRef<HTMLElement>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
-  const zoomRef = useRef<HTMLElement>(null);
+  const galleryFrameRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
+  const viewerTriggerRef = useRef<HTMLElement | null>(null);
 
   const images = useMemo(
     () => product ? getProductModalImages(product) : [],
@@ -149,6 +198,16 @@ export default function ProductModal() {
     setZoomIndex(next);
   };
 
+  const openViewer = (index: number, trigger: HTMLElement) => {
+    viewerTriggerRef.current = trigger;
+    updateZoomIndex(index);
+  };
+
+  const closeViewer = () => {
+    updateZoomIndex(null);
+    globalThis.setTimeout(() => viewerTriggerRef.current?.focus(), 0);
+  };
+
   const closeModal = () => {
     updateZoomIndex(null);
     setProduct(null);
@@ -159,7 +218,9 @@ export default function ProductModal() {
       const detail = (event as CustomEvent<OpenProductDetail>).detail;
       if (!detail?.product) return;
       triggerRef.current = detail.trigger ?? null;
+      viewerTriggerRef.current = null;
       setActiveIndex(0);
+      setGallerySize({ width: 0, height: 0 });
       setProduct(detail.product);
       setSelectedVariant(
         detail.product.variants.find((variant) => !variant.disabled),
@@ -223,7 +284,7 @@ export default function ProductModal() {
 
   useEffect(() => {
     if (!product || images.length === 0) return;
-    const dialog = zoomIndex === null ? modalRef.current : zoomRef.current;
+    const dialog = modalRef.current;
     if (!dialog) return;
 
     const frame = requestAnimationFrame(() => {
@@ -235,7 +296,28 @@ export default function ProductModal() {
     });
 
     return () => cancelAnimationFrame(frame);
-  }, [product, zoomIndex, images.length]);
+  }, [product, images.length]);
+
+  useEffect(() => {
+    if (!product || images.length !== 2) return;
+    const frame = galleryFrameRef.current;
+    if (!frame) return;
+
+    const measure = () => {
+      const rect = frame.getBoundingClientRect();
+      setGallerySize({ width: rect.width, height: rect.height });
+    };
+
+    measure();
+    if (typeof ResizeObserver !== "undefined") {
+      const observer = new ResizeObserver(measure);
+      observer.observe(frame);
+      return () => observer.disconnect();
+    }
+
+    globalThis.addEventListener("resize", measure);
+    return () => globalThis.removeEventListener("resize", measure);
+  }, [product, images.length]);
 
   useEffect(() => {
     if (!product || images.length < 2) return;
@@ -282,28 +364,15 @@ export default function ProductModal() {
     if (!product || images.length === 0) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
-      const dialog = zoomIndexRef.current === null
-        ? modalRef.current
-        : zoomRef.current;
+      if (zoomIndexRef.current !== null) return;
+      const dialog = modalRef.current;
       if (!dialog) return;
 
       if (event.key === "Escape") {
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
-        if (zoomIndexRef.current !== null) updateZoomIndex(null);
-        else closeModal();
-        return;
-      }
-
-      if (
-        zoomIndexRef.current !== null && images.length > 1 &&
-        (event.key === "ArrowLeft" || event.key === "ArrowRight")
-      ) {
-        event.preventDefault();
-        const current = zoomIndexRef.current;
-        const delta = event.key === "ArrowLeft" ? -1 : 1;
-        updateZoomIndex((current + delta + images.length) % images.length);
+        closeModal();
         return;
       }
 
@@ -343,12 +412,23 @@ export default function ProductModal() {
   const installment = activeIsInquiry
     ? null
     : buildInstallmentFromPriceCents(activePriceCents);
-  const zoomImage = zoomIndex === null ? null : images[zoomIndex];
+  const twoImagePresentation: TwoImagePresentation = images.length === 2
+    ? getTwoImagePresentation(
+      images,
+      gallerySize.width,
+      gallerySize.height,
+    )
+    : "stage";
+  const usesStage = images.length > 2 ||
+    (images.length === 2 && twoImagePresentation === "stage");
   const galleryMode = images.length === 1
     ? "is-single"
-    : images.length === 2
+    : images.length === 2 && !usesStage
     ? "is-double"
     : "is-multiple";
+  const galleryClass = `${galleryMode}${
+    images.length === 2 && usesStage ? " is-two-stage" : ""
+  }`;
   const positionLabel = `${formatImagePosition(activeIndex + 1)} / ${
     formatImagePosition(images.length)
   }`;
@@ -399,10 +479,16 @@ export default function ProductModal() {
             <CloseIcon />
           </button>
 
-          <div class="esv-product-modal-gallery-frame">
+          <div
+            ref={galleryFrameRef}
+            class="esv-product-modal-gallery-frame"
+            data-two-image-presentation={images.length === 2
+              ? twoImagePresentation
+              : undefined}
+          >
             <div
               ref={galleryRef}
-              class={`esv-product-modal-gallery ${galleryMode}`}
+              class={`esv-product-modal-gallery ${galleryClass}`}
             >
               {images.map((image, index) => (
                 <button
@@ -413,13 +499,13 @@ export default function ProductModal() {
                   type="button"
                   aria-label={`Ampliar imagem ${index + 1} de ${product.title}`}
                   data-gallery-index={index}
-                  onClick={() => updateZoomIndex(index)}
+                  onClick={(event) => openViewer(index, event.currentTarget)}
                 >
                   <img
                     src={image.src}
                     alt={image.alt}
-                    width="900"
-                    height="1125"
+                    width={image.width ?? 900}
+                    height={image.height ?? 1125}
                     loading={index === 0 ? "eager" : "lazy"}
                     decoding="async"
                   />
@@ -427,7 +513,7 @@ export default function ProductModal() {
                 </button>
               ))}
 
-              {images.length > 2 && (
+              {usesStage && images.length > 1 && (
                 <div class="esv-product-modal-gallery-controls">
                   <button
                     type="button"
@@ -533,59 +619,14 @@ export default function ProductModal() {
         </article>
       </div>
 
-      {zoomImage && zoomIndex !== null && (
-        <div
-          class="esv-product-zoom"
-          role="presentation"
-          onClick={() => updateZoomIndex(null)}
-        >
-          <section
-            ref={zoomRef}
-            class="esv-product-zoom-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-label={`Imagem ampliada de ${product.title}`}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              class="esv-product-zoom-close"
-              type="button"
-              aria-label="Fechar imagem ampliada"
-              onClick={() => updateZoomIndex(null)}
-              data-autofocus="true"
-            >
-              <CloseIcon />
-            </button>
-
-            <figure class="esv-product-zoom-stage">
-              <img src={zoomImage.src} alt={zoomImage.alt} />
-            </figure>
-
-            {images.length > 1 && (
-              <div class="esv-product-zoom-controls">
-                <button
-                  type="button"
-                  aria-label="Imagem anterior"
-                  onClick={() =>
-                    updateZoomIndex(
-                      (zoomIndex - 1 + images.length) % images.length,
-                    )}
-                >
-                  <ArrowIcon direction="previous" />
-                </button>
-                <span>{zoomIndex + 1} / {images.length}</span>
-                <button
-                  type="button"
-                  aria-label="Próxima imagem"
-                  onClick={() =>
-                    updateZoomIndex((zoomIndex + 1) % images.length)}
-                >
-                  <ArrowIcon direction="next" />
-                </button>
-              </div>
-            )}
-          </section>
-        </div>
+      {zoomIndex !== null && images[zoomIndex] && (
+        <ProductMediaViewer
+          images={images}
+          index={zoomIndex}
+          title={product.title}
+          onIndexChange={updateZoomIndex}
+          onClose={closeViewer}
+        />
       )}
     </>
   );

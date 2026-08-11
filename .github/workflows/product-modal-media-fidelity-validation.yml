@@ -1,6 +1,8 @@
-name: Product modal two-image validation
+name: Product modal media fidelity validation
 
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -8,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  two-image-modal:
+  media-fidelity:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -25,11 +27,27 @@ jobs:
         with:
           node-version: 24
 
-      - name: Product media contracts
+      - name: Format product media files
         run: >-
-          deno test -A
+          deno fmt --check
+          components/esmera/ProductMediaViewer.tsx
+          islands/ProductModal.tsx
+          lib/esmera/productMediaPresentation.ts
+          lib/payload/media.ts
+          routes/_app.tsx
+          static/esmera-product-media-v16.css
+          tests/product/product_modal_contract_test.ts
           tests/product/product_modal_cache_contract_test.ts
           tests/product/product_media_presentation_test.ts
+
+      - name: Lint
+        run: deno lint
+
+      - name: Typecheck
+        run: deno check dev.ts main.ts
+
+      - name: Unit and contract tests
+        run: deno test -A
 
       - name: Build
         run: deno task build
@@ -37,14 +55,14 @@ jobs:
       - name: Start preview
         shell: bash
         run: |
-          deno task preview > /tmp/esmera-two-image-preview.log 2>&1 &
+          deno task preview > /tmp/esmera-media-fidelity-preview.log 2>&1 &
           for attempt in $(seq 1 90); do
             if curl --silent --fail http://127.0.0.1:8000/ > /dev/null; then
               exit 0
             fi
             sleep 1
           done
-          cat /tmp/esmera-two-image-preview.log
+          cat /tmp/esmera-media-fidelity-preview.log
           exit 1
 
       - name: Install Chromium
@@ -52,14 +70,14 @@ jobs:
           npm install --no-save playwright@1.54.2
           npx playwright install --with-deps chromium
 
-      - name: Validate two-image and mixed-ratio behavior
+      - name: Validate media fidelity and viewer interactions
         run: node scripts/ci/product-modal-media-fidelity.mjs
 
-      - name: Upload two-image evidence
+      - name: Upload media fidelity evidence
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: product-modal-two-image-evidence
+          name: product-modal-media-fidelity-evidence
           path: media-fidelity-artifacts
           if-no-files-found: warn
           retention-days: 7

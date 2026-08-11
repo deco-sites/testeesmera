@@ -5,6 +5,9 @@ export interface ResolvedMedia {
   alt: string;
   width?: number;
   height?: number;
+  fullUrl?: string;
+  fullWidth?: number;
+  fullHeight?: number;
 }
 
 function absoluteURL(value: string, baseURL: string): string {
@@ -35,10 +38,17 @@ export function resolvePayloadMedia(
   const url = absoluteURL(rawURL, baseURL);
   if (!url) return null;
 
+  const originalUrl = relationship.url
+    ? absoluteURL(relationship.url, baseURL)
+    : "";
+
   return {
     url,
     alt: editorialAlt?.trim() || relationship.alt?.trim() || "",
     width: size?.width ?? relationship.width ?? undefined,
     height: size?.height ?? relationship.height ?? undefined,
+    fullUrl: originalUrl || url,
+    fullWidth: relationship.width ?? size?.width ?? undefined,
+    fullHeight: relationship.height ?? size?.height ?? undefined,
   };
 }

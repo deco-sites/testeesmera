@@ -1,0 +1,161 @@
+/* ESMÉRA — product media fidelity v16
+ * Guarantees complete product imagery in the modal and powers the interactive
+ * high-resolution viewer. Loaded after modal v2 + frame guard.
+ */
+
+.esv-product-modal-image {
+  display: grid;
+  place-items: center;
+  background: var(--bg-alt);
+}
+
+.esv-product-modal-image img {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain !important;
+  object-position: center center;
+  transform: none !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .esv-product-modal-image:hover img {
+    transform: none !important;
+  }
+}
+
+/* Two-image products can opt out of split view when either image would become
+ * too small inside a half-width panel. The existing multiple-image stage is
+ * intentionally reused so the interaction remains visually consistent.
+ */
+.esv-product-modal-gallery.is-two-stage {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.esv-product-modal-gallery.is-two-stage
+  .esv-product-modal-image:not(.is-active) {
+  display: none;
+}
+
+/* Viewer */
+.esv-product-viewer-dialog {
+  isolation: isolate;
+}
+
+.esv-product-viewer-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: zoom-in;
+}
+
+.esv-product-viewer-stage.is-zoomed {
+  cursor: grab;
+}
+
+.esv-product-viewer-stage.is-zoomed:active {
+  cursor: grabbing;
+}
+
+.esv-product-viewer-stage .esv-product-viewer-image {
+  display: block;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain !important;
+  object-position: center center;
+  transform-origin: center center;
+  will-change: transform;
+  transition: transform 120ms ease-out;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.esv-product-viewer-toolbar {
+  position: absolute;
+  z-index: 6;
+  right: 24px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  border: 1px solid rgba(243, 240, 232, .22);
+  background: rgba(17, 18, 16, .62);
+  color: var(--ink-inverse);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.esv-product-viewer-toolbar button {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.esv-product-viewer-toolbar button:disabled {
+  opacity: .3;
+  cursor: default;
+}
+
+.esv-product-viewer-toolbar span {
+  min-width: 52px;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-align: center;
+}
+
+.esv-product-viewer-toolbar button:focus-visible,
+.esv-product-zoom-controls button:focus-visible,
+.esv-product-zoom-close:focus-visible {
+  outline: 1px solid rgba(243, 240, 232, .9);
+  outline-offset: -4px;
+}
+
+@media (max-width: 767px) {
+  .esv-product-modal-gallery.is-two-stage
+    .esv-product-modal-image:not(.is-active) {
+    display: grid;
+  }
+
+  .esv-product-viewer-toolbar {
+    right: auto;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: 14px;
+  }
+
+  .esv-product-viewer .esv-product-zoom-controls {
+    right: 14px;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: auto;
+  }
+
+  .esv-product-viewer .esv-product-zoom-controls button {
+    width: 40px;
+    height: 44px;
+  }
+
+  .esv-product-viewer .esv-product-zoom-controls span {
+    min-width: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esv-product-viewer-stage .esv-product-viewer-image {
+    transition: none !important;
+  }
+}

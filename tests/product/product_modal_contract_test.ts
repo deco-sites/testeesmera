@@ -39,7 +39,7 @@ Deno.test("one available photo occupies the modal gallery alone", () => {
   assertEquals(images[0].src, "https://cdn.example.com/object-cover.jpg");
 });
 
-Deno.test("two available photos produce a split gallery without duplicates", () => {
+Deno.test("two available photos produce a split-capable gallery without duplicates", () => {
   const detail = "https://cdn.example.com/object-detail.jpg";
   const images = getProductModalImages(product({
     detailImage: detail,
@@ -93,7 +93,7 @@ Deno.test("three available photos are all preserved in editorial order", () => {
   ]);
 });
 
-Deno.test("five unique valid photos remain available to modal and zoom", () => {
+Deno.test("five unique valid photos remain available to modal and viewer", () => {
   const images = getProductModalImages(product({
     detailImage: "https://cdn.example.com/object-detail.jpg",
     gallery: [
@@ -202,7 +202,13 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   const card = await Deno.readTextFile("components/esmera/ObjectCard.tsx");
   const actions = await Deno.readTextFile("islands/ProductActions.tsx");
   const modal = await Deno.readTextFile("islands/ProductModal.tsx");
+  const viewer = await Deno.readTextFile(
+    "components/esmera/ProductMediaViewer.tsx",
+  );
   const css = await Deno.readTextFile("static/esmera-product-modal-v2.css");
+  const fidelityCss = await Deno.readTextFile(
+    "static/esmera-product-media-v16.css",
+  );
 
   assertFalse(card.includes("/produto/"));
   assertStringIncludes(card, 'presentation="media"');
@@ -215,10 +221,14 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(modal, '"is-single"');
   assertStringIncludes(modal, '"is-double"');
   assertStringIncludes(modal, '"is-multiple"');
+  assertStringIncludes(modal, "getTwoImagePresentation");
+  assertStringIncludes(modal, "ProductMediaViewer");
   assertFalse(modal.includes(".slice(0, 2)"));
-  assertStringIncludes(modal, 'event.key === "ArrowLeft"');
-  assertStringIncludes(modal, 'event.key === "ArrowRight"');
-  assertStringIncludes(modal, 'class="esv-product-zoom"');
+  assertStringIncludes(viewer, 'event.key === "ArrowLeft"');
+  assertStringIncludes(viewer, 'event.key === "ArrowRight"');
+  assertStringIncludes(viewer, "data-viewer-scale");
+  assertStringIncludes(viewer, "onPointerMove");
+  assertStringIncludes(viewer, "onWheel");
   assertStringIncludes(modal, 'root.style.overflow = "hidden"');
   assertStringIncludes(modal, "root.style.overflow = previous.rootOverflow");
   assertStringIncludes(modal, "if (!product || images.length === 0) return;");
@@ -227,6 +237,8 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(css, ".esv-product-modal-gallery.is-multiple");
   assertStringIncludes(css, "scroll-snap-type: x mandatory");
   assertStringIncludes(css, ".esv-product-modal-gallery-mobile-counter");
+  assertStringIncludes(fidelityCss, "object-fit: contain !important");
+  assertStringIncludes(fidelityCss, ".esv-product-viewer-stage");
 });
 
 Deno.test("Matter is a whole-panel category link with stable overlay CSS", async () => {

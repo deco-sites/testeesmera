@@ -51,7 +51,7 @@ function imageField(value: unknown): {
 function resolveImageField(
   value: unknown,
   baseURL: string,
-  preferred: "thumb" | "card" | "wide" | "original" = "original",
+  preferred: "thumb" | "card" | "wide" | "territory" | "original" = "original",
   fallbackAlt?: string | null,
 ) {
   const field = imageField(value);
@@ -312,7 +312,7 @@ export function toMatterPanels(
   baseURL = getPayloadBaseURL(),
 ) {
   return (home.matterPanels ?? []).map((panel) => {
-    const image = resolveImageField(panel.image, baseURL, "wide");
+    const image = resolveImageField(panel.image, baseURL, "territory");
     const category = objectRelationship(panel.category);
     return {
       image: image?.url,

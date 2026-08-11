@@ -34,6 +34,7 @@ export interface PayloadMedia {
     thumb?: PayloadMediaSize | null;
     card?: PayloadMediaSize | null;
     wide?: PayloadMediaSize | null;
+    territory?: PayloadMediaSize | null;
   } | null;
   _status?: "draft" | "published" | null;
 }

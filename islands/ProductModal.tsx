@@ -399,56 +399,60 @@ export default function ProductModal() {
             <CloseIcon />
           </button>
 
-          <div
-            ref={galleryRef}
-            class={`esv-product-modal-gallery ${galleryMode}`}
-          >
-            {images.map((image, index) => (
-              <button
-                key={image.src}
-                class={`esv-product-modal-image ${
-                  index === activeIndex ? "is-active" : ""
-                }`}
-                type="button"
-                aria-label={`Ampliar imagem ${index + 1} de ${product.title}`}
-                data-gallery-index={index}
-                onClick={() => updateZoomIndex(index)}
-              >
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  width="900"
-                  height="1125"
-                  loading={index === 0 ? "eager" : "lazy"}
-                  decoding="async"
-                />
-                <span aria-hidden="true">Ampliar</span>
-              </button>
-            ))}
+          <div class="esv-product-modal-gallery-frame">
+            <div
+              ref={galleryRef}
+              class={`esv-product-modal-gallery ${galleryMode}`}
+            >
+              {images.map((image, index) => (
+                <button
+                  key={image.src}
+                  class={`esv-product-modal-image ${
+                    index === activeIndex ? "is-active" : ""
+                  }`}
+                  type="button"
+                  aria-label={`Ampliar imagem ${index + 1} de ${product.title}`}
+                  data-gallery-index={index}
+                  onClick={() => updateZoomIndex(index)}
+                >
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    width="900"
+                    height="1125"
+                    loading={index === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                  />
+                  <span aria-hidden="true">Ampliar</span>
+                </button>
+              ))}
 
-            {images.length > 2 && (
-              <div class="esv-product-modal-gallery-controls">
-                <button
-                  type="button"
-                  aria-label="Imagem anterior da galeria"
-                  onClick={() =>
-                    setActiveIndex((current) =>
-                      (current - 1 + images.length) % images.length
-                    )}
-                >
-                  <ArrowIcon direction="previous" />
-                </button>
-                <span aria-live="polite">{positionLabel}</span>
-                <button
-                  type="button"
-                  aria-label="Próxima imagem da galeria"
-                  onClick={() =>
-                    setActiveIndex((current) => (current + 1) % images.length)}
-                >
-                  <ArrowIcon direction="next" />
-                </button>
-              </div>
-            )}
+              {images.length > 2 && (
+                <div class="esv-product-modal-gallery-controls">
+                  <button
+                    type="button"
+                    aria-label="Imagem anterior da galeria"
+                    onClick={() =>
+                      setActiveIndex((current) =>
+                        (current - 1 + images.length) % images.length
+                      )}
+                  >
+                    <ArrowIcon direction="previous" />
+                  </button>
+                  <span aria-live="polite">{positionLabel}</span>
+                  <button
+                    type="button"
+                    aria-label="Próxima imagem da galeria"
+                    onClick={() =>
+                      setActiveIndex((current) =>
+                        (current + 1) % images.length
+                      )}
+                  >
+                    <ArrowIcon direction="next" />
+                  </button>
+                </div>
+              )}
+            </div>
 
             {images.length > 1 && (
               <span

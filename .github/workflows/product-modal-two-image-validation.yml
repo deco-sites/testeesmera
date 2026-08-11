@@ -1,0 +1,214 @@
+name: Product modal two-image validation
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  two-image-modal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PAYLOAD_API_URL: https://esmeracms-green.vercel.app
+      PORT: "8000"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Contract test
+        run: deno test -A tests/product/product_modal_cache_contract_test.ts
+
+      - name: Build
+        run: deno task build
+
+      - name: Start preview
+        shell: bash
+        run: |
+          deno task preview > /tmp/esmera-two-image-preview.log 2>&1 &
+          for attempt in $(seq 1 90); do
+            if curl --silent --fail http://127.0.0.1:8000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/esmera-two-image-preview.log
+          exit 1
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.54.2
+          npx playwright install --with-deps chromium
+
+      - name: Validate two-image geometry
+        shell: bash
+        run: |
+          mkdir -p two-image-artifacts
+          cat > ./.two-image-smoke.mjs <<'JS'
+          import { chromium } from "playwright";
+
+          const BASE_URL = "http://127.0.0.1:8000/";
+          const ARTIFACT_DIR = "two-image-artifacts";
+
+          function smokeImage(index) {
+            const tones = ["#d9d3c8", "#b8b2a8"];
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1125" viewBox="0 0 900 1125"><rect width="900" height="1125" fill="${tones[index - 1]}"/><text x="450" y="562" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" fill="#4b4a45">ESMERA ${index}</text></svg>`;
+            return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+          }
+
+          function twoImageProduct() {
+            return {
+              id: "smoke-gallery-2",
+              slug: "smoke-gallery-2",
+              code: "SMOKE-2",
+              title: "Galeria smoke 2",
+              image: smokeImage(1),
+              alt: "Peça Esméra smoke principal",
+              detailImage: smokeImage(2),
+              availability: "available",
+              material: "Pedra natural",
+              gallery: [],
+              attributes: [],
+              priceMode: "fixed",
+              priceCents: 120000,
+              formattedPrice: "R$ 1.200,00",
+              isInquiry: false,
+              variants: [],
+              seo: { title: "Galeria smoke 2", description: "", noindex: false },
+              price: "R$ 1.200,00",
+            };
+          }
+
+          async function openFixture(page) {
+            await page.goto(BASE_URL, { waitUntil: "networkidle", timeout: 120000 });
+            await page.evaluate((product) => {
+              globalThis.dispatchEvent(
+                new CustomEvent("esmera:open-product", { detail: { product } }),
+              );
+            }, twoImageProduct());
+            await page.waitForSelector(".esv-product-modal", { state: "visible" });
+            await page.waitForFunction(() => {
+              const images = Array.from(document.querySelectorAll(".esv-product-modal-gallery img"));
+              return images.length === 2 && images.every((image) => image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0);
+            });
+            await page.waitForTimeout(320);
+          }
+
+          const browser = await chromium.launch({ headless: true });
+          try {
+            const desktopContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+            const desktop = await desktopContext.newPage();
+            await openFixture(desktop);
+
+            const stylesheetHref = await desktop.locator('link[href*="esmera-product-modal-v2.css"]').getAttribute("href");
+            if (!stylesheetHref?.includes("2026-08-11-product-modal-gallery-v15")) {
+              throw new Error(`Modal stylesheet revision is stale: ${stylesheetHref}`);
+            }
+
+            const desktopGeometry = await desktop.locator(".esv-product-modal").evaluate((modal) => {
+              const frame = modal.querySelector(".esv-product-modal-gallery-frame");
+              const gallery = modal.querySelector(".esv-product-modal-gallery");
+              const slides = Array.from(modal.querySelectorAll(".esv-product-modal-image"));
+              const counter = modal.querySelector(".esv-product-modal-gallery-mobile-counter");
+              if (!(frame instanceof HTMLElement) || !(gallery instanceof HTMLElement) || slides.some((slide) => !(slide instanceof HTMLElement)) || !(counter instanceof HTMLElement)) {
+                throw new Error("Two-image modal geometry nodes missing");
+              }
+              const modalRect = modal.getBoundingClientRect();
+              const frameRect = frame.getBoundingClientRect();
+              const galleryRect = gallery.getBoundingClientRect();
+              const slideRects = slides.map((slide) => slide.getBoundingClientRect());
+              return {
+                modalHeight: modalRect.height,
+                frameHeight: frameRect.height,
+                galleryHeight: galleryRect.height,
+                galleryWidth: galleryRect.width,
+                slideWidths: slideRects.map((rect) => rect.width),
+                slideHeights: slideRects.map((rect) => rect.height),
+                galleryClass: gallery.className,
+                counterDisplay: getComputedStyle(counter).display,
+              };
+            });
+
+            if (!desktopGeometry.galleryClass.includes("is-double")) {
+              throw new Error(`Expected is-double: ${JSON.stringify(desktopGeometry)}`);
+            }
+            if (Math.abs(desktopGeometry.frameHeight - desktopGeometry.modalHeight) > 4) {
+              throw new Error(`Gallery frame does not fill modal height: ${JSON.stringify(desktopGeometry)}`);
+            }
+            if (Math.abs(desktopGeometry.galleryHeight - desktopGeometry.frameHeight) > 2) {
+              throw new Error(`Gallery does not fill frame: ${JSON.stringify(desktopGeometry)}`);
+            }
+            for (const width of desktopGeometry.slideWidths) {
+              if (Math.abs(width - desktopGeometry.galleryWidth / 2) > 2) {
+                throw new Error(`Desktop slide is not 50/50: ${JSON.stringify(desktopGeometry)}`);
+              }
+            }
+            for (const height of desktopGeometry.slideHeights) {
+              if (Math.abs(height - desktopGeometry.galleryHeight) > 2) {
+                throw new Error(`Desktop slide does not fill gallery height: ${JSON.stringify(desktopGeometry)}`);
+              }
+            }
+            if (desktopGeometry.counterDisplay !== "none") {
+              throw new Error(`Mobile counter leaked into desktop: ${JSON.stringify(desktopGeometry)}`);
+            }
+            await desktop.screenshot({ path: `${ARTIFACT_DIR}/desktop-two-images.png` });
+            await desktopContext.close();
+
+            const mobileContext = await browser.newContext({
+              viewport: { width: 390, height: 844 },
+              hasTouch: true,
+            });
+            const mobile = await mobileContext.newPage();
+            await openFixture(mobile);
+            const gallery = mobile.locator(".esv-product-modal-gallery");
+            const mobileGeometry = await gallery.evaluate((element) => {
+              const slides = Array.from(element.querySelectorAll(".esv-product-modal-image"));
+              const galleryRect = element.getBoundingClientRect();
+              return {
+                galleryWidth: galleryRect.width,
+                slideWidths: slides.map((slide) => slide.getBoundingClientRect().width),
+                scrollSnap: getComputedStyle(element).scrollSnapType,
+              };
+            });
+            if (mobileGeometry.slideWidths.length !== 2) {
+              throw new Error(`Expected two mobile slides: ${JSON.stringify(mobileGeometry)}`);
+            }
+            for (const width of mobileGeometry.slideWidths) {
+              if (Math.abs(width - mobileGeometry.galleryWidth) > 2) {
+                throw new Error(`Mobile slide is not full viewport: ${JSON.stringify(mobileGeometry)}`);
+              }
+            }
+            if (!mobileGeometry.scrollSnap.includes("mandatory")) {
+              throw new Error(`Mobile scroll snap missing: ${JSON.stringify(mobileGeometry)}`);
+            }
+            const counter = mobile.locator(".esv-product-modal-gallery-mobile-counter");
+            await counter.waitFor({ state: "visible" });
+            if ((await counter.textContent())?.trim() !== "01 / 02") {
+              throw new Error(`Unexpected mobile counter: ${await counter.textContent()}`);
+            }
+            await mobile.screenshot({ path: `${ARTIFACT_DIR}/mobile-two-images.png` });
+            await gallery.evaluate((element) => element.scrollTo({ left: element.clientWidth, behavior: "auto" }));
+            await mobile.waitForFunction(() => document.querySelector(".esv-product-modal-gallery-mobile-counter")?.textContent?.trim() === "02 / 02");
+            await mobileContext.close();
+          } finally {
+            await browser.close();
+          }
+          JS
+          node ./.two-image-smoke.mjs
+          rm -f ./.two-image-smoke.mjs
+
+      - name: Upload two-image evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: product-modal-two-image-evidence
+          path: two-image-artifacts
+          if-no-files-found: warn
+          retention-days: 7

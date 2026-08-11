@@ -38,7 +38,9 @@ export const handler: Handlers = {
         sort: query.payloadSort,
         q: query.q.length >= 2 ? query.q : undefined,
         category: query.category || undefined,
-        material: query.material || undefined,
+        material: query.materials.length
+          ? query.materials.join(",")
+          : undefined,
         availability: query.availability || undefined,
       };
       const result = category
@@ -59,7 +61,7 @@ export const handler: Handlers = {
         applied: {
           q: query.q,
           category: query.category,
-          material: query.material,
+          materials: query.materials,
           availability: query.availability,
           sort: query.sort,
         },

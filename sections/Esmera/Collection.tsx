@@ -5,6 +5,7 @@ import type {
   CollectionSort,
 } from "../../lib/payload/catalog.ts";
 import type { StorefrontProductV2 } from "../../lib/esmera/storefront.ts";
+import type { MaterialFacet } from "../../loaders/Esmera/MaterialFacets.ts";
 
 export interface Props {
   eyebrow?: string;
@@ -22,9 +23,10 @@ export interface Props {
   filters?: {
     visible: CatalogFilter[];
     categories: Array<{ title: string; slug: string }>;
+    materials: MaterialFacet[];
     q: string;
     category: string;
-    material: string;
+    materialValues: string[];
     availability: string;
     sort: CollectionSort;
   };
@@ -61,9 +63,10 @@ export default function Collection({
       "sort",
     ] as CatalogFilter[],
     categories: [],
+    materials: [],
     q: "",
     category: "",
-    material: "",
+    materialValues: [],
     availability: "",
     sort: "editorial" as CollectionSort,
   };
@@ -98,10 +101,11 @@ export default function Collection({
           endpoint={endpoint}
           visibleFilters={collectionFilters.visible}
           categories={collectionFilters.categories}
+          materials={collectionFilters.materials}
           initial={{
             q: collectionFilters.q,
             category: collectionFilters.category,
-            material: collectionFilters.material,
+            materials: collectionFilters.materialValues,
             availability: collectionFilters.availability,
             sort: collectionFilters.sort,
           }}

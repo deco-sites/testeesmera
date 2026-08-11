@@ -14,6 +14,11 @@ import {
 import { getPageChrome } from "../../lib/payload/pageData.ts";
 import type { StorefrontProductV2 } from "../../lib/esmera/storefront.ts";
 import type { SEOModel } from "../../lib/payload/types.ts";
+import MaterialFacets, {
+  expandMaterialFilters,
+  type MaterialFacet,
+  resolveMaterialFilterKeys,
+} from "../../loaders/Esmera/MaterialFacets.ts";
 import Collection from "../../sections/Esmera/Collection.tsx";
 
 interface Data {
@@ -33,14 +38,16 @@ interface Data {
   hasNextPage: boolean;
   baseHref: string;
   slug: string;
+  materials: MaterialFacet[];
 }
 
 export const handler: Handlers<Data> = {
   async GET(req, ctx) {
-    const [category, chrome, collectionPage] = await Promise.all([
+    const [category, chrome, collectionPage, materials] = await Promise.all([
       getCategoryBySlug(ctx.params.slug),
       getPageChrome(),
       getCollectionPage(),
+      MaterialFacets({ slug: ctx.params.slug }),
     ]);
     const url = new URL(req.url);
     if (!category) {
@@ -60,18 +67,22 @@ export const handler: Handlers<Data> = {
         hasNextPage: false,
         baseHref: url.pathname,
         slug: ctx.params.slug,
+        materials: [],
       }, { status: 404 });
     }
     const visibleFilters = normalizeVisibleFilters(
       collectionPage?.visibleFilters,
     ).filter((filter) => filter !== "category");
     const query = buildCatalogQuery(url, visibleFilters, chrome.categories);
+    const materialQueryValues = expandMaterialFilters(query.materials, materials);
     const products = await listProductsByCategory(category.slug, {
       limit: 24,
       page: query.page,
       sort: query.payloadSort,
       q: query.q.length >= 2 ? query.q : undefined,
-      material: query.material || undefined,
+      material: materialQueryValues.length
+        ? materialQueryValues.join(",")
+        : undefined,
       availability: query.availability || undefined,
     });
     const categorySEO = {
@@ -95,6 +106,7 @@ export const handler: Handlers<Data> = {
       hasNextPage: products.hasNextPage,
       baseHref: `${url.pathname}${url.search}`,
       slug: ctx.params.slug,
+      materials,
     });
   },
 };
@@ -117,9 +129,13 @@ export default function CategoryRoute({ data }: PageProps<Data>) {
             filters={{
               visible: data.visibleFilters,
               categories: [],
+              materials: data.materials,
               q: data.query.q,
               category: "",
-              material: data.query.material,
+              materialValues: resolveMaterialFilterKeys(
+                data.query.materials,
+                data.materials,
+              ),
               availability: data.query.availability,
               sort: data.query.sort,
             }}

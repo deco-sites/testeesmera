@@ -28,6 +28,7 @@ export interface ProductCardViewModel {
   image: string | null;
   imageAlt: string;
   hoverImage: string | null;
+  hoverImageAlt: string;
   isPurchasable: boolean;
 }
 
@@ -219,6 +220,9 @@ export function esmeraObjectToCardViewModel(
     image: item.image || null,
     imageAlt: item.alt || item.title,
     hoverImage: item.detailImage || null,
+    hoverImageAlt: item.detailImage
+      ? `${item.title} — imagem complementar`
+      : "",
     isPurchasable: !item.isInquiry &&
       (state === "available" || state === "limited"),
   };
@@ -246,6 +250,8 @@ export function toProductCardViewModel(
     image: product.image?.url ?? null,
     imageAlt: product.image?.alt ?? name,
     hoverImage: product.hoverImage?.url ?? null,
+    hoverImageAlt: product.hoverImage?.alt ??
+      (product.hoverImage ? `${name} — imagem complementar` : ""),
     isPurchasable: Boolean(product.purchasable),
   };
 }

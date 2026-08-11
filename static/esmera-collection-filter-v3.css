@@ -1,0 +1,678 @@
+/*
+ * Collection filter v4 — reference layout.
+ * Desktop follows the supplied editorial catalogue composition while the
+ * existing URL/filter contract and mobile drawer behaviour remain intact.
+ */
+
+.esv-collection-v2-count {
+  margin-bottom: 16px;
+  color: var(--muted-strong, var(--muted));
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.esv-collection-v2-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(410px, 29.5%);
+  gap: 16px;
+  align-items: stretch;
+  border: 0;
+}
+
+.esv-collection-v2-search {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 72px;
+  padding: 0 20px;
+  border: 1px solid var(--line);
+  background: transparent;
+}
+
+.esv-collection-v2-search svg {
+  flex: none;
+}
+
+.esv-collection-v2-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+}
+
+.esv-collection-v2-search input::placeholder {
+  color: var(--muted);
+  opacity: 0.74;
+}
+
+.esv-collection-v2-toolbar {
+  display: grid;
+  grid-template-columns: minmax(150px, 43%) minmax(0, 57%);
+  min-height: 72px;
+  border: 1px solid var(--line);
+}
+
+.esv-collection-v2-filter-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-width: 0;
+  min-height: 70px;
+  padding: 0 18px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 180ms ease;
+}
+
+.esv-collection-v2-filter-trigger:hover,
+.esv-collection-v2-filter-trigger:focus-visible,
+.esv-collection-v2-filter-trigger.is-active {
+  background: rgba(17, 18, 16, 0.025);
+  outline: 0;
+}
+
+.esv-collection-v2-filter-icon {
+  flex: none;
+}
+
+.esv-collection-v2-filter-label {
+  display: inline;
+  min-width: 0;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+}
+
+.esv-collection-v2-filter-count {
+  display: grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 9px;
+  letter-spacing: 0;
+}
+
+.esv-collection-v2-sort {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 70px;
+  padding: 0 26px;
+  border: 0;
+  background: transparent;
+}
+
+.esv-collection-v2-sort .esv-collection-v2-sort-label {
+  display: block;
+  color: var(--muted-strong, var(--muted));
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.esv-collection-v2-sort .esv-facet-select,
+.esv-collection-v2-sort .esv-facet-select-trigger {
+  width: 100%;
+  min-width: 0;
+}
+
+.esv-collection-v2-sort .esv-facet-select-trigger {
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 14px;
+}
+
+.esv-collection-v2-sort .esv-facet-select-trigger > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.esv-collection-v2-filters,
+.esv-collection-v2-filters.is-open {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  width: auto;
+  height: auto;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+  transition: none;
+}
+
+.esv-collection-v2-filters {
+  display: none;
+}
+
+.esv-collection-v2-filters.is-open {
+  display: block;
+  padding-top: 30px;
+}
+
+.esv-collection-v2-filter-head {
+  display: none;
+}
+
+.esv-collection-v2-filter-fields {
+  display: grid;
+  grid-template-columns: 0.8fr 1.05fr 1.1fr;
+  gap: 0;
+  width: 100%;
+  padding: 0 0 30px;
+}
+
+.esv-collection-v2-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  min-height: 186px;
+  padding: 10px 32px 0 0;
+  border: 0;
+}
+
+.esv-collection-v2-filter-field + .esv-collection-v2-filter-field {
+  padding-right: 32px;
+  padding-left: 32px;
+  border-left: 1px solid var(--line);
+}
+
+.esv-collection-v2-filter-field:last-child {
+  padding-right: 0;
+}
+
+.esv-collection-v2-filter-field > span {
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.esv-collection-v2-filter-field .esv-facet-select,
+.esv-collection-v2-filter-field .esv-facet-select-trigger {
+  width: 100%;
+}
+
+.esv-collection-v2-filter-field .esv-facet-select-trigger {
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  background: transparent;
+  font-size: 12px;
+}
+
+.esv-collection-v2-filter-field .esv-facet-select-list {
+  z-index: 60;
+}
+
+.esv-collection-v2-materials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  align-content: flex-start;
+}
+
+.esv-collection-v2-materials button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.esv-collection-v2-materials button:hover,
+.esv-collection-v2-materials button:focus-visible {
+  border-color: var(--line-strong, var(--muted));
+  outline: 0;
+}
+
+.esv-collection-v2-materials button.is-selected {
+  border-color: var(--ink);
+  background: rgba(17, 18, 16, 0.045);
+}
+
+.esv-collection-v2-clear-inline {
+  align-self: flex-end;
+  min-width: 132px;
+  min-height: 46px;
+  margin-top: 48px;
+  padding: 0 20px;
+  border: 1px solid var(--line-strong, var(--muted));
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.esv-collection-v2-clear-inline:hover,
+.esv-collection-v2-clear-inline:focus-visible {
+  border-color: var(--ink);
+  outline: 0;
+}
+
+.esv-collection-v2-clear-inline:disabled {
+  opacity: 0.38;
+  cursor: default;
+}
+
+.esv-collection-v2-active-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  min-height: 86px;
+  padding: 20px 0;
+  border-top: 1px solid var(--line);
+}
+
+.esv-collection-v2-active-strip-main {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  min-width: 0;
+}
+
+.esv-collection-v2-active-label {
+  flex: none;
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.esv-collection-v2-active-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.esv-collection-v2-active-chips button,
+.esv-collection-v2-chips button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 34px;
+  padding: 0 15px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.esv-collection-v2-active-chips button:hover,
+.esv-collection-v2-active-chips button:focus-visible,
+.esv-collection-v2-chips button:hover,
+.esv-collection-v2-chips button:focus-visible {
+  border-color: var(--line-strong, var(--muted));
+  outline: 0;
+}
+
+.esv-collection-v2-active-chips button span,
+.esv-collection-v2-chips button span {
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.esv-collection-v2-active-empty {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.esv-collection-v2-hide-filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  flex: none;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.esv-collection-v2-filter-actions {
+  display: none;
+}
+
+.esv-collection-v2-filter-backdrop {
+  display: none;
+}
+
+.esv-collection-v2-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 0 0;
+}
+
+.esv-collection-v2-chips .esv-collection-v2-clear {
+  border-color: transparent;
+  border-radius: 0;
+  padding-inline: 8px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.esv-collection-v2-grid {
+  transition: opacity 180ms ease;
+}
+
+.esv-collection-v2-grid.is-updating {
+  opacity: 0.48;
+  pointer-events: none;
+}
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  .esv-collection-v2-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 43%);
+  }
+
+  .esv-collection-v2-toolbar {
+    grid-template-columns: 42% 58%;
+  }
+
+  .esv-collection-v2-filter-trigger {
+    gap: 9px;
+    padding-inline: 12px;
+  }
+
+  .esv-collection-v2-sort {
+    padding-inline: 18px;
+  }
+
+  .esv-collection-v2-filter-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .esv-collection-v2-filter-field:nth-child(3) {
+    grid-column: 1 / -1;
+    min-height: auto;
+    padding-top: 28px;
+    padding-left: 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .esv-collection-v2-clear-inline {
+    margin-top: 18px;
+  }
+}
+
+@media (max-width: 767px) {
+  .esv-collection-v2-count {
+    margin-bottom: 12px;
+  }
+
+  .esv-collection-v2-controls {
+    display: block;
+  }
+
+  .esv-collection-v2-search {
+    min-height: 56px;
+    padding-inline: 16px;
+  }
+
+  .esv-collection-v2-toolbar {
+    grid-template-columns: 1fr 1fr;
+    min-height: 54px;
+    margin-top: 10px;
+  }
+
+  .esv-collection-v2-filter-trigger {
+    justify-content: flex-start;
+    min-height: 52px;
+    padding-inline: 15px;
+  }
+
+  .esv-collection-v2-filter-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .esv-collection-v2-sort {
+    min-height: 52px;
+    padding-inline: 15px;
+  }
+
+  .esv-collection-v2-sort .esv-collection-v2-sort-label {
+    display: none;
+  }
+
+  .esv-collection-v2-sort .esv-facet-select-trigger {
+    min-height: 28px;
+    font-size: 12px;
+  }
+
+  .esv-collection-v2-filter-backdrop {
+    position: fixed;
+    z-index: 350;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: rgba(17, 18, 16, 0.38);
+    backdrop-filter: blur(2px);
+  }
+
+  .esv-collection-v2-filters,
+  .esv-collection-v2-filters.is-open {
+    position: fixed;
+    z-index: 360;
+    inset: 0 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: min(92vw, 430px);
+    height: 100dvh;
+    padding: 0 22px max(16px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    border: 0;
+    background: var(--bg);
+    box-shadow: -24px 0 70px rgba(17, 18, 16, 0.18);
+    transform: translateX(105%);
+    visibility: hidden;
+    transition: transform 260ms var(--ease-esmera), visibility 260ms;
+  }
+
+  .esv-collection-v2-filters.is-open {
+    transform: translateX(0);
+    visibility: visible;
+  }
+
+  .esv-collection-v2-filter-head {
+    position: sticky;
+    z-index: 3;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: none;
+    min-height: calc(68px + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) 0 0;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  .esv-collection-v2-filter-head strong {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .esv-collection-v2-filter-close {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .esv-collection-v2-filter-fields {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
+    width: 100%;
+    padding: 26px 0 32px;
+  }
+
+  .esv-collection-v2-filter-field,
+  .esv-collection-v2-filter-field + .esv-collection-v2-filter-field,
+  .esv-collection-v2-filter-field:last-child,
+  .esv-collection-v2-filter-field:nth-child(3) {
+    min-height: auto;
+    padding: 0 0 26px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .esv-collection-v2-filter-field + .esv-collection-v2-filter-field {
+    padding-top: 26px;
+  }
+
+  .esv-collection-v2-filter-field .esv-facet-select-trigger {
+    min-height: 48px;
+  }
+
+  .esv-collection-v2-materials {
+    gap: 8px;
+  }
+
+  .esv-collection-v2-materials button {
+    min-height: 40px;
+    padding-inline: 13px;
+  }
+
+  .esv-collection-v2-clear-inline,
+  .esv-collection-v2-active-strip {
+    display: none;
+  }
+
+  .esv-collection-v2-filter-actions {
+    position: sticky;
+    z-index: 3;
+    bottom: 0;
+    display: grid;
+    grid-template-columns: minmax(100px, 0.7fr) minmax(0, 1.3fr);
+    gap: 8px;
+    padding: 14px 0 0;
+    background: var(--bg);
+  }
+
+  .esv-collection-v2-filter-actions button,
+  .esv-collection-v2-results-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    margin: 0;
+    padding: 0 14px;
+    border: 1px solid var(--line-strong, #a9a49a);
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .esv-collection-v2-results-action {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .esv-collection-v2-filter-actions button:disabled {
+    opacity: 0.4;
+  }
+
+  .esv-collection-v2-chips {
+    padding-top: 12px;
+  }
+}
+
+@media (max-width: 429px) {
+  .esv-collection-v2-toolbar {
+    grid-template-columns: minmax(120px, 0.9fr) minmax(0, 1.1fr);
+  }
+
+  .esv-collection-v2-filter-trigger {
+    gap: 8px;
+    padding-inline: 12px;
+  }
+
+  .esv-collection-v2-sort {
+    padding-inline: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esv-collection-v2-filter-trigger,
+  .esv-collection-v2-materials button,
+  .esv-collection-v2-grid,
+  .esv-collection-v2-filters {
+    transition: none !important;
+  }
+}

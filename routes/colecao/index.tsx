@@ -15,6 +15,11 @@ import type {
   PayloadCollectionPage,
   SEOModel,
 } from "../../lib/payload/types.ts";
+import MaterialFacets, {
+  expandMaterialFilters,
+  type MaterialFacet,
+  resolveMaterialFilterKeys,
+} from "../../loaders/Esmera/MaterialFacets.ts";
 import Collection from "../../sections/Esmera/Collection.tsx";
 
 interface Data {
@@ -28,24 +33,29 @@ interface Data {
   totalPages: number;
   hasNextPage: boolean;
   baseHref: string;
+  materials: MaterialFacet[];
 }
 
 export const handler: Handlers<Data> = {
   async GET(req, ctx) {
-    const [page, chrome] = await Promise.all([
+    const [page, chrome, materials] = await Promise.all([
       getCollectionPage(),
       getPageChrome(),
+      MaterialFacets({}),
     ]);
     const visibleFilters = normalizeVisibleFilters(page?.visibleFilters);
     const url = new URL(req.url);
     const query = buildCatalogQuery(url, visibleFilters, chrome.categories);
+    const materialQueryValues = expandMaterialFilters(query.materials, materials);
     const products = await listProducts({
       limit: 24,
       page: query.page,
       sort: query.payloadSort,
       q: query.q.length >= 2 ? query.q : undefined,
       category: query.category || undefined,
-      material: query.material || undefined,
+      material: materialQueryValues.length
+        ? materialQueryValues.join(",")
+        : undefined,
       availability: query.availability || undefined,
     });
     const seo = toSEO(page?.seo, chrome.settings);
@@ -64,6 +74,7 @@ export const handler: Handlers<Data> = {
       totalPages: products.totalPages,
       hasNextPage: products.hasNextPage,
       baseHref: `${url.pathname}${url.search}`,
+      materials,
     });
   },
 };
@@ -86,9 +97,13 @@ export default function CollectionRoute({ data }: PageProps<Data>) {
         filters={{
           visible: data.visibleFilters,
           categories: data.chrome.categories,
+          materials: data.materials,
           q: data.query.q,
           category: data.query.category,
-          material: data.query.material,
+          materialValues: resolveMaterialFilterKeys(
+            data.query.materials,
+            data.materials,
+          ),
           availability: data.query.availability,
           sort: data.query.sort,
         }}

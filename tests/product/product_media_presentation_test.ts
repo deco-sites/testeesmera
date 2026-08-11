@@ -1,8 +1,4 @@
-import {
-  assert,
-  assertAlmostEquals,
-  assertEquals,
-} from "@std/assert";
+import { assert, assertAlmostEquals, assertEquals } from "@std/assert";
 import {
   clampViewerTransform,
   getContainCoverage,
@@ -13,7 +9,10 @@ import { resolvePayloadMedia } from "../../lib/payload/media.ts";
 import type { PayloadMedia } from "../../lib/payload/types.ts";
 
 Deno.test("media aspect ratio requires real positive dimensions", () => {
-  assertAlmostEquals(mediaAspectRatio({ width: 1600, height: 900 }) ?? 0, 16 / 9);
+  assertAlmostEquals(
+    mediaAspectRatio({ width: 1600, height: 900 }) ?? 0,
+    16 / 9,
+  );
   assertEquals(mediaAspectRatio({ width: 0, height: 900 }), null);
   assertEquals(mediaAspectRatio({}), null);
 });

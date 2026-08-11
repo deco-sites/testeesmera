@@ -87,14 +87,22 @@ export default function ProductMediaViewer({
   const closeRef = useRef<HTMLButtonElement>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const dragRef = useRef<
-    { pointerId: number; x: number; y: number; originX: number; originY: number } |
-      null
+    | {
+      pointerId: number;
+      x: number;
+      y: number;
+      originX: number;
+      originY: number;
+    }
+    | null
   >(null);
   const swipeRef = useRef<
     { pointerId: number; x: number; y: number; startedAt: number } | null
   >(null);
   const pinchRef = useRef<{ distance: number; scale: number } | null>(null);
-  const lastTapRef = useRef<{ time: number; x: number; y: number } | null>(null);
+  const lastTapRef = useRef<{ time: number; x: number; y: number } | null>(
+    null,
+  );
   const current = images[index];
 
   const clampToStage = (next: ViewerTransform): ViewerTransform => {
@@ -109,7 +117,8 @@ export default function ProductMediaViewer({
     }
     const stageRect = stage.getBoundingClientRect();
     const mediaWidth = current.fullWidth || current.width || image.naturalWidth;
-    const mediaHeight = current.fullHeight || current.height || image.naturalHeight;
+    const mediaHeight = current.fullHeight || current.height ||
+      image.naturalHeight;
     return clampViewerTransform(
       next,
       stageRect.width,
@@ -301,7 +310,8 @@ export default function ProductMediaViewer({
         const previous = lastTapRef.current;
         if (
           previous && now - previous.time < 320 &&
-          Math.hypot(event.clientX - previous.x, event.clientY - previous.y) < 28
+          Math.hypot(event.clientX - previous.x, event.clientY - previous.y) <
+            28
         ) {
           setScale(transform.scale > 1 ? 1 : 2);
           lastTapRef.current = null;
@@ -385,7 +395,10 @@ export default function ProductMediaViewer({
           />
         </div>
 
-        <div class="esv-product-viewer-toolbar" aria-label="Controles de ampliação">
+        <div
+          class="esv-product-viewer-toolbar"
+          aria-label="Controles de ampliação"
+        >
           <button
             type="button"
             aria-label="Reduzir zoom"

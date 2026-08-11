@@ -106,6 +106,57 @@ jobs:
             return value;
           }
 
+          function smokeImage(index) {
+            const tones = ["#d9d3c8", "#c8c0b3", "#b8b2a8", "#a9a49a"];
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1125" viewBox="0 0 900 1125"><rect width="900" height="1125" fill="${tones[(index - 1) % tones.length]}"/><text x="450" y="562" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" fill="#4b4a45">ESMERA ${index}</text></svg>`;
+            return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+          }
+
+          function galleryFixture(imageCount = 4) {
+            const urls = Array.from(
+              { length: imageCount },
+              (_, index) => smokeImage(index + 1),
+            );
+            const roles = ["detail", "context", "scale"];
+            return {
+              id: `smoke-gallery-${imageCount}`,
+              slug: `smoke-gallery-${imageCount}`,
+              code: `SMOKE-${imageCount}`,
+              title: `Galeria smoke ${imageCount}`,
+              image: urls[0] ?? "",
+              alt: "Peça Esméra para smoke test",
+              availability: "available",
+              material: "Pedra natural",
+              gallery: urls.slice(1).map((url, index) => ({
+                url,
+                alt: `Imagem ${index + 2} da peça smoke`,
+                key: `smoke-${index + 2}`,
+                role: roles[index % roles.length],
+              })),
+              attributes: [],
+              priceMode: "fixed",
+              priceCents: 120000,
+              formattedPrice: "R$ 1.200,00",
+              isInquiry: false,
+              variants: [],
+              seo: { title: "Galeria smoke", description: "", noindex: false },
+              price: "R$ 1.200,00",
+            };
+          }
+
+          async function openGalleryFixture(page, imageCount = 4) {
+            await page.evaluate((product) => {
+              globalThis.dispatchEvent(
+                new CustomEvent("esmera:open-product", { detail: { product } }),
+              );
+            }, galleryFixture(imageCount));
+            await page.waitForSelector(".esv-product-modal", { state: "visible" });
+            await page.waitForFunction(() => {
+              const image = document.querySelector(".esv-product-modal-gallery img");
+              return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
+            });
+          }
+
           async function validateMatter(page) {
             await page.waitForSelector(".esv-territory-panel.is-clickable", {
               state: "visible",
@@ -136,6 +187,7 @@ jobs:
           async function runViewport(browser, name, viewport, scenario) {
             const context = await browser.newContext({
               viewport,
+              hasTouch: viewport.width <= 767,
               recordVideo: {
                 dir: `${ARTIFACT_DIR}/videos`,
                 size: viewport,
@@ -207,7 +259,11 @@ jobs:
                   }
                   await desktop.waitForSelector(".esv-product-modal-buybox", { state: "visible" });
                   const galleryClass = await desktop.locator(".esv-product-modal-gallery").getAttribute("class");
-                  if (!galleryClass?.includes("is-single") && !galleryClass?.includes("is-double")) {
+                  if (
+                    !galleryClass?.includes("is-single") &&
+                    !galleryClass?.includes("is-double") &&
+                    !galleryClass?.includes("is-multiple")
+                  ) {
                     throw new Error(`Adaptive gallery class missing: ${galleryClass}`);
                   }
                   return metrics;
@@ -223,6 +279,55 @@ jobs:
                   await desktop.waitForSelector(".esv-product-modal", { state: "visible" });
                 });
                 await step("desktop: second Escape closes modal", async () => {
+                  await desktop.keyboard.press("Escape");
+                  await desktop.waitForSelector(".esv-product-modal", { state: "detached" });
+                });
+
+                await step("desktop: validate deterministic four-image gallery", async () => {
+                  await openGalleryFixture(desktop, 4);
+                  const gallery = desktop.locator(".esv-product-modal-gallery");
+                  const galleryClass = await gallery.getAttribute("class");
+                  if (!galleryClass?.includes("is-multiple")) {
+                    throw new Error(`Four-image gallery is not multiple: ${galleryClass}`);
+                  }
+                  const count = await gallery.locator(".esv-product-modal-image").count();
+                  if (count !== 4) throw new Error(`Expected 4 gallery images, got ${count}`);
+                  await desktop.waitForTimeout(320);
+                  await desktop.screenshot({ path: `${ARTIFACT_DIR}/desktop-modal-4-images.png` });
+                  const counter = gallery.locator(".esv-product-modal-gallery-controls span");
+                  await counter.waitFor({ state: "visible" });
+                  if ((await counter.textContent())?.trim() !== "01 / 04") {
+                    throw new Error(`Unexpected initial gallery counter: ${await counter.textContent()}`);
+                  }
+                  await gallery.getByRole("button", { name: "Próxima imagem da galeria" }).click();
+                  await desktop.waitForFunction(() =>
+                    document.querySelector(".esv-product-modal-gallery-controls span")?.textContent?.trim() === "02 / 04"
+                  );
+                });
+
+                await step("desktop: validate four-image zoom keyboard loop", async () => {
+                  await desktop.locator(".esv-product-modal-image.is-active").click();
+                  await desktop.waitForSelector(".esv-product-zoom", { state: "visible" });
+                  const counter = desktop.locator(".esv-product-zoom-controls span");
+                  if ((await counter.textContent())?.trim() !== "2 / 4") {
+                    throw new Error(`Zoom did not open active image: ${await counter.textContent()}`);
+                  }
+                  await desktop.keyboard.press("ArrowRight");
+                  await desktop.waitForFunction(() =>
+                    document.querySelector(".esv-product-zoom-controls span")?.textContent?.trim() === "3 / 4"
+                  );
+                  await desktop.keyboard.press("ArrowRight");
+                  await desktop.keyboard.press("ArrowRight");
+                  await desktop.waitForFunction(() =>
+                    document.querySelector(".esv-product-zoom-controls span")?.textContent?.trim() === "1 / 4"
+                  );
+                  await desktop.keyboard.press("ArrowLeft");
+                  await desktop.waitForFunction(() =>
+                    document.querySelector(".esv-product-zoom-controls span")?.textContent?.trim() === "4 / 4"
+                  );
+                  await desktop.waitForTimeout(260);
+                  await desktop.screenshot({ path: `${ARTIFACT_DIR}/desktop-zoom-4-images.png` });
+                  await desktop.keyboard.press("Escape");
                   await desktop.keyboard.press("Escape");
                   await desktop.waitForSelector(".esv-product-modal", { state: "detached" });
                 });
@@ -273,6 +378,58 @@ jobs:
                   await mobile.keyboard.press("Escape");
                   await mobile.waitForSelector(".esv-product-modal", { state: "detached" });
                 });
+
+                await step("mobile: validate four-image one-per-viewport carousel", async () => {
+                  await openGalleryFixture(mobile, 4);
+                  const gallery = mobile.locator(".esv-product-modal-gallery");
+                  const slides = gallery.locator(".esv-product-modal-image");
+                  if (await slides.count() !== 4) {
+                    throw new Error(`Mobile gallery did not preserve four images`);
+                  }
+                  const geometry = await gallery.evaluate((element) => {
+                    const slide = element.querySelector(".esv-product-modal-image");
+                    if (!(slide instanceof HTMLElement)) throw new Error("Mobile gallery slide missing");
+                    return {
+                      galleryWidth: element.getBoundingClientRect().width,
+                      slideWidth: slide.getBoundingClientRect().width,
+                      scrollSnap: getComputedStyle(element).scrollSnapType,
+                    };
+                  });
+                  if (Math.abs(geometry.galleryWidth - geometry.slideWidth) > 2) {
+                    throw new Error(`Mobile slide is not one viewport wide: ${JSON.stringify(geometry)}`);
+                  }
+                  if (!geometry.scrollSnap.includes("mandatory")) {
+                    throw new Error(`Mobile scroll snap missing: ${JSON.stringify(geometry)}`);
+                  }
+                  const mobileCounter = mobile.locator(".esv-product-modal-gallery-mobile-counter");
+                  await mobileCounter.waitFor({ state: "visible" });
+                  if ((await mobileCounter.textContent())?.trim() !== "01 / 04") {
+                    throw new Error(`Unexpected mobile gallery counter: ${await mobileCounter.textContent()}`);
+                  }
+                  await mobile.waitForTimeout(320);
+                  await mobile.screenshot({ path: `${ARTIFACT_DIR}/mobile-modal-4-images.png` });
+                  await gallery.evaluate((element) => {
+                    element.scrollTo({ left: element.clientWidth, behavior: "auto" });
+                  });
+                  await mobile.waitForFunction(() =>
+                    document.querySelector(".esv-product-modal-gallery-mobile-counter")?.textContent?.trim() === "02 / 04"
+                  );
+                });
+
+                await step("mobile: zoom remains complete after carousel navigation", async () => {
+                  await mobile.locator(".esv-product-modal-image").nth(1).click();
+                  await mobile.waitForSelector(".esv-product-zoom", { state: "visible" });
+                  const counter = mobile.locator(".esv-product-zoom-controls span");
+                  if ((await counter.textContent())?.trim() !== "2 / 4") {
+                    throw new Error(`Mobile zoom did not open second image: ${await counter.textContent()}`);
+                  }
+                  await mobile.waitForTimeout(260);
+                  await mobile.screenshot({ path: `${ARTIFACT_DIR}/mobile-zoom-4-images.png` });
+                  await mobile.keyboard.press("Escape");
+                  await mobile.keyboard.press("Escape");
+                  await mobile.waitForSelector(".esv-product-modal", { state: "detached" });
+                });
+
                 return metrics;
               },
             );

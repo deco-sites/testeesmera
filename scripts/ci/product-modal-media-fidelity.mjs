@@ -153,7 +153,7 @@ function assertComplete(geometry, label) {
   }
 }
 
-async function recordScenario(name, data) {
+function recordScenario(name, data) {
   metrics.scenarios.push({ name, ...data });
 }
 

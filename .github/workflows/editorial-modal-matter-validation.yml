@@ -106,10 +106,16 @@ jobs:
             return value;
           }
 
+          function smokeImage(index) {
+            const tones = ["#d9d3c8", "#c8c0b3", "#b8b2a8", "#a9a49a"];
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1125" viewBox="0 0 900 1125"><rect width="900" height="1125" fill="${tones[(index - 1) % tones.length]}"/><text x="450" y="562" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" fill="#4b4a45">ESMERA ${index}</text></svg>`;
+            return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+          }
+
           function galleryFixture(imageCount = 4) {
             const urls = Array.from(
               { length: imageCount },
-              (_, index) => `https://placehold.co/900x1125/png?text=ESMERA+${index + 1}`,
+              (_, index) => smokeImage(index + 1),
             );
             const roles = ["detail", "context", "scale"];
             return {
@@ -145,6 +151,10 @@ jobs:
               );
             }, galleryFixture(imageCount));
             await page.waitForSelector(".esv-product-modal", { state: "visible" });
+            await page.waitForFunction(() => {
+              const image = document.querySelector(".esv-product-modal-gallery img");
+              return image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0;
+            });
           }
 
           async function validateMatter(page) {
@@ -390,6 +400,11 @@ jobs:
                   }
                   if (!geometry.scrollSnap.includes("mandatory")) {
                     throw new Error(`Mobile scroll snap missing: ${JSON.stringify(geometry)}`);
+                  }
+                  const mobileCounter = mobile.locator(".esv-product-modal-gallery-mobile-counter");
+                  await mobileCounter.waitFor({ state: "visible" });
+                  if ((await mobileCounter.textContent())?.trim() !== "01 / 04") {
+                    throw new Error(`Unexpected mobile gallery counter: ${await mobileCounter.textContent()}`);
                   }
                   await mobile.waitForTimeout(320);
                   await mobile.screenshot({ path: `${ARTIFACT_DIR}/mobile-modal-4-images.png` });

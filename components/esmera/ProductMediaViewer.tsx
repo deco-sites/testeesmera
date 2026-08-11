@@ -137,6 +137,12 @@ export default function ProductMediaViewer({
     setTransform((value) => clampToStage({ ...value, scale }));
   };
 
+  const zoomBy = (delta: number) => {
+    setTransform((value) =>
+      clampToStage({ ...value, scale: value.scale + delta })
+    );
+  };
+
   useEffect(() => {
     setTransform({ scale: 1, x: 0, y: 0 });
     pointersRef.current.clear();
@@ -180,12 +186,12 @@ export default function ProductMediaViewer({
       }
       if (event.key === "+" || event.key === "=") {
         event.preventDefault();
-        setScale(transform.scale + 0.5);
+        zoomBy(0.5);
         return;
       }
       if (event.key === "-") {
         event.preventDefault();
-        setScale(transform.scale - 0.5);
+        zoomBy(-0.5);
         return;
       }
       if (event.key !== "Tab") return;
@@ -403,7 +409,7 @@ export default function ProductMediaViewer({
             type="button"
             aria-label="Reduzir zoom"
             disabled={transform.scale <= 1}
-            onClick={() => setScale(transform.scale - 0.5)}
+            onClick={() => zoomBy(-0.5)}
           >
             −
           </button>
@@ -412,7 +418,7 @@ export default function ProductMediaViewer({
             type="button"
             aria-label="Aumentar zoom"
             disabled={transform.scale >= 3}
-            onClick={() => setScale(transform.scale + 0.5)}
+            onClick={() => zoomBy(0.5)}
           >
             +
           </button>

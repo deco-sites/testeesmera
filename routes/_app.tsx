@@ -9,6 +9,9 @@ export default defineApp(async (_req, ctx) => {
   // revision remains stable. Bump this token whenever the storefront chrome
   // changes so preview environments cannot mix new JSX with stale styles.
   const storefrontStyleRevision = "2026-08-11-product-media-fidelity-v16";
+  // Modal-only cache bust. Keeps unrelated storefront CSS on the stable v16
+  // revision while forcing Deco/CDN to fetch the corrected media layer.
+  const productMediaPatchRevision = "2026-08-11-popup-gallery-zoom-v17";
   return (
     <>
       <Theme colorScheme="any" />
@@ -54,9 +57,9 @@ export default defineApp(async (_req, ctx) => {
         />
         <link
           rel="stylesheet"
-          href={asset(
+          href={`${asset(
             `/esmera-product-media-v16.css?v=${storefrontStyleRevision}`,
-          )}
+          )}&patch=${productMediaPatchRevision}`}
         />
         <link
           rel="stylesheet"

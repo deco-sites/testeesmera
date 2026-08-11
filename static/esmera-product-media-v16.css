@@ -5,6 +5,8 @@
 
 .esv-product-modal-image {
   display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   background: var(--bg-alt);
 }
@@ -45,6 +47,10 @@
 
 .esv-product-viewer-stage {
   position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  place-items: center;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -75,6 +81,15 @@
   transition: transform 120ms ease-out;
   pointer-events: none;
   -webkit-user-drag: none;
+  animation: esv-product-viewer-image-in 260ms var(--ease-esmera) both;
+}
+
+/* Keep the viewer intro opacity-only. The legacy modal animation also animates
+ * transform with fill-mode `both`, which would override the inline transform
+ * used by ProductMediaViewer for zoom and pan after the animation finishes. */
+@keyframes esv-product-viewer-image-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .esv-product-viewer-toolbar {

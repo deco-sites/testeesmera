@@ -59,7 +59,7 @@ html:root {
 
 /* Mega aberto: header e mega formam uma unica superficie continua. */
 .esv-header.esv-header.is-mega-open {
-  border-bottom-color: transparent;
+  border-bottom: 0;
 }
 
 .esv-header.esv-header.is-mega-open::before {

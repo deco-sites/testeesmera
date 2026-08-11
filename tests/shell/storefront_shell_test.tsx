@@ -113,11 +113,16 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
 
   const headerBase =
     headerCss.match(/\.esv-header\.esv-header\s*\{([^}]*)\}/)?.[1] ?? "";
+  const megaOpenHeader = headerCss.match(
+    /\.esv-header\.esv-header\.is-mega-open\s*\{([^}]*)\}/,
+  )?.[1] ?? "";
   const megaBase =
     headerCss.match(/\.esv-mega-v2\.esv-mega-v2\s*\{([^}]*)\}/)?.[1] ?? "";
   assert(headerBase.length > 0);
+  assert(megaOpenHeader.length > 0);
   assert(megaBase.length > 0);
   assertFalse(headerBase.includes("backdrop-filter"));
+  assertStringIncludes(megaOpenHeader, "border-bottom: 0");
   assertStringIncludes(megaBase, "border-top: 0");
 
   assertStringIncludes(masterCss, "--header-h: 60px");

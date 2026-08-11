@@ -254,7 +254,9 @@ export default function ProductModal() {
       observer = new IntersectionObserver(
         (entries) => {
           const visible = entries
-            .filter((entry) => entry.isIntersecting && entry.intersectionRatio >= 0.65)
+            .filter((entry) =>
+              entry.isIntersecting && entry.intersectionRatio >= 0.65
+            )
             .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
           if (!(visible?.target instanceof HTMLElement)) return;
           const nextIndex = Number(visible.target.dataset.galleryIndex);

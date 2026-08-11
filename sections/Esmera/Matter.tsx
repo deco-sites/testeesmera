@@ -74,7 +74,7 @@ function PanelContent(
           loading="lazy"
           decoding="async"
           width={1200}
-          height={1500}
+          height={2160}
           sizes="(max-width: 767px) 100vw, 33vw"
         />
       </figure>

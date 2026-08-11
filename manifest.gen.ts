@@ -10,13 +10,14 @@ import * as $$$2 from "./loaders/Esmera/CategoryList.ts";
 import * as $$$3 from "./loaders/Esmera/CollectionPage.ts";
 import * as $$$4 from "./loaders/Esmera/Contact.ts";
 import * as $$$5 from "./loaders/Esmera/Home.ts";
-import * as $$$6 from "./loaders/Esmera/Navigation.ts";
-import * as $$$7 from "./loaders/Esmera/ProductBySlug.ts";
-import * as $$$8 from "./loaders/Esmera/ProductList.ts";
-import * as $$$9 from "./loaders/Esmera/ProductsByCategory.ts";
-import * as $$$10 from "./loaders/Esmera/SearchProducts.ts";
-import * as $$$11 from "./loaders/Esmera/SiteSettings.ts";
-import * as $$$12 from "./loaders/Esmera/StorefrontPageData.ts";
+import * as $$$6 from "./loaders/Esmera/MaterialFacets.ts";
+import * as $$$7 from "./loaders/Esmera/Navigation.ts";
+import * as $$$8 from "./loaders/Esmera/ProductBySlug.ts";
+import * as $$$9 from "./loaders/Esmera/ProductList.ts";
+import * as $$$10 from "./loaders/Esmera/ProductsByCategory.ts";
+import * as $$$11 from "./loaders/Esmera/SearchProducts.ts";
+import * as $$$12 from "./loaders/Esmera/SiteSettings.ts";
+import * as $$$13 from "./loaders/Esmera/StorefrontPageData.ts";
 import * as $$$$$$0 from "./sections/Esmera/Collection.tsx";
 import * as $$$$$$1 from "./sections/Esmera/Context.tsx";
 import * as $$$$$$2 from "./sections/Esmera/Footer.tsx";
@@ -42,13 +43,14 @@ const manifest = {
     "site/loaders/Esmera/CollectionPage.ts": $$$3,
     "site/loaders/Esmera/Contact.ts": $$$4,
     "site/loaders/Esmera/Home.ts": $$$5,
-    "site/loaders/Esmera/Navigation.ts": $$$6,
-    "site/loaders/Esmera/ProductBySlug.ts": $$$7,
-    "site/loaders/Esmera/ProductList.ts": $$$8,
-    "site/loaders/Esmera/ProductsByCategory.ts": $$$9,
-    "site/loaders/Esmera/SearchProducts.ts": $$$10,
-    "site/loaders/Esmera/SiteSettings.ts": $$$11,
-    "site/loaders/Esmera/StorefrontPageData.ts": $$$12,
+    "site/loaders/Esmera/MaterialFacets.ts": $$$6,
+    "site/loaders/Esmera/Navigation.ts": $$$7,
+    "site/loaders/Esmera/ProductBySlug.ts": $$$8,
+    "site/loaders/Esmera/ProductList.ts": $$$9,
+    "site/loaders/Esmera/ProductsByCategory.ts": $$$10,
+    "site/loaders/Esmera/SearchProducts.ts": $$$11,
+    "site/loaders/Esmera/SiteSettings.ts": $$$12,
+    "site/loaders/Esmera/StorefrontPageData.ts": $$$13,
   },
   "sections": {
     "site/sections/Esmera/Collection.tsx": $$$$$$0,

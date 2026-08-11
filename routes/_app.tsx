@@ -57,9 +57,11 @@ export default defineApp(async (_req, ctx) => {
         />
         <link
           rel="stylesheet"
-          href={`${asset(
-            `/esmera-product-media-v16.css?v=${storefrontStyleRevision}`,
-          )}&patch=${productMediaPatchRevision}`}
+          href={`${
+            asset(
+              `/esmera-product-media-v16.css?v=${storefrontStyleRevision}`,
+            )
+          }&patch=${productMediaPatchRevision}`}
         />
         <link
           rel="stylesheet"

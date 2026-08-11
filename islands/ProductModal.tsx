@@ -31,6 +31,10 @@ function normalized(value?: string | null): string {
   return value?.trim() ?? "";
 }
 
+function formatImagePosition(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
 export function getProductModalImages(
   product: EsmeraObject,
 ): ProductModalImage[] {
@@ -58,7 +62,7 @@ export function getProductModalImages(
     if (!image.src || seen.has(image.src)) return false;
     seen.add(image.src);
     return true;
-  }).slice(0, 2);
+  });
 }
 
 export function getProductFacts(product: EsmeraObject): ProductFact[] {
@@ -119,9 +123,11 @@ export default function ProductModal() {
   const [selectedVariant, setSelectedVariant] = useState<
     EsmeraVariant | undefined
   >();
+  const [activeIndex, setActiveIndex] = useState(0);
   const [zoomIndex, setZoomIndex] = useState<number | null>(null);
   const zoomIndexRef = useRef<number | null>(null);
   const modalRef = useRef<HTMLElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
   const zoomRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
 
@@ -153,6 +159,7 @@ export default function ProductModal() {
       const detail = (event as CustomEvent<OpenProductDetail>).detail;
       if (!detail?.product) return;
       triggerRef.current = detail.trigger ?? null;
+      setActiveIndex(0);
       setProduct(detail.product);
       setSelectedVariant(
         detail.product.variants.find((variant) => !variant.disabled),
@@ -165,7 +172,7 @@ export default function ProductModal() {
   }, []);
 
   useEffect(() => {
-    if (!product) return;
+    if (!product || images.length === 0) return;
     const body = document.body;
     const root = document.documentElement;
     const scrollY = globalThis.scrollY || 0;
@@ -212,10 +219,10 @@ export default function ProductModal() {
       globalThis.scrollTo({ top: scrollY, left: 0, behavior: "auto" });
       globalThis.setTimeout(() => triggerRef.current?.focus(), 0);
     };
-  }, [product]);
+  }, [product, images.length]);
 
   useEffect(() => {
-    if (!product) return;
+    if (!product || images.length === 0) return;
     const dialog = zoomIndex === null ? modalRef.current : zoomRef.current;
     if (!dialog) return;
 
@@ -228,10 +235,49 @@ export default function ProductModal() {
     });
 
     return () => cancelAnimationFrame(frame);
-  }, [product, zoomIndex]);
+  }, [product, zoomIndex, images.length]);
 
   useEffect(() => {
-    if (!product) return;
+    if (!product || images.length < 2) return;
+    const gallery = galleryRef.current;
+    if (!gallery || typeof globalThis.matchMedia !== "function") return;
+    if (typeof IntersectionObserver === "undefined") return;
+
+    const mediaQuery = globalThis.matchMedia("(max-width: 767px)");
+    let observer: IntersectionObserver | null = null;
+
+    const connect = () => {
+      observer?.disconnect();
+      observer = null;
+      if (!mediaQuery.matches) return;
+
+      observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting && entry.intersectionRatio >= 0.65)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+          if (!(visible?.target instanceof HTMLElement)) return;
+          const nextIndex = Number(visible.target.dataset.galleryIndex);
+          if (Number.isInteger(nextIndex)) setActiveIndex(nextIndex);
+        },
+        { root: gallery, threshold: [0.65, 0.85] },
+      );
+
+      gallery.querySelectorAll<HTMLElement>("[data-gallery-index]").forEach(
+        (element) => observer?.observe(element),
+      );
+    };
+
+    connect();
+    mediaQuery.addEventListener("change", connect);
+    return () => {
+      observer?.disconnect();
+      mediaQuery.removeEventListener("change", connect);
+    };
+  }, [product, images.length]);
+
+  useEffect(() => {
+    if (!product || images.length === 0) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
       const dialog = zoomIndexRef.current === null
@@ -245,6 +291,17 @@ export default function ProductModal() {
         event.stopImmediatePropagation();
         if (zoomIndexRef.current !== null) updateZoomIndex(null);
         else closeModal();
+        return;
+      }
+
+      if (
+        zoomIndexRef.current !== null && images.length > 1 &&
+        (event.key === "ArrowLeft" || event.key === "ArrowRight")
+      ) {
+        event.preventDefault();
+        const current = zoomIndexRef.current;
+        const delta = event.key === "ArrowLeft" ? -1 : 1;
+        updateZoomIndex((current + delta + images.length) % images.length);
         return;
       }
 
@@ -269,7 +326,7 @@ export default function ProductModal() {
 
     globalThis.addEventListener("keydown", onKeyDown);
     return () => globalThis.removeEventListener("keydown", onKeyDown);
-  }, [product]);
+  }, [product, images.length]);
 
   if (!product || images.length === 0) return null;
 
@@ -285,6 +342,14 @@ export default function ProductModal() {
     ? null
     : buildInstallmentFromPriceCents(activePriceCents);
   const zoomImage = zoomIndex === null ? null : images[zoomIndex];
+  const galleryMode = images.length === 1
+    ? "is-single"
+    : images.length === 2
+    ? "is-double"
+    : "is-multiple";
+  const positionLabel = `${formatImagePosition(activeIndex + 1)} / ${
+    formatImagePosition(images.length)
+  }`;
 
   const addToCart = () => {
     const cartProduct = selectedVariant
@@ -333,16 +398,18 @@ export default function ProductModal() {
           </button>
 
           <div
-            class={`esv-product-modal-gallery ${
-              images.length === 1 ? "is-single" : "is-double"
-            }`}
+            ref={galleryRef}
+            class={`esv-product-modal-gallery ${galleryMode}`}
           >
             {images.map((image, index) => (
               <button
                 key={image.src}
-                class="esv-product-modal-image"
+                class={`esv-product-modal-image ${
+                  index === activeIndex ? "is-active" : ""
+                }`}
                 type="button"
                 aria-label={`Ampliar imagem ${index + 1} de ${product.title}`}
+                data-gallery-index={index}
                 onClick={() => updateZoomIndex(index)}
               >
                 <img
@@ -356,6 +423,39 @@ export default function ProductModal() {
                 <span aria-hidden="true">Ampliar</span>
               </button>
             ))}
+
+            {images.length > 2 && (
+              <div class="esv-product-modal-gallery-controls">
+                <button
+                  type="button"
+                  aria-label="Imagem anterior da galeria"
+                  onClick={() =>
+                    setActiveIndex((current) =>
+                      (current - 1 + images.length) % images.length
+                    )}
+                >
+                  <ArrowIcon direction="previous" />
+                </button>
+                <span aria-live="polite">{positionLabel}</span>
+                <button
+                  type="button"
+                  aria-label="Próxima imagem da galeria"
+                  onClick={() =>
+                    setActiveIndex((current) => (current + 1) % images.length)}
+                >
+                  <ArrowIcon direction="next" />
+                </button>
+              </div>
+            )}
+
+            {images.length > 1 && (
+              <span
+                class="esv-product-modal-gallery-mobile-counter"
+                aria-hidden="true"
+              >
+                {positionLabel}
+              </span>
+            )}
           </div>
 
           <div class="esv-product-modal-buybox">

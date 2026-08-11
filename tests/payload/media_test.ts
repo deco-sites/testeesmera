@@ -36,3 +36,50 @@ Deno.test("resolves absolute, relative, missing and draft media", () => {
     null,
   );
 });
+
+Deno.test("prefers territory media and falls back to original for legacy uploads", () => {
+  const withTerritory = resolvePayloadMedia({
+    id: 2,
+    url: "/media/original.jpg",
+    width: 2400,
+    height: 4320,
+    alt: "Painel",
+    _status: "published",
+    sizes: {
+      wide: {
+        url: "/media/panel-1800x1200.jpg",
+        width: 1800,
+        height: 1200,
+      },
+      territory: {
+        url: "/media/panel-1200x2160.jpg",
+        width: 1200,
+        height: 2160,
+      },
+    },
+  }, "https://cms.example.com", "territory");
+
+  assertEquals(withTerritory?.url, "https://cms.example.com/media/panel-1200x2160.jpg");
+  assertEquals(withTerritory?.width, 1200);
+  assertEquals(withTerritory?.height, 2160);
+
+  const legacyUpload = resolvePayloadMedia({
+    id: 3,
+    url: "/media/original-vertical.jpg",
+    width: 1200,
+    height: 2160,
+    alt: "Painel legado",
+    _status: "published",
+    sizes: {
+      wide: {
+        url: "/media/panel-1800x1200.jpg",
+        width: 1800,
+        height: 1200,
+      },
+    },
+  }, "https://cms.example.com", "territory");
+
+  assertEquals(legacyUpload?.url, "https://cms.example.com/media/original-vertical.jpg");
+  assertEquals(legacyUpload?.width, 1200);
+  assertEquals(legacyUpload?.height, 2160);
+});

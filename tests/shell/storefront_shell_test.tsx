@@ -94,6 +94,7 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
 
   assertStringIncludes(headerCss, ".esv-header.esv-header");
   assertStringIncludes(headerCss, ".esv-header.esv-header.is-solid");
+  assertStringIncludes(headerCss, ".esv-header.esv-header.is-mega-open");
   assertStringIncludes(headerCss, '[data-header-variant="transparent"]');
   assertStringIncludes(headerCss, ".esv-header .esv-nav-v2-desktop");
   assertStringIncludes(headerCss, ".esv-header .esv-nav-v2-mobile-trigger");
@@ -112,8 +113,12 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
 
   const headerBase =
     headerCss.match(/\.esv-header\.esv-header\s*\{([^}]*)\}/)?.[1] ?? "";
+  const megaBase =
+    headerCss.match(/\.esv-mega-v2\.esv-mega-v2\s*\{([^}]*)\}/)?.[1] ?? "";
   assert(headerBase.length > 0);
+  assert(megaBase.length > 0);
   assertFalse(headerBase.includes("backdrop-filter"));
+  assertFalse(megaBase.includes("border-top"));
 
   assertStringIncludes(masterCss, "--header-h: 60px");
   assertStringIncludes(masterCss, "--header-h: 56px");
@@ -152,10 +157,20 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   assertStringIncludes(menuIsland, 'class="esv-mega-backdrop"');
   assertStringIncludes(menuIsland, "aria-current");
   assertStringIncludes(menuIsland, "animationDelay");
+  assertStringIncludes(menuIsland, 'const MEGA_ID = "esv-mega-panel"');
+  assertStringIncludes(menuIsland, "aria-controls");
+  assertStringIncludes(menuIsland, 'event.key !== "ArrowDown"');
+  assertStringIncludes(menuIsland, 'document.addEventListener("focusin"');
+  assertStringIncludes(menuIsland, "activeTriggerRef.current?.focus()");
+  assertStringIncludes(menuIsland, "tabIndex={-1}");
+  assertStringIncludes(menuIsland, "focusables()[0] ?? drawerRef.current");
+  assertFalse(menuIsland.includes("onFocusOut="));
 
   assertStringIncludes(headerIsland, 'body.style.position = "fixed"');
   assertStringIncludes(headerIsland, "globalThis.scrollTo");
   assertStringIncludes(headerIsland, "setIsScrolled");
+  assertStringIncludes(headerIsland, "onMegaChange={setMegaOpen}");
+  assertStringIncludes(headerIsland, 'megaOpen ? " is-mega-open" : ""');
   assertStringIncludes(headerIsland, "return previous ? y > 8 : y > 24;");
   assertStringIncludes(headerIsland, "key={cartCount}");
   assertStringIncludes(headerIsland, 'class="esv-cart-quantity"');

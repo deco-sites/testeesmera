@@ -145,6 +145,7 @@ export default function EsmeraHeader({
     "idle" | "loading" | "ready" | "error"
   >("idle");
   const [isScrolled, setIsScrolled] = useState(false);
+  const [megaOpen, setMegaOpen] = useState(false);
   const searchInput = useRef<HTMLInputElement>(null);
   const requestRef = useRef<AbortController | null>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -404,7 +405,8 @@ export default function EsmeraHeader({
     hasInquiry ? "Itens sob consulta serão confirmados pela curadoria." : "",
   ].filter(Boolean).join("\n");
   const sendHref = checkoutHref(whatsappHref, message);
-  const isSolid = variant === "solid" || isScrolled || overlay !== null;
+  const isSolid = variant === "solid" || isScrolled || overlay !== null ||
+    megaOpen;
   const overlayTitle = overlay === "search" ? "Busca" : "Carrinho";
 
   const openSearchProduct = (product: EsmeraObject) => {
@@ -424,7 +426,9 @@ export default function EsmeraHeader({
   return (
     <>
       <header
-        class={`esv-header${isSolid ? " is-solid" : ""}`}
+        class={`esv-header${isSolid ? " is-solid" : ""}${
+          megaOpen ? " is-mega-open" : ""
+        }`}
         data-header-variant={variant}
         data-header-state={isSolid ? "solid" : "transparent"}
       >
@@ -432,6 +436,7 @@ export default function EsmeraHeader({
           items={menu}
           whatsappHref={whatsappHref}
           instagramHref={instagramHref}
+          onMegaChange={setMegaOpen}
         />
         <a class="esv-wordmark" aria-label={`${logo} — início`} href="/">
           <img

@@ -57,6 +57,16 @@ html:root {
   color: var(--ink);
 }
 
+/* Mega aberto: header e mega formam uma unica superficie continua. */
+.esv-header.esv-header.is-mega-open {
+  border-bottom-color: transparent;
+}
+
+.esv-header.esv-header.is-mega-open::before {
+  background: rgba(243, 240, 232, .985);
+  opacity: 1;
+}
+
 .esv-header .esv-wordmark {
   position: static;
   inset: auto;
@@ -277,7 +287,6 @@ html:root {
   top: calc(var(--header-h) + env(safe-area-inset-top));
   right: 0;
   left: 0;
-  border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: rgba(243, 240, 232, .985);
   color: var(--ink);

@@ -146,6 +146,7 @@ export default function EsmeraHeader({
   >("idle");
   const [isScrolled, setIsScrolled] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
+  const [desktopMenuHovered, setDesktopMenuHovered] = useState(false);
   const searchInput = useRef<HTMLInputElement>(null);
   const requestRef = useRef<AbortController | null>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -406,7 +407,7 @@ export default function EsmeraHeader({
   ].filter(Boolean).join("\n");
   const sendHref = checkoutHref(whatsappHref, message);
   const isSolid = variant === "solid" || isScrolled || overlay !== null ||
-    megaOpen;
+    megaOpen || desktopMenuHovered;
   const overlayTitle = overlay === "search" ? "Busca" : "Carrinho";
 
   const openSearchProduct = (product: EsmeraObject) => {
@@ -437,6 +438,7 @@ export default function EsmeraHeader({
           whatsappHref={whatsappHref}
           instagramHref={instagramHref}
           onMegaChange={setMegaOpen}
+          onDesktopHoverChange={setDesktopMenuHovered}
         />
         <a class="esv-wordmark" aria-label={`${logo} — início`} href="/">
           <img

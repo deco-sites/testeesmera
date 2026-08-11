@@ -164,12 +164,20 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   assertStringIncludes(menuIsland, "activeTriggerRef.current?.focus()");
   assertStringIncludes(menuIsland, "tabIndex={-1}");
   assertStringIncludes(menuIsland, "focusables()[0] ?? drawerRef.current");
+  assertStringIncludes(menuIsland, "onDesktopHoverChange?.(true)");
+  assertStringIncludes(menuIsland, "onDesktopHoverChange?.(false)");
+  assertStringIncludes(menuIsland, 'event.pointerType === "mouse"');
   assertFalse(menuIsland.includes("onFocusOut="));
 
   assertStringIncludes(headerIsland, 'body.style.position = "fixed"');
   assertStringIncludes(headerIsland, "globalThis.scrollTo");
   assertStringIncludes(headerIsland, "setIsScrolled");
   assertStringIncludes(headerIsland, "onMegaChange={setMegaOpen}");
+  assertStringIncludes(
+    headerIsland,
+    "onDesktopHoverChange={setDesktopMenuHovered}",
+  );
+  assertStringIncludes(headerIsland, "megaOpen || desktopMenuHovered");
   assertStringIncludes(headerIsland, 'megaOpen ? " is-mega-open" : ""');
   assertStringIncludes(headerIsland, "return previous ? y > 8 : y > 24;");
   assertStringIncludes(headerIsland, "key={cartCount}");

@@ -8,6 +8,7 @@ export interface Props {
   whatsappHref?: string;
   instagramHref?: string;
   onMegaChange?: (open: boolean) => void;
+  onDesktopHoverChange?: (hovered: boolean) => void;
 }
 
 const FOCUSABLE = [
@@ -103,7 +104,13 @@ function isCurrentPath(href: string, pathname: string): boolean {
 }
 
 export default function DynamicMenu(
-  { items, whatsappHref = "", instagramHref = "", onMegaChange }: Props,
+  {
+    items,
+    whatsappHref = "",
+    instagramHref = "",
+    onMegaChange,
+    onDesktopHoverChange,
+  }: Props,
 ) {
   const MEGA_ID = "esv-mega-panel";
   const [desktopOpen, setDesktopOpen] = useState<string | null>(null);
@@ -170,6 +177,11 @@ export default function DynamicMenu(
   }, [megaVisible, onMegaChange]);
 
   useEffect(() => () => onMegaChange?.(false), [onMegaChange]);
+
+  useEffect(
+    () => () => onDesktopHoverChange?.(false),
+    [onDesktopHoverChange],
+  );
 
   useEffect(() => {
     let active = true;
@@ -487,8 +499,14 @@ export default function DynamicMenu(
         <nav
           class="esv-nav-v2-desktop"
           aria-label="Navegação principal"
-          onPointerEnter={cancelDesktopClose}
-          onPointerLeave={scheduleDesktopClose}
+          onPointerEnter={(event) => {
+            cancelDesktopClose();
+            if (event.pointerType === "mouse") onDesktopHoverChange?.(true);
+          }}
+          onPointerLeave={(event) => {
+            if (event.pointerType === "mouse") onDesktopHoverChange?.(false);
+            scheduleDesktopClose();
+          }}
         >
           {desktopItems.map((item) => (
             <a

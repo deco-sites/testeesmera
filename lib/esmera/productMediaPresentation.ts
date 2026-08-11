@@ -46,11 +46,18 @@ export function getTwoImagePresentation(
   if (images.length !== 2) return "stage";
   if (galleryWidth <= 0 || galleryHeight <= 0) return "stage";
 
+  const aspects = images.map(mediaAspectRatio);
+  if (aspects.some((aspect) => aspect === null)) return "stage";
+
+  const firstAspect = aspects[0] as number;
+  const secondAspect = aspects[1] as number;
+  const pairCompatibility = getContainCoverage(firstAspect, secondAspect);
+  if (pairCompatibility < minCoverage) return "stage";
+
   const panelAspect = (galleryWidth / 2) / galleryHeight;
-  const coverages = images.map((image) => {
-    const aspect = mediaAspectRatio(image);
-    return aspect === null ? 0 : getContainCoverage(aspect, panelAspect);
-  });
+  const coverages = [firstAspect, secondAspect].map((aspect) =>
+    getContainCoverage(aspect, panelAspect)
+  );
 
   return coverages.every((coverage) => coverage >= minCoverage)
     ? "split"

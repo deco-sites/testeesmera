@@ -52,6 +52,17 @@ Deno.test("mixed or unknown ratios fall back to one dominant stage", () => {
   );
 });
 
+Deno.test("mixed ratios never become split just because the modal is shallow", () => {
+  assertEquals(
+    getTwoImagePresentation(
+      [{ width: 900, height: 1125 }, { width: 1600, height: 900 }],
+      954,
+      400,
+    ),
+    "stage",
+  );
+});
+
 Deno.test("viewer transform resets at 1x and clamps pan at 3x", () => {
   assertEquals(
     clampViewerTransform(

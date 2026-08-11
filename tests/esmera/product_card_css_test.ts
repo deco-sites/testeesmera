@@ -67,6 +67,6 @@ Deno.test("product card stylesheet is the only owner of card presentation", asyn
   assert(cardIndex > headerIndex);
   assertStringIncludes(
     app,
-    'storefrontStyleRevision = "2026-08-10-brand-mobile-v7"',
+    'storefrontStyleRevision = "2026-08-10-collection-filter-v11"',
   );
 });

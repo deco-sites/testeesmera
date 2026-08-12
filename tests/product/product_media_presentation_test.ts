@@ -18,6 +18,20 @@ Deno.test("media aspect ratio requires real positive dimensions", () => {
   assertEquals(mediaAspectRatio({}), null);
 });
 
+Deno.test("original dimensions define orientation even when a rendition was cropped", () => {
+  const croppedPortrait = {
+    width: 1800,
+    height: 1200,
+    fullWidth: 1200,
+    fullHeight: 1600,
+  };
+  assertAlmostEquals(mediaAspectRatio(croppedPortrait) ?? 0, 0.75);
+  assertEquals(classifyOrientation(croppedPortrait), "portrait");
+  assertEquals(buildGallerySlides([croppedPortrait, croppedPortrait], "desktop"), [
+    { kind: "pair", indices: [0, 1], ratio: 1.5 },
+  ]);
+});
+
 Deno.test("one horizontal image keeps its natural desktop ratio", () => {
   const slides = buildGallerySlides([{ width: 1500, height: 1000 }], "desktop");
   assertEquals(slides, [{ kind: "single", indices: [0], ratio: 1.5 }]);
@@ -119,7 +133,7 @@ Deno.test("viewer transform resets at 1x and clamps pan at 3x", () => {
   assert(clamped.y > -9999);
 });
 
-Deno.test("resolved product media carries wide dimensions and original high-resolution source", () => {
+Deno.test("resolved product media carries rendition dimensions and original high-resolution source", () => {
   const media: PayloadMedia = {
     id: "media-1",
     url: "/media/original.jpg",

@@ -28,7 +28,6 @@ export default function HeroCarousel(
   const slide = slides[active];
   return (
     <section
-      id="main-content"
       class={`esv-hero is-overlay-${overlay} is-focal-${focalPoint}`}
       style={{ display: "grid" }}
       aria-roledescription="carousel"

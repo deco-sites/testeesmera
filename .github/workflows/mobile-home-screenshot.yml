@@ -52,7 +52,8 @@ jobs:
         shell: bash
         run: |
           mkdir -p mobile-home-artifacts
-          cat > /tmp/mobile-home-shot.mjs <<'JS'
+          trap 'rm -f ./.mobile-home-shot.mjs' EXIT
+          cat > ./.mobile-home-shot.mjs <<'JS'
           import { chromium } from "playwright";
 
           const browser = await chromium.launch({ headless: true });
@@ -76,7 +77,7 @@ jobs:
           await context.close();
           await browser.close();
           JS
-          node /tmp/mobile-home-shot.mjs
+          node ./.mobile-home-shot.mjs
 
       - name: Upload mobile screenshot
         uses: actions/upload-artifact@v6

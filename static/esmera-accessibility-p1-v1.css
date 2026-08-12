@@ -1,0 +1,14 @@
+/* ESMÉRA — P1 accessibility correction
+ * Keeps the quiet-luxury hierarchy while making secondary text AA-compliant
+ * on the two light storefront surfaces. Loaded last on purpose.
+ */
+
+:root {
+  --muted: #62645F;
+  --muted-strong: #565954;
+}
+
+.esv-collection-v2-search input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}

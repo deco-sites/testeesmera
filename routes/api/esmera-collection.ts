@@ -1,4 +1,5 @@
 import type { Handlers } from "$fresh/server.ts";
+import { collectionFacetCategories } from "../../lib/esmera/categoryFacets.ts";
 import {
   buildCatalogQuery,
   normalizeVisibleFilters,
@@ -31,7 +32,8 @@ export const handler: Handlers = {
         collectionPage?.visibleFilters,
       )
         .filter((filter) => !slug || filter !== "category");
-      const query = buildCatalogQuery(url, visibleFilters, chrome.categories);
+      const categories = collectionFacetCategories(chrome.categories);
+      const query = buildCatalogQuery(url, visibleFilters, categories);
       const common = {
         limit: 24,
         page: query.page,

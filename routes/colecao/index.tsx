@@ -1,5 +1,6 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import StorefrontLayout from "../../components/esmera/StorefrontLayout.tsx";
+import { collectionFacetCategories } from "../../lib/esmera/categoryFacets.ts";
 import {
   buildCatalogQuery,
   type CatalogFilter,
@@ -26,6 +27,7 @@ interface Data {
   products: StorefrontProductV2[];
   page: PayloadCollectionPage | null;
   chrome: Awaited<ReturnType<typeof getPageChrome>>;
+  categories: ReturnType<typeof collectionFacetCategories>;
   seo: SEOModel;
   visibleFilters: CatalogFilter[];
   query: ReturnType<typeof buildCatalogQuery>;
@@ -43,9 +45,10 @@ export const handler: Handlers<Data> = {
       getPageChrome(),
       MaterialFacets({}),
     ]);
+    const categories = collectionFacetCategories(chrome.categories);
     const visibleFilters = normalizeVisibleFilters(page?.visibleFilters);
     const url = new URL(req.url);
-    const query = buildCatalogQuery(url, visibleFilters, chrome.categories);
+    const query = buildCatalogQuery(url, visibleFilters, categories);
     const materialQueryValues = expandMaterialFilters(query.materials, materials);
     const products = await listProducts({
       limit: 24,
@@ -63,6 +66,7 @@ export const handler: Handlers<Data> = {
       products: products.docs,
       page,
       chrome,
+      categories,
       seo: {
         ...seo,
         canonical: seo.canonical || `${url.origin}${url.pathname}`,
@@ -96,7 +100,7 @@ export default function CollectionRoute({ data }: PageProps<Data>) {
         emptyStateCopy={data.page?.emptyStateCopy ?? ""}
         filters={{
           visible: data.visibleFilters,
-          categories: data.chrome.categories,
+          categories: data.categories,
           materials: data.materials,
           q: data.query.q,
           category: data.query.category,

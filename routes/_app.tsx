@@ -98,6 +98,10 @@ export default defineApp(async (_req, ctx) => {
             `/esmera-product-card.css?v=${storefrontStyleRevision}`,
           )}
         />
+        <link
+          rel="stylesheet"
+          href={asset("/esmera-accessibility-p1-v1.css")}
+        />
 
         <link rel="manifest" href={asset("/site.webmanifest")} />
         <link rel="icon" href={asset("/favicon.ico")} />

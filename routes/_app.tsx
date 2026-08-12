@@ -9,6 +9,9 @@ export default defineApp(async (_req, ctx) => {
   // revision remains stable. Bump this token whenever the storefront chrome
   // changes so preview environments cannot mix new JSX with stale styles.
   const storefrontStyleRevision = "2026-08-11-product-media-fidelity-v16";
+  // Home motion has its own revision so homepage cleanup does not invalidate
+  // the product-media contract that is independently certified.
+  const homeStyleRevision = "2026-08-11-home-hygiene-v19";
   // Modal-only cache bust. Keeps unrelated storefront CSS on the stable v16
   // revision while forcing Deco/CDN to fetch the corrected media layer.
   const productMediaPatchRevision = "2026-08-11-popup-gallery-zoom-v18";
@@ -36,7 +39,10 @@ export default defineApp(async (_req, ctx) => {
         />
         <link rel="stylesheet" href={asset("/esmera-master.css")} />
         <link rel="stylesheet" href={asset("/esmera-finish.css")} />
-        <link rel="stylesheet" href={asset("/esmera-motion-v2.css")} />
+        <link
+          rel="stylesheet"
+          href={asset(`/esmera-motion-v2.css?v=${homeStyleRevision}`)}
+        />
         <link rel="stylesheet" href={asset("/esmera-structure-guard.css")} />
         <link rel="stylesheet" href={asset("/esmera-commerce-refine.css")} />
         <link

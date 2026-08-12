@@ -89,10 +89,25 @@ jobs:
         run: |
           set -euo pipefail
           home_html="$(curl --silent --fail http://127.0.0.1:8000/)"
-          grep -Eiq '<link[^>]+rel="canonical"[^>]+href="[^"]+"|<link[^>]+href="[^"]+"[^>]+rel="canonical"' <<< "$home_html"
+          if [[ "$home_html" != *'rel="canonical"'* ]]; then
+            echo "Home canonical missing"
+            exit 1
+          fi
 
           sitemap="$(curl --silent --fail http://127.0.0.1:8000/sitemap.xml)"
-          grep -q '<loc>http://127.0.0.1:8000/sobre</loc>' <<< "$sitemap"
-          grep -q '<loc>http://127.0.0.1:8000/contato</loc>' <<< "$sitemap"
-          if grep -q '/pagina/sobre' <<< "$sitemap"; then exit 1; fi
-          if grep -q '/pagina/contato' <<< "$sitemap"; then exit 1; fi
+          if [[ "$sitemap" != *'/sobre</loc>'* ]]; then
+            echo "Canonical /sobre missing from sitemap"
+            exit 1
+          fi
+          if [[ "$sitemap" != *'/contato</loc>'* ]]; then
+            echo "Canonical /contato missing from sitemap"
+            exit 1
+          fi
+          if [[ "$sitemap" == *'/pagina/sobre'* ]]; then
+            echo "Legacy /pagina/sobre leaked into sitemap"
+            exit 1
+          fi
+          if [[ "$sitemap" == *'/pagina/contato'* ]]; then
+            echo "Legacy /pagina/contato leaked into sitemap"
+            exit 1
+          fi

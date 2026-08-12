@@ -1,4 +1,4 @@
-import { assertEquals, assertStringIncludes } from "@std/assert";
+import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 
 function emptyObjectPaths(value: unknown, path = "root"): string[] {
   if (Array.isArray(value)) {
@@ -101,4 +101,40 @@ Deno.test("Home keeps main-content and signature ids unique by construction", as
     payloadHome,
     'instanceKey={`${slide.product?.id ?? "signature"}-${index}`}',
   );
+});
+
+Deno.test("P2 accessibility keeps collection headings, landmarks and WhatsApp affordance", async () => {
+  const collection = await Deno.readTextFile("sections/Esmera/Collection.tsx");
+  const header = await Deno.readTextFile("sections/Esmera/Header.tsx");
+  const footer = await Deno.readTextFile("sections/Esmera/Footer.tsx");
+  const accessibilityCss = await Deno.readTextFile(
+    "static/esmera-accessibility-p1-v1.css",
+  );
+
+  const h1 = collection.indexOf('<h1 id="esv-collection-title">');
+  const h2 = collection.indexOf('<h2 class="esv-sr-only">Peças da coleção</h2>');
+  const explorer = collection.indexOf("<CollectionExplorer");
+  assert(h1 >= 0 && h2 > h1 && explorer > h2);
+
+  assertStringIncludes(
+    header,
+    '<nav class="esv-skip-landmark" aria-label="Acessibilidade">',
+  );
+  assertStringIncludes(
+    header,
+    '<a class="esv-skip" href="#main-content">Pular para o conteúdo</a>',
+  );
+
+  assertStringIncludes(footer, 'import Icon from "../../components/ui/Icon.tsx";');
+  assertStringIncludes(
+    footer,
+    '<Icon id="WhatsApp" size={18} aria-hidden="true" />',
+  );
+  assertStringIncludes(
+    footer,
+    'aria-label="Falar com a Esméra no WhatsApp"',
+  );
+  assertStringIncludes(accessibilityCss, ".esv-whatsapp-sticky > svg");
+  assertStringIncludes(accessibilityCss, "width: 20px;");
+  assertStringIncludes(accessibilityCss, "height: 20px;");
 });

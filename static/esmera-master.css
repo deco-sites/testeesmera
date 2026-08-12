@@ -1477,7 +1477,6 @@ img {
     --page-x: clamp(16px, 5vw, 20px);
     --grid-gap: clamp(12px, 3.5vw, 16px);
     --section-y: clamp(72px, 20vw, 96px);
-    --header-h: 56px;
   }
 
   .esv-kicker {

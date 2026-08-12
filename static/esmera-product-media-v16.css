@@ -4,26 +4,23 @@
  */
 
 .esv-product-modal-image {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr);
-  grid-template-columns: minmax(0, 1fr);
-  place-items: center;
-  background: var(--bg-alt);
+  display: block;
+  background: var(--bg);
 }
 
 .esv-product-modal-image img {
-  width: auto !important;
-  height: auto !important;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain !important;
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none;
+  max-height: none;
+  object-fit: cover !important;
   object-position: center center;
-  transform: none !important;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .esv-product-modal-image:hover img {
-    transform: none !important;
+    transform: scale(1.012);
   }
 }
 
@@ -46,7 +43,7 @@
     .esv-product-modal-image:not(.is-active) {
     position: absolute;
     inset: 0;
-    display: grid;
+    display: block;
     visibility: hidden;
     pointer-events: none;
   }
@@ -162,7 +159,7 @@
 @media (max-width: 767px) {
   .esv-product-modal-gallery.is-two-stage
     .esv-product-modal-image:not(.is-active) {
-    display: grid;
+    display: block;
   }
 
   .esv-product-viewer-toolbar {

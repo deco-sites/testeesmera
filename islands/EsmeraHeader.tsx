@@ -114,6 +114,27 @@ function SearchIcon() {
   );
 }
 
+function BagIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
+      <path
+        d="M5.5 8.5h13l-1 11h-11l-1-11Z"
+        fill="none"
+        stroke="currentColor"
+        stroke-linejoin="round"
+        stroke-width="1.4"
+      />
+      <path
+        d="M9 9V6.75a3 3 0 0 1 6 0V9"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-width="1.4"
+      />
+    </svg>
+  );
+}
+
 function CloseIcon() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
@@ -468,7 +489,10 @@ export default function EsmeraHeader({
             aria-expanded={overlay === "enquiry"}
             onClick={(event) => openOverlay("enquiry", event.currentTarget)}
           >
-            <span>{enquiryLabel}</span>
+            <span class="esv-cart-label">{enquiryLabel}</span>
+            <span class="esv-cart-icon">
+              <BagIcon />
+            </span>
             <sup key={cartCount} aria-live="polite">{cartCount}</sup>
           </button>
         </div>

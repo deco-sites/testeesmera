@@ -209,6 +209,12 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   const fidelityCss = await Deno.readTextFile(
     "static/esmera-product-media-v16.css",
   );
+  const frameCss = await Deno.readTextFile(
+    "static/esmera-product-modal-frame-fix.css",
+  );
+  const recommendationsRoute = await Deno.readTextFile(
+    "routes/api/esmera-recommendations.ts",
+  );
 
   assertFalse(card.includes("/produto/"));
   assertStringIncludes(card, 'presentation="media"');
@@ -237,7 +243,20 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(css, ".esv-product-modal-gallery.is-multiple");
   assertStringIncludes(css, "scroll-snap-type: x mandatory");
   assertStringIncludes(css, ".esv-product-modal-gallery-mobile-counter");
-  assertStringIncludes(fidelityCss, "object-fit: contain !important");
+  assertStringIncludes(fidelityCss, "object-fit: cover !important");
+  assertStringIncludes(frameCss, "--esv-modal-gallery-ratio: 6 / 5");
+  assertStringIncludes(frameCss, "--esv-modal-gallery-ratio: 1 / 1");
+  assertStringIncludes(frameCss, "--esv-modal-gallery-ratio: 4 / 5");
+  assertStringIncludes(modal, 'type ModalPhase = "unmounted" | "opening"');
+  assertStringIncludes(modal, 'updatePhase("closing")');
+  assertStringIncludes(modal, "onTransitionEnd");
+  assertStringIncludes(modal, "MODAL_TRANSITION_TIMEOUT_MS");
+  assertStringIncludes(modal, "controller.abort()");
+  assertStringIncludes(modal, "VOCÊ TAMBÉM VAI GOSTAR");
+  assertStringIncludes(modal, "item.id !== product.id");
+  assertStringIncludes(recommendationsRoute, "MAX_RECOMMENDATIONS = 4");
+  assertStringIncludes(recommendationsRoute, "new Set([productId])");
+  assertStringIncludes(recommendationsRoute, 'sort: "newest"');
   assertStringIncludes(fidelityCss, ".esv-product-viewer-stage");
 });
 

@@ -126,8 +126,7 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   assertStringIncludes(megaBase, "border-top: 0");
 
   assertStringIncludes(masterCss, "--header-h: 60px");
-  assertStringIncludes(masterCss, "--header-h: 56px");
-  assert(masterCss.match(/--header-h:/g)?.length === 2);
+  assert(masterCss.match(/--header-h:/g)?.length === 1);
   assertStringIncludes(masterCss, "--ease-esmera: cubic-bezier(.16, 1, .3, 1)");
   assertFalse(masterCss.includes(".esv-header.is-scrolled"));
   assertFalse(masterCss.includes(".esv-header-nav"));
@@ -196,6 +195,16 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   assertStringIncludes(headerIsland, 'width="1225"');
   assertStringIncludes(headerIsland, 'height="369"');
   assertStringIncludes(headerCss, "width: clamp(108px, 30vw, 126px)");
+  assertStringIncludes(headerCss, "justify-content: space-between");
+  assertStringIncludes(headerCss, "--esv-header-group-gap:");
+  assertStringIncludes(
+    headerCss,
+    "grid-template-columns: 88px minmax(0, 1fr) 88px",
+  );
+  assertStringIncludes(headerCss, ".esv-header .esv-cart-label");
+  assertStringIncludes(headerCss, ".esv-header .esv-cart-icon");
+  assertStringIncludes(headerIsland, "function BagIcon()");
+  assertStringIncludes(headerIsland, 'class="esv-cart-icon"');
   assertStringIncludes(commerceCss, "@media (max-width: 520px)");
   assertStringIncludes(headerIsland, "<DynamicMenu");
   assertFalse(headerIsland.includes("is-scrolled"));

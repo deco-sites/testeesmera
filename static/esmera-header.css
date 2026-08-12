@@ -18,9 +18,11 @@ html:root {
   position: fixed;
   z-index: var(--esv-layer-header);
   inset: 0 0 auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 0;
+  --esv-header-group-gap: clamp(12px, 1.4vw, 20px);
   width: 100%;
   height: calc(var(--header-h) + env(safe-area-inset-top));
   min-height: 0;
@@ -72,8 +74,7 @@ html:root {
   inset: auto;
   display: inline-flex;
   align-items: center;
-  justify-self: center;
-  grid-column: 2;
+  order: 1;
   width: clamp(128px, 9vw, 144px);
   min-height: 44px;
   padding: 0;
@@ -108,9 +109,8 @@ html:root {
 .esv-header .esv-header-actions {
   display: flex;
   align-items: center;
-  justify-self: end;
-  grid-column: 3;
-  gap: 4px;
+  order: 3;
+  gap: var(--esv-header-group-gap);
   min-width: 0;
   color: inherit;
 }
@@ -130,7 +130,7 @@ html:root {
   position: relative;
   display: grid;
   place-items: center;
-  width: 42px;
+  width: 44px;
   height: 44px;
   padding: 0;
 }
@@ -187,6 +187,10 @@ html:root {
   transition: transform 280ms var(--ease-out);
 }
 
+.esv-header .esv-cart-icon {
+  display: none;
+}
+
 .esv-header :where(a, button):focus-visible,
 .esv-nav-v2-drawer :where(a, button):focus-visible,
 .esv-mega-v2 :where(a, button):focus-visible {
@@ -202,8 +206,9 @@ html:root {
   position: relative;
   z-index: auto;
   min-width: 0;
-  justify-self: start;
-  grid-column: 1;
+  order: 2;
+  margin-right: var(--esv-header-group-gap);
+  margin-left: auto;
   color: inherit;
 }
 
@@ -675,13 +680,60 @@ html:root {
 }
 
 @media (max-width: 1023px) {
+  .esv-header.esv-header {
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr) 88px;
+    align-items: center;
+  }
   .esv-header .esv-nav-v2-desktop { display: none; }
   .esv-header .esv-nav-v2-mobile-trigger { display: grid; }
   .esv-header .esv-nav-v2-root {
     display: grid;
+    grid-column: 1;
     align-items: center;
-    width: 42px;
+    justify-self: start;
+    width: 88px;
     height: var(--header-h);
+    margin: 0;
+  }
+  .esv-header .esv-wordmark {
+    grid-column: 2;
+    justify-self: center;
+    width: clamp(108px, 18vw, 132px);
+  }
+  .esv-header .esv-header-actions {
+    grid-column: 3;
+    justify-self: end;
+    width: 88px;
+    gap: 0;
+  }
+  .esv-header .esv-cart-label {
+    display: none;
+  }
+  .esv-header .esv-cart-icon {
+    display: grid;
+    place-items: center;
+  }
+  .esv-header .esv-enquiry-link {
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+  }
+  .esv-header .esv-enquiry-link sup {
+    position: absolute;
+    top: 4px;
+    right: 2px;
+    display: grid;
+    place-items: center;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 3px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 8px;
   }
   .esv-mega-v2,
   .esv-mega-backdrop { display: none; }
@@ -689,7 +741,7 @@ html:root {
 
 @media (max-width: 767px) {
   .esv-header.esv-header {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-columns: 88px minmax(0, 1fr) 88px;
     padding-inline: 12px;
   }
   .esv-header .esv-wordmark {
@@ -700,8 +752,8 @@ html:root {
   }
   .esv-header .esv-header-actions { gap: 0; }
   .esv-header .esv-enquiry-link {
-    gap: 4px;
-    min-width: 68px;
+    gap: 0;
+    min-width: 44px;
     font-size: 11px;
   }
   .esv-panel-wordmark { width: min(180px, 56vw); }
@@ -711,7 +763,7 @@ html:root {
   .esv-header.esv-header { padding-inline: 8px 10px; }
   .esv-header .esv-wordmark { width: clamp(96px, 30vw, 108px); }
   .esv-header .esv-header-actions { gap: 0; }
-  .esv-header .esv-enquiry-link { min-width: 62px; }
+  .esv-header .esv-enquiry-link { min-width: 44px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

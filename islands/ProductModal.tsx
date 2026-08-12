@@ -36,6 +36,11 @@ interface OpenProductDetail {
   trigger?: HTMLElement;
 }
 
+type ModalPhase = "unmounted" | "opening" | "open" | "closing";
+type RecommendationState = "idle" | "loading" | "ready" | "hidden";
+
+const MODAL_TRANSITION_TIMEOUT_MS = 300;
+
 const FOCUSABLE_SELECTOR = [
   "a[href]",
   "button:not([disabled])",
@@ -167,6 +172,11 @@ function ArrowIcon({ direction }: { direction: "previous" | "next" }) {
 
 export default function ProductModal() {
   const [product, setProduct] = useState<EsmeraObject | null>(null);
+  const [phase, setPhase] = useState<ModalPhase>("unmounted");
+  const [recommendations, setRecommendations] = useState<EsmeraObject[]>([]);
+  const [recommendationState, setRecommendationState] = useState<
+    RecommendationState
+  >("idle");
   const [selectedVariant, setSelectedVariant] = useState<
     EsmeraVariant | undefined
   >();
@@ -179,6 +189,14 @@ export default function ProductModal() {
   const galleryFrameRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
   const viewerTriggerRef = useRef<HTMLElement | null>(null);
+  const phaseRef = useRef<ModalPhase>("unmounted");
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const afterCloseRef = useRef<(() => void) | null>(null);
+
+  const updatePhase = (next: ModalPhase) => {
+    phaseRef.current = next;
+    setPhase(next);
+  };
 
   const images = useMemo(
     () => product ? getProductModalImages(product) : [],
@@ -208,24 +226,65 @@ export default function ProductModal() {
     globalThis.setTimeout(() => viewerTriggerRef.current?.focus(), 0);
   };
 
-  const closeModal = () => {
+  const finalizeClose = () => {
+    if (phaseRef.current !== "closing") return;
+    if (closeTimerRef.current !== null) {
+      globalThis.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
     updateZoomIndex(null);
+    updatePhase("unmounted");
     setProduct(null);
+    setRecommendations([]);
+    setRecommendationState("idle");
+    const afterClose = afterCloseRef.current;
+    afterCloseRef.current = null;
+    if (afterClose) globalThis.setTimeout(afterClose, 0);
+  };
+
+  const closeModal = (afterClose?: () => void) => {
+    if (
+      phaseRef.current === "closing" ||
+      phaseRef.current === "unmounted"
+    ) return;
+    updateZoomIndex(null);
+    afterCloseRef.current = afterClose ?? null;
+    updatePhase("closing");
+    closeTimerRef.current = globalThis.setTimeout(
+      finalizeClose,
+      MODAL_TRANSITION_TIMEOUT_MS,
+    );
+  };
+
+  const selectProduct = (next: EsmeraObject) => {
+    setActiveIndex(0);
+    setGallerySize({ width: 0, height: 0 });
+    setProduct(next);
+    setSelectedVariant(
+      next.variants.find((variant) => !variant.disabled),
+    );
+    setRecommendations([]);
+    setRecommendationState("loading");
+    updateZoomIndex(null);
+    requestAnimationFrame(() => {
+      modalRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      galleryRef.current?.scrollTo({ left: 0, behavior: "auto" });
+    });
   };
 
   useEffect(() => {
     const open = (event: Event) => {
       const detail = (event as CustomEvent<OpenProductDetail>).detail;
       if (!detail?.product) return;
+      if (closeTimerRef.current !== null) {
+        globalThis.clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+      afterCloseRef.current = null;
       triggerRef.current = detail.trigger ?? null;
       viewerTriggerRef.current = null;
-      setActiveIndex(0);
-      setGallerySize({ width: 0, height: 0 });
-      setProduct(detail.product);
-      setSelectedVariant(
-        detail.product.variants.find((variant) => !variant.disabled),
-      );
-      updateZoomIndex(null);
+      selectProduct(detail.product);
+      updatePhase("opening");
     };
 
     globalThis.addEventListener("esmera:open-product", open);
@@ -233,7 +292,21 @@ export default function ProductModal() {
   }, []);
 
   useEffect(() => {
-    if (!product || images.length === 0) return;
+    if (phase !== "opening") return;
+    let secondFrame = 0;
+    const firstFrame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => updatePhase("open"));
+    });
+    return () => {
+      cancelAnimationFrame(firstFrame);
+      cancelAnimationFrame(secondFrame);
+    };
+  }, [phase]);
+
+  const isMounted = phase !== "unmounted";
+
+  useEffect(() => {
+    if (!isMounted) return;
     const body = document.body;
     const root = document.documentElement;
     const scrollY = globalThis.scrollY || 0;
@@ -280,10 +353,10 @@ export default function ProductModal() {
       globalThis.scrollTo({ top: scrollY, left: 0, behavior: "auto" });
       globalThis.setTimeout(() => triggerRef.current?.focus(), 0);
     };
-  }, [product, images.length]);
+  }, [isMounted]);
 
   useEffect(() => {
-    if (!product || images.length === 0) return;
+    if (!isMounted) return;
     const dialog = modalRef.current;
     if (!dialog) return;
 
@@ -296,7 +369,38 @@ export default function ProductModal() {
     });
 
     return () => cancelAnimationFrame(frame);
-  }, [product, images.length]);
+  }, [isMounted]);
+
+  useEffect(() => {
+    if (!isMounted || !product) return;
+    const controller = new AbortController();
+    setRecommendations([]);
+    setRecommendationState("loading");
+    const params = new URLSearchParams({ productId: product.id });
+    if (product.category) params.set("category", product.category);
+
+    fetch(`/api/esmera-recommendations?${params}`, {
+      signal: controller.signal,
+      headers: { accept: "application/json" },
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("recommendations failed");
+        return response.json() as Promise<{ items?: EsmeraObject[] }>;
+      })
+      .then((data) => {
+        if (controller.signal.aborted) return;
+        const items = Array.isArray(data.items)
+          ? data.items.filter((item) => item.id !== product.id).slice(0, 4)
+          : [];
+        setRecommendations(items);
+        setRecommendationState(items.length > 0 ? "ready" : "hidden");
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setRecommendationState("hidden");
+      });
+
+    return () => controller.abort();
+  }, [isMounted, product?.id, product?.category]);
 
   useEffect(() => {
     if (!product || images.length !== 2) return;
@@ -399,7 +503,7 @@ export default function ProductModal() {
     return () => globalThis.removeEventListener("keydown", onKeyDown);
   }, [product, images.length]);
 
-  if (!product || images.length === 0) return null;
+  if (!isMounted || !product || images.length === 0) return null;
 
   const availability = getAvailabilityMeta(product.availability);
   const activePrice = selectedVariant?.formattedPrice ?? product.formattedPrice;
@@ -444,22 +548,22 @@ export default function ProductModal() {
       }
       : product;
 
-    closeModal();
-    globalThis.setTimeout(() => {
+    closeModal(() => {
       globalThis.dispatchEvent(
         new CustomEvent("esmera:add-to-enquiry", {
           detail: { product: cartProduct },
         }),
       );
-    }, 0);
+    });
   };
 
   return (
     <>
       <div
         class="esv-product-modal-backdrop"
+        data-phase={phase}
         role="presentation"
-        onClick={closeModal}
+        onClick={() => closeModal()}
       >
         <article
           ref={modalRef}
@@ -468,12 +572,18 @@ export default function ProductModal() {
           aria-modal="true"
           aria-labelledby="esv-product-modal-title"
           onClick={(event) => event.stopPropagation()}
+          onTransitionEnd={(event) => {
+            if (
+              event.target === event.currentTarget &&
+              event.propertyName === "opacity"
+            ) finalizeClose();
+          }}
         >
           <button
             class="esv-product-modal-close"
             type="button"
             aria-label="Fechar detalhes da peça"
-            onClick={closeModal}
+            onClick={() => closeModal()}
             data-autofocus="true"
           >
             <CloseIcon />
@@ -615,6 +725,51 @@ export default function ProductModal() {
               <span>Adicionar ao carrinho</span>
               <span aria-hidden="true">↗</span>
             </button>
+
+            {(recommendationState === "loading" ||
+              recommendationState === "ready") && (
+              <section
+                class="esv-product-modal-recommendations"
+                aria-busy={recommendationState === "loading"}
+              >
+                <h3>VOCÊ TAMBÉM VAI GOSTAR</h3>
+                <div class="esv-product-modal-related-grid">
+                  {recommendationState === "loading"
+                    ? Array.from({ length: 4 }, (_, index) => (
+                      <div
+                        class="esv-product-modal-related-skeleton"
+                        aria-hidden="true"
+                        key={index}
+                      >
+                        <span />
+                        <i />
+                        <i />
+                      </div>
+                    ))
+                    : recommendations.map((item) => (
+                      <button
+                        class="esv-product-modal-related-card"
+                        type="button"
+                        key={item.id}
+                        onClick={() => selectProduct(item)}
+                      >
+                        <span class="esv-product-modal-related-media">
+                          <img
+                            src={item.image}
+                            alt={item.alt}
+                            width="360"
+                            height="450"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </span>
+                        <strong>{item.title}</strong>
+                        <small>{item.formattedPrice}</small>
+                      </button>
+                    ))}
+                </div>
+              </section>
+            )}
           </div>
         </article>
       </div>

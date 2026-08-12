@@ -47,6 +47,7 @@ Deno.test("Home has no legacy scroll-scene coordinator or scene hooks", async ()
   for (const source of [header, freshManifest]) {
     assertEquals(source.includes("EsmeraScrollScenes"), false);
   }
+  assertEquals(freshManifest.includes("SpatialMatter"), false);
   for (const source of [hero, manifesto, matter, interlude]) {
     assertEquals(source.includes("data-motion-scene"), false);
   }

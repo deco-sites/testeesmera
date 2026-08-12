@@ -89,10 +89,10 @@ jobs:
         run: |
           set -euo pipefail
           home_html="$(curl --silent --fail http://127.0.0.1:8000/)"
-          echo "$home_html" | grep -Eiq '<link[^>]+rel="canonical"[^>]+href="[^"]+"|<link[^>]+href="[^"]+"[^>]+rel="canonical"'
+          grep -Eiq '<link[^>]+rel="canonical"[^>]+href="[^"]+"|<link[^>]+href="[^"]+"[^>]+rel="canonical"' <<< "$home_html"
 
           sitemap="$(curl --silent --fail http://127.0.0.1:8000/sitemap.xml)"
-          echo "$sitemap" | grep -q '<loc>http://127.0.0.1:8000/sobre</loc>'
-          echo "$sitemap" | grep -q '<loc>http://127.0.0.1:8000/contato</loc>'
-          if echo "$sitemap" | grep -q '/pagina/sobre'; then exit 1; fi
-          if echo "$sitemap" | grep -q '/pagina/contato'; then exit 1; fi
+          grep -q '<loc>http://127.0.0.1:8000/sobre</loc>' <<< "$sitemap"
+          grep -q '<loc>http://127.0.0.1:8000/contato</loc>' <<< "$sitemap"
+          if grep -q '/pagina/sobre' <<< "$sitemap"; then exit 1; fi
+          if grep -q '/pagina/contato' <<< "$sitemap"; then exit 1; fi

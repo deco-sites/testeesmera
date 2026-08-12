@@ -27,9 +27,12 @@ Deno.test("original dimensions define orientation even when a rendition was crop
   };
   assertAlmostEquals(mediaAspectRatio(croppedPortrait) ?? 0, 0.75);
   assertEquals(classifyOrientation(croppedPortrait), "portrait");
-  assertEquals(buildGallerySlides([croppedPortrait, croppedPortrait], "desktop"), [
-    { kind: "pair", indices: [0, 1], ratio: 1.5 },
-  ]);
+  assertEquals(
+    buildGallerySlides([croppedPortrait, croppedPortrait], "desktop"),
+    [
+      { kind: "pair", indices: [0, 1], ratio: 1.5 },
+    ],
+  );
 });
 
 Deno.test("one horizontal image keeps its natural desktop ratio", () => {

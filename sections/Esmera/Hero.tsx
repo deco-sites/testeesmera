@@ -100,11 +100,9 @@ export default function Hero(
   }
   return (
     <section
-      id="main-content"
       class={`esv-hero is-overlay-${overlay} is-focal-${focalPoint}`}
       style={{ display: "grid" }}
       aria-labelledby="esv-hero-title"
-      data-motion-scene="hero"
     >
       <Slide slide={activeSlides[0]} priority />
     </section>

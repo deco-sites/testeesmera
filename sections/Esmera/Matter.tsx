@@ -106,7 +106,6 @@ export default function Matter(
       id="territory"
       class="esv-territory"
       aria-label="Território Esméra"
-      data-motion-scene="territory-stack"
     >
       <div class="esv-territory-track">
         {panels.slice(0, 3).map((panel, index) => {

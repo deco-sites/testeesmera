@@ -22,7 +22,9 @@ export const handler: Handlers = {
     const products = productsResult.status === "fulfilled"
       ? productsResult.value.docs
       : [];
-    const categoryItems = categories.status === "fulfilled" ? categories.value : [];
+    const categoryItems = categories.status === "fulfilled"
+      ? categories.value
+      : [];
     const paths = new Set<string>([
       "/",
       "/colecao",

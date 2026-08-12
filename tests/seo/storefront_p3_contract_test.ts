@@ -1,8 +1,4 @@
-import {
-  assertEquals,
-  assertFalse,
-  assertStringIncludes,
-} from "@std/assert";
+import { assertEquals, assertFalse, assertStringIncludes } from "@std/assert";
 import {
   getDedicatedEditorialPath,
   isLegacyEditorialAlias,
@@ -50,9 +46,15 @@ Deno.test("P3 Home always publishes a canonical fallback", async () => {
   const home = await Deno.readTextFile("sections/Esmera/PayloadHome.tsx");
   const seo = await Deno.readTextFile("components/esmera/StorefrontSEO.tsx");
 
-  assertStringIncludes(home, "function homeCanonical(frontendURL?: string | null): string");
+  assertStringIncludes(
+    home,
+    "function homeCanonical(frontendURL?: string | null): string",
+  );
   assertStringIncludes(home, 'if (!frontendURL) return "/";');
-  assertStringIncludes(home, 'canonical={homeCanonical(settings?.frontendURL)}');
+  assertStringIncludes(
+    home,
+    "canonical={homeCanonical(settings?.frontendURL)}",
+  );
   assertStringIncludes(
     seo,
     '{resolvedCanonical && <link rel="canonical" href={resolvedCanonical} />}',

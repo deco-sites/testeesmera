@@ -15,12 +15,21 @@ export interface Props {
   dimensions?: string;
   showFullDetails?: boolean;
   headingLevel?: "h1" | "h2";
+  instanceKey?: string;
 }
 
 export const loader = async (props: Props) => ({
   ...props,
   resolvedHome: await loadResolvedHome(),
 });
+
+function toDomToken(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "object";
+}
 
 function SignatureObjectView({
   product,
@@ -30,6 +39,7 @@ function SignatureObjectView({
   dimensions = "",
   showFullDetails = false,
   headingLevel = "h2",
+  instanceKey,
 }: Props) {
   if (!product) return null;
   const availability = getAvailabilityMeta(product.availability);
@@ -45,12 +55,15 @@ function SignatureObjectView({
   const additionalGallery = product.gallery.filter((item) =>
     item.url !== primaryImage && item.url !== product.detailImage
   );
+  const domToken = toDomToken(instanceKey ?? product.id);
+  const sectionId = `signature-${domToken}`;
+  const titleId = `${sectionId}-title`;
 
   return (
     <section
-      id="signature"
+      id={sectionId}
       class="esv-signature"
-      aria-labelledby="esv-signature-title"
+      aria-labelledby={titleId}
     >
       <div class="esv-shell esv-signature-grid">
         <figure
@@ -91,8 +104,8 @@ function SignatureObjectView({
         >
           <p class="esv-kicker">{eyebrow}</p>
           {headingLevel === "h1"
-            ? <h1 id="esv-signature-title">{product.title}</h1>
-            : <h2 id="esv-signature-title">{product.title}</h2>}
+            ? <h1 id={titleId}>{product.title}</h1>
+            : <h2 id={titleId}>{product.title}</h2>}
           {product.subtitle && (
             <p class="esv-signature-subtitle">{product.subtitle}</p>
           )}
@@ -163,6 +176,7 @@ export default function SignatureObject(
         {slides.map((slide, index) => (
           <SignatureObjectView
             key={`${slide.product?.id ?? "signature"}-${index}`}
+            instanceKey={`${slide.product?.id ?? "signature"}-${index}`}
             {...slide}
           />
         ))}

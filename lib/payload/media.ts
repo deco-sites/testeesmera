@@ -24,7 +24,13 @@ function absoluteURL(value: string, baseURL: string): string {
 export function resolvePayloadMedia(
   relationship: Relationship<PayloadMedia> | undefined,
   baseURL: string,
-  preferred: "thumb" | "card" | "wide" | "territory" | "original" = "original",
+  preferred:
+    | "thumb"
+    | "card"
+    | "wide"
+    | "gallery"
+    | "territory"
+    | "original" = "original",
   editorialAlt?: string | null,
 ): ResolvedMedia | null {
   if (!relationship || typeof relationship !== "object") return null;

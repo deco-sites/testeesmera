@@ -92,6 +92,7 @@ export default function Collection({
       </header>
 
       <div class="esv-shell">
+        <h2 class="esv-sr-only">Peças da coleção</h2>
         <CollectionExplorer
           initialItems={products}
           initialTotalDocs={totalDocs}

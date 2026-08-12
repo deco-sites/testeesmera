@@ -19,13 +19,7 @@ interface ProductModalImage {
   fullHeight?: number;
 }
 
-type RuntimeGalleryMedia = EsmeraObject["gallery"][number] & {
-  width?: number;
-  height?: number;
-  fullUrl?: string;
-  fullWidth?: number;
-  fullHeight?: number;
-};
+type RuntimeGalleryMedia = EsmeraObject["gallery"][number];
 
 interface ProductFact {
   label: string;
@@ -78,7 +72,7 @@ function toModalImage(
 export function getProductModalImages(
   product: EsmeraObject,
 ): ProductModalImage[] {
-  const gallery = product.gallery as RuntimeGalleryMedia[];
+  const gallery = product.gallery;
   const byUrl = new Map(
     gallery.map((media) => [normalized(media.url), media] as const),
   );
@@ -244,8 +238,8 @@ function GalleryFrame({
                       ? "(min-width: 1024px) 35vw, 100vw"
                       : "(min-width: 1024px) 70vw, 100vw"}
                     alt={image.alt}
-                    width={image.width ?? 900}
-                    height={image.height ?? 1125}
+                    width={image.width ?? image.fullWidth}
+                    height={image.height ?? image.fullHeight}
                     loading={imageIndex === 0 ? "eager" : "lazy"}
                     decoding="async"
                   />
@@ -708,115 +702,119 @@ export default function ProductModal() {
           />
 
           <div class="esv-product-modal-buybox">
-            <div class="esv-product-modal-heading">
-              <p class="esv-kicker">{availability.label}</p>
-              <h2 id="esv-product-modal-title">{product.title}</h2>
-              {product.subtitle && (
-                <p class="esv-product-modal-subtitle">{product.subtitle}</p>
-              )}
-              {activePrice && (
-                <strong class="esv-product-modal-price">{activePrice}</strong>
-              )}
-              {installment && (
-                <p class="esv-product-modal-installment">
-                  {installment.prefix}
-                  <strong>{installment.emphasis}</strong>
-                  {installment.suffix}
+            <div class="esv-product-modal-buybox-scroll">
+              <div class="esv-product-modal-heading">
+                <p class="esv-kicker">{availability.label}</p>
+                <h2 id="esv-product-modal-title">{product.title}</h2>
+                {product.subtitle && (
+                  <p class="esv-product-modal-subtitle">{product.subtitle}</p>
+                )}
+                {activePrice && (
+                  <strong class="esv-product-modal-price">{activePrice}</strong>
+                )}
+                {installment && (
+                  <p class="esv-product-modal-installment">
+                    {installment.prefix}
+                    <strong>{installment.emphasis}</strong>
+                    {installment.suffix}
+                  </p>
+                )}
+              </div>
+
+              {product.description && (
+                <p class="esv-product-modal-description">
+                  {product.description}
                 </p>
+              )}
+
+              {facts.length > 0 && (
+                <dl class="esv-product-modal-facts">
+                  {facts.map((fact) => (
+                    <div key={fact.label}>
+                      <dt>{fact.label}</dt>
+                      <dd>{fact.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+
+              {availableVariants.length > 0 && (
+                <label class="esv-product-modal-variant">
+                  <span>Variação</span>
+                  <select
+                    value={selectedVariant?.sku}
+                    onChange={(event) =>
+                      setSelectedVariant(
+                        availableVariants.find((variant) =>
+                          variant.sku === event.currentTarget.value
+                        ),
+                      )}
+                  >
+                    {availableVariants.map((variant) => (
+                      <option key={variant.sku} value={variant.sku}>
+                        {variant.label} — {variant.formattedPrice}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
+              {(recommendationState === "loading" ||
+                recommendationState === "ready") && (
+                <section
+                  class="esv-product-modal-recommendations"
+                  aria-busy={recommendationState === "loading"}
+                >
+                  <h3>VOCÊ TAMBÉM VAI GOSTAR</h3>
+                  <div class="esv-product-modal-related-grid">
+                    {recommendationState === "loading"
+                      ? Array.from({ length: 4 }, (_, index) => (
+                        <div
+                          class="esv-product-modal-related-skeleton"
+                          aria-hidden="true"
+                          key={index}
+                        >
+                          <span />
+                          <i />
+                          <i />
+                        </div>
+                      ))
+                      : recommendations.map((item) => (
+                        <button
+                          class="esv-product-modal-related-card"
+                          type="button"
+                          key={item.id}
+                          onClick={() => selectProduct(item)}
+                        >
+                          <span class="esv-product-modal-related-media">
+                            <img
+                              src={item.image}
+                              alt={item.alt}
+                              width="360"
+                              height="450"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          </span>
+                          <strong>{item.title}</strong>
+                          <small>{item.formattedPrice}</small>
+                        </button>
+                      ))}
+                  </div>
+                </section>
               )}
             </div>
 
-            {product.description && (
-              <p class="esv-product-modal-description">
-                {product.description}
-              </p>
-            )}
-
-            {facts.length > 0 && (
-              <dl class="esv-product-modal-facts">
-                {facts.map((fact) => (
-                  <div key={fact.label}>
-                    <dt>{fact.label}</dt>
-                    <dd>{fact.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            )}
-
-            {availableVariants.length > 0 && (
-              <label class="esv-product-modal-variant">
-                <span>Variação</span>
-                <select
-                  value={selectedVariant?.sku}
-                  onChange={(event) =>
-                    setSelectedVariant(
-                      availableVariants.find((variant) =>
-                        variant.sku === event.currentTarget.value
-                      ),
-                    )}
-                >
-                  {availableVariants.map((variant) => (
-                    <option key={variant.sku} value={variant.sku}>
-                      {variant.label} — {variant.formattedPrice}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-
-            <button
-              class="esv-product-modal-add"
-              type="button"
-              onClick={addToCart}
-            >
-              <span>Adicionar ao carrinho</span>
-              <span aria-hidden="true">↗</span>
-            </button>
-
-            {(recommendationState === "loading" ||
-              recommendationState === "ready") && (
-              <section
-                class="esv-product-modal-recommendations"
-                aria-busy={recommendationState === "loading"}
+            <div class="esv-product-modal-buybox-footer">
+              <button
+                class="esv-product-modal-add"
+                type="button"
+                onClick={addToCart}
               >
-                <h3>VOCÊ TAMBÉM VAI GOSTAR</h3>
-                <div class="esv-product-modal-related-grid">
-                  {recommendationState === "loading"
-                    ? Array.from({ length: 4 }, (_, index) => (
-                      <div
-                        class="esv-product-modal-related-skeleton"
-                        aria-hidden="true"
-                        key={index}
-                      >
-                        <span />
-                        <i />
-                        <i />
-                      </div>
-                    ))
-                    : recommendations.map((item) => (
-                      <button
-                        class="esv-product-modal-related-card"
-                        type="button"
-                        key={item.id}
-                        onClick={() => selectProduct(item)}
-                      >
-                        <span class="esv-product-modal-related-media">
-                          <img
-                            src={item.image}
-                            alt={item.alt}
-                            width="360"
-                            height="450"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </span>
-                        <strong>{item.title}</strong>
-                        <small>{item.formattedPrice}</small>
-                      </button>
-                    ))}
-                </div>
-              </section>
-            )}
+                <span>Adicionar ao carrinho</span>
+                <span aria-hidden="true">↗</span>
+              </button>
+            </div>
           </div>
         </article>
       </div>

@@ -104,6 +104,7 @@ export default function ProductMediaViewer({
   const lastTapRef = useRef<{ time: number; x: number; y: number } | null>(
     null,
   );
+  const lastTouchPointerAtRef = useRef(0);
   const current = images[index];
 
   const clampToStage = (next: ViewerTransform): ViewerTransform => {
@@ -235,6 +236,9 @@ export default function ProductMediaViewer({
   const handlePointerDown = (
     event: JSX.TargetedPointerEvent<HTMLDivElement>,
   ) => {
+    if (event.pointerType === "touch") {
+      lastTouchPointerAtRef.current = performance.now();
+    }
     event.currentTarget.setPointerCapture?.(event.pointerId);
     pointersRef.current.set(event.pointerId, {
       x: event.clientX,
@@ -363,6 +367,7 @@ export default function ProductMediaViewer({
   };
 
   const handleDoubleClick = () => {
+    if (performance.now() - lastTouchPointerAtRef.current < 500) return;
     setScale(transformRef.current.scale > 1 ? 1 : 2);
   };
 

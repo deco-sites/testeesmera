@@ -39,6 +39,9 @@ Deno.test("Home has no legacy scroll-scene coordinator or scene hooks", async ()
   const interlude = await Deno.readTextFile("sections/Esmera/MatterInterlude.tsx");
   const freshManifest = await Deno.readTextFile("fresh.gen.ts");
   const motion = await Deno.readTextFile("static/esmera-motion-v2.css");
+  const matterStyles = await Deno.readTextFile(
+    "static/esmera-matter-interaction.css",
+  );
   const app = await Deno.readTextFile("routes/_app.tsx");
 
   for (const source of [header, freshManifest]) {
@@ -54,14 +57,21 @@ Deno.test("Home has no legacy scroll-scene coordinator or scene hooks", async ()
   assertEquals(motion.includes(".esv-maison-scene"), false);
   assertEquals(motion.includes("--esv-interlude-y"), false);
   assertEquals(motion.includes("position: sticky"), false);
+  assertEquals(matterStyles.includes("esv-scenes-ready"), false);
+  assertEquals(matterStyles.includes("is-active"), false);
+  assertEquals(app.includes("esmera-structure-guard.css"), false);
 
   assertStringIncludes(
     app,
-    'const homeStyleRevision = "2026-08-11-home-hygiene-v19";',
+    'const homeStyleRevision = "2026-08-11-home-hygiene-v20";',
   );
   assertStringIncludes(
     app,
     "/esmera-motion-v2.css?v=${homeStyleRevision}",
+  );
+  assertStringIncludes(
+    app,
+    "/esmera-matter-interaction.css?v=${homeStyleRevision}",
   );
 });
 

@@ -1,0 +1,55 @@
+name: Frontend option matrix fast
+
+on:
+  push:
+    branches:
+      - agent/full-frontend-e2e-audit-20260812
+    paths:
+      - "scripts/ci/frontend-option-matrix-fast.mjs"
+      - ".github/workflows/frontend-option-matrix-fast.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  option-matrix-fast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PAYLOAD_API_URL: https://esmeracms-green.vercel.app
+      PORT: "8000"
+      BASE_URL: http://127.0.0.1:8000
+    steps:
+      - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Build
+        run: deno task build
+      - name: Start preview
+        shell: bash
+        run: |
+          deno task preview > /tmp/esmera-option-matrix-fast-preview.log 2>&1 &
+          for attempt in $(seq 1 120); do
+            if curl --silent --fail http://127.0.0.1:8000/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/esmera-option-matrix-fast-preview.log
+          exit 1
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.54.2
+          npx playwright install --with-deps chromium
+      - name: Test every frontend option with bounded waits
+        run: node scripts/ci/frontend-option-matrix-fast.mjs
+      - name: Upload bounded option matrix evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: frontend-option-matrix-fast-pack
+          path: frontend-option-matrix-fast-artifacts
+          if-no-files-found: warn
+          retention-days: 14

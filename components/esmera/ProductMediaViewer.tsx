@@ -69,6 +69,8 @@ function distance(
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
+const INITIAL_TRANSFORM: ViewerTransform = { scale: 1, x: 0, y: 0 };
+
 export default function ProductMediaViewer({
   images,
   index,
@@ -76,11 +78,8 @@ export default function ProductMediaViewer({
   onIndexChange,
   onClose,
 }: Props) {
-  const [transform, setTransform] = useState<ViewerTransform>({
-    scale: 1,
-    x: 0,
-    y: 0,
-  });
+  const [transform, setTransform] = useState<ViewerTransform>(INITIAL_TRANSFORM);
+  const transformRef = useRef<ViewerTransform>(INITIAL_TRANSFORM);
   const dialogRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -128,23 +127,29 @@ export default function ProductMediaViewer({
     );
   };
 
+  const commitTransform = (next: ViewerTransform): ViewerTransform => {
+    const clamped = clampToStage(next);
+    transformRef.current = clamped;
+    setTransform(clamped);
+    return clamped;
+  };
+
   const changeIndex = (delta: number) => {
     if (images.length < 2) return;
     onIndexChange((index + delta + images.length) % images.length);
   };
 
   const setScale = (scale: number) => {
-    setTransform((value) => clampToStage({ ...value, scale }));
+    commitTransform({ ...transformRef.current, scale });
   };
 
   const zoomBy = (delta: number) => {
-    setTransform((value) =>
-      clampToStage({ ...value, scale: value.scale + delta })
-    );
+    setScale(transformRef.current.scale + delta);
   };
 
   useEffect(() => {
-    setTransform({ scale: 1, x: 0, y: 0 });
+    transformRef.current = INITIAL_TRANSFORM;
+    setTransform(INITIAL_TRANSFORM);
     pointersRef.current.clear();
     dragRef.current = null;
     swipeRef.current = null;
@@ -218,7 +223,7 @@ export default function ProductMediaViewer({
 
     globalThis.addEventListener("keydown", onKeyDown);
     return () => globalThis.removeEventListener("keydown", onKeyDown);
-  }, [images, index, transform.scale]);
+  }, [images, index]);
 
   const handlePointerDown = (
     event: JSX.TargetedPointerEvent<HTMLDivElement>,
@@ -229,13 +234,14 @@ export default function ProductMediaViewer({
       y: event.clientY,
     });
 
+    const currentTransform = transformRef.current;
     if (pointersRef.current.size === 1) {
       dragRef.current = {
         pointerId: event.pointerId,
         x: event.clientX,
         y: event.clientY,
-        originX: transform.x,
-        originY: transform.y,
+        originX: currentTransform.x,
+        originY: currentTransform.y,
       };
       swipeRef.current = {
         pointerId: event.pointerId,
@@ -247,7 +253,7 @@ export default function ProductMediaViewer({
       const [first, second] = Array.from(pointersRef.current.values());
       pinchRef.current = {
         distance: Math.max(1, distance(first, second)),
-        scale: transform.scale,
+        scale: currentTransform.scale,
       };
       swipeRef.current = null;
     }
@@ -266,20 +272,24 @@ export default function ProductMediaViewer({
       const [first, second] = Array.from(pointersRef.current.values());
       const ratio = distance(first, second) / pinchRef.current.distance;
       const scale = pinchRef.current.scale * ratio;
-      setTransform((value) => clampToStage({ ...value, scale }));
+      commitTransform({ ...transformRef.current, scale });
       return;
     }
 
     const drag = dragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId || transform.scale <= 1) {
+    const currentTransform = transformRef.current;
+    if (
+      !drag || drag.pointerId !== event.pointerId ||
+      currentTransform.scale <= 1
+    ) {
       return;
     }
 
-    setTransform(clampToStage({
-      scale: transform.scale,
+    commitTransform({
+      scale: currentTransform.scale,
       x: drag.originX + event.clientX - drag.x,
       y: drag.originY + event.clientY - drag.y,
-    }));
+    });
   };
 
   const finishPointer = (
@@ -292,9 +302,10 @@ export default function ProductMediaViewer({
     if (pointersRef.current.size < 2) pinchRef.current = null;
     if (dragRef.current?.pointerId === event.pointerId) dragRef.current = null;
 
+    const currentTransform = transformRef.current;
     if (
       wasSinglePointer && swipe?.pointerId === event.pointerId &&
-      transform.scale === 1
+      currentTransform.scale === 1
     ) {
       const dx = event.clientX - swipe.x;
       const dy = event.clientY - swipe.y;
@@ -319,7 +330,7 @@ export default function ProductMediaViewer({
           Math.hypot(event.clientX - previous.x, event.clientY - previous.y) <
             28
         ) {
-          setScale(transform.scale > 1 ? 1 : 2);
+          setScale(currentTransform.scale > 1 ? 1 : 2);
           lastTapRef.current = null;
         } else {
           lastTapRef.current = {
@@ -337,13 +348,15 @@ export default function ProductMediaViewer({
   const handleWheel = (event: JSX.TargetedWheelEvent<HTMLDivElement>) => {
     event.preventDefault();
     const factor = Math.exp(-event.deltaY * 0.0015);
-    setTransform((value) =>
-      clampToStage({ ...value, scale: value.scale * factor })
-    );
+    const currentTransform = transformRef.current;
+    commitTransform({
+      ...currentTransform,
+      scale: currentTransform.scale * factor,
+    });
   };
 
   const handleDoubleClick = () => {
-    setScale(transform.scale > 1 ? 1 : 2);
+    setScale(transformRef.current.scale > 1 ? 1 : 2);
   };
 
   return (

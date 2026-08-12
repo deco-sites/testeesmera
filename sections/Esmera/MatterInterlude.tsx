@@ -49,7 +49,6 @@ export default function MatterInterlude(
       id="matter"
       class={`esv-matter-interlude is-focal-${focalPoint}`}
       aria-labelledby="esv-matter-interlude-title"
-      data-motion-scene="interlude"
     >
       <EsmeraPicture
         class="esv-matter-interlude-media"

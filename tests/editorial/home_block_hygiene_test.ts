@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertStringIncludes } from "@std/assert";
 
 function emptyObjectPaths(value: unknown, path = "root"): string[] {
   if (Array.isArray(value)) {
@@ -28,4 +28,55 @@ Deno.test("Home block does not persist empty or incomplete object overrides", as
 
   assertEquals(Object.hasOwn(selectedObjects || {}, "products"), false);
   assertEquals(Object.hasOwn(signature || {}, "product"), false);
+});
+
+Deno.test("Home has no legacy scroll-scene coordinator or scene hooks", async () => {
+  const header = await Deno.readTextFile("sections/Esmera/Header.tsx");
+  const hero = await Deno.readTextFile("sections/Esmera/Hero.tsx");
+  const carousel = await Deno.readTextFile("islands/HeroCarousel.tsx");
+  const manifesto = await Deno.readTextFile("sections/Esmera/Manifesto.tsx");
+  const matter = await Deno.readTextFile("sections/Esmera/Matter.tsx");
+  const interlude = await Deno.readTextFile("sections/Esmera/MatterInterlude.tsx");
+  const freshManifest = await Deno.readTextFile("fresh.gen.ts");
+  const motion = await Deno.readTextFile("static/esmera-motion-v2.css");
+  const app = await Deno.readTextFile("routes/_app.tsx");
+
+  for (const source of [header, freshManifest]) {
+    assertEquals(source.includes("EsmeraScrollScenes"), false);
+  }
+  for (const source of [hero, manifesto, matter, interlude]) {
+    assertEquals(source.includes("data-motion-scene"), false);
+  }
+
+  assertEquals(hero.includes('id="main-content"'), false);
+  assertEquals(carousel.includes('id="main-content"'), false);
+  assertEquals(motion.includes("--esv-hero-y"), false);
+  assertEquals(motion.includes(".esv-maison-scene"), false);
+  assertEquals(motion.includes("--esv-interlude-y"), false);
+  assertEquals(motion.includes("position: sticky"), false);
+
+  assertStringIncludes(
+    app,
+    'const homeStyleRevision = "2026-08-11-home-hygiene-v19";',
+  );
+  assertStringIncludes(
+    app,
+    "/esmera-motion-v2.css?v=${homeStyleRevision}",
+  );
+});
+
+Deno.test("Home keeps main-content and signature ids unique by construction", async () => {
+  const layout = await Deno.readTextFile(
+    "components/esmera/StorefrontLayout.tsx",
+  );
+  const signature = await Deno.readTextFile(
+    "sections/Esmera/SignatureObject.tsx",
+  );
+  const payloadHome = await Deno.readTextFile("sections/Esmera/PayloadHome.tsx");
+
+  assertStringIncludes(layout, '<main id="main-content">');
+  assertEquals(signature.includes('id="signature"'), false);
+  assertEquals(signature.includes('id="esv-signature-title"'), false);
+  assertStringIncludes(signature, "const sectionId = `signature-${domToken}`;");
+  assertStringIncludes(payloadHome, "instanceKey={`${slide.product?.id ?? \"signature\"}-${index}`}");
 });

@@ -1,6 +1,8 @@
 export interface MediaDimensions {
   width?: number;
   height?: number;
+  fullWidth?: number;
+  fullHeight?: number;
 }
 
 export type Orientation = "portrait" | "landscape" | "unknown";
@@ -33,8 +35,10 @@ function positive(value: number | undefined): value is number {
 }
 
 export function mediaAspectRatio(media: MediaDimensions): number | null {
-  if (!positive(media.width) || !positive(media.height)) return null;
-  return media.width / media.height;
+  const width = positive(media.fullWidth) ? media.fullWidth : media.width;
+  const height = positive(media.fullHeight) ? media.fullHeight : media.height;
+  if (!positive(width) || !positive(height)) return null;
+  return width / height;
 }
 
 export function classifyOrientation(media: MediaDimensions): Orientation {

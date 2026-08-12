@@ -78,7 +78,9 @@ export default function ProductMediaViewer({
   onIndexChange,
   onClose,
 }: Props) {
-  const [transform, setTransform] = useState<ViewerTransform>(INITIAL_TRANSFORM);
+  const [transform, setTransform] = useState<ViewerTransform>(
+    INITIAL_TRANSFORM,
+  );
   const transformRef = useRef<ViewerTransform>(INITIAL_TRANSFORM);
   const dialogRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);

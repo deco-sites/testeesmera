@@ -28,7 +28,6 @@ import * as $EsmeraMotion from "./islands/EsmeraMotion.tsx";
 import * as $HeroCarousel from "./islands/HeroCarousel.tsx";
 import * as $ProductActions from "./islands/ProductActions.tsx";
 import * as $ProductModal from "./islands/ProductModal.tsx";
-import * as $SpatialMatter from "./islands/SpatialMatter.tsx";
 import * as $WishlistButton from "./islands/WishlistButton.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
@@ -62,7 +61,6 @@ const manifest = {
     "./islands/HeroCarousel.tsx": $HeroCarousel,
     "./islands/ProductActions.tsx": $ProductActions,
     "./islands/ProductModal.tsx": $ProductModal,
-    "./islands/SpatialMatter.tsx": $SpatialMatter,
     "./islands/WishlistButton.tsx": $WishlistButton,
   },
   baseUrl: import.meta.url,

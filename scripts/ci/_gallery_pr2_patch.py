@@ -1,0 +1,83 @@
+from pathlib import Path
+
+p = Path("scripts/ci/product-modal-media-fidelity.mjs")
+s = p.read_text()
+
+old = '''    const rect = image.getBoundingClientRect();
+    const parent = container.getBoundingClientRect();
+    return {
+      naturalWidth: image.naturalWidth,
+      naturalHeight: image.naturalHeight,
+      naturalAspect: image.naturalWidth / image.naturalHeight,
+      renderedWidth: rect.width,
+      renderedHeight: rect.height,
+      renderedAspect: rect.width / rect.height,
+      image: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+      container: { left: parent.left, top: parent.top, right: parent.right, bottom: parent.bottom },
+      objectFit: getComputedStyle(image).objectFit,
+      src: image.currentSrc || image.src,
+    };'''
+new = '''    const rect = image.getBoundingClientRect();
+    const parent = container.getBoundingClientRect();
+    const objectFit = getComputedStyle(image).objectFit;
+    const naturalAspect = image.naturalWidth / image.naturalHeight;
+    let contentWidth = rect.width;
+    let contentHeight = rect.height;
+    if (objectFit === "contain" && rect.width > 0 && rect.height > 0) {
+      if (naturalAspect > rect.width / rect.height) {
+        contentHeight = rect.width / naturalAspect;
+      } else {
+        contentWidth = rect.height * naturalAspect;
+      }
+    }
+    const left = rect.left + (rect.width - contentWidth) / 2;
+    const top = rect.top + (rect.height - contentHeight) / 2;
+    return {
+      naturalWidth: image.naturalWidth,
+      naturalHeight: image.naturalHeight,
+      naturalAspect,
+      renderedWidth: contentWidth,
+      renderedHeight: contentHeight,
+      renderedAspect: contentWidth / contentHeight,
+      image: { left, top, right: left + contentWidth, bottom: top + contentHeight },
+      container: { left: parent.left, top: parent.top, right: parent.right, bottom: parent.bottom },
+      objectFit,
+      src: image.currentSrc || image.src,
+    };'''
+assert old in s
+s = s.replace(old, new)
+s = s.replace('link[href*="esmera-product-media-v16.css"]', 'link[href*="esmera-product-modal.css"]')
+s = s.replace('2026-08-11-product-media-fidelity-v16', '2026-08-12-media-fidelity-modal-v23')
+
+old = '''  const singleClass = await desktop.locator(".esv-product-modal-gallery").getAttribute("class");
+  if (!singleClass?.includes("is-single")) fail("Single image mode missing", { singleClass });'''
+new = '''  const singleClass = await desktop.locator(".esv-product-modal-slide").first().getAttribute("class");
+  if (!singleClass?.includes("is-single")) fail("Single image mode missing", { singleClass });'''
+assert old in s
+s = s.replace(old, new)
+
+old = '''  const splitPresentation = await desktop.locator(".esv-product-modal-gallery-frame").getAttribute("data-two-image-presentation");
+  if (splitPresentation !== "split") fail("Compatible portraits did not keep split", { splitPresentation });'''
+new = '''  const splitClass = await desktop.locator(".esv-product-modal-slide").first().getAttribute("class");
+  if (!splitClass?.includes("is-pair")) fail("Compatible portraits did not keep split", { splitClass });'''
+assert old in s
+s = s.replace(old, new)
+s = s.replace('await recordScenario("desktop-two-portrait-split", { presentation: splitPresentation });', 'await recordScenario("desktop-two-portrait-split", { presentation: splitClass });')
+
+old = '''  const mixedPresentation = await desktop.locator(".esv-product-modal-gallery-frame").getAttribute("data-two-image-presentation");
+  if (mixedPresentation !== "stage") fail("Mixed ratios did not fall back to stage", { mixedPresentation });
+  const mixedGalleryClass = await desktop.locator(".esv-product-modal-gallery").getAttribute("class");
+  if (!mixedGalleryClass?.includes("is-two-stage")) fail("Two-image stage class missing", { mixedGalleryClass });'''
+new = '''  const mixedSlides = desktop.locator(".esv-product-modal-slide");
+  if (await mixedSlides.count() !== 2) fail("Mixed ratios did not keep two stages");
+  const mixedFirstClass = await mixedSlides.nth(0).getAttribute("class");
+  const mixedSecondClass = await mixedSlides.nth(1).getAttribute("class");
+  if (!mixedFirstClass?.includes("is-pair") || !mixedSecondClass?.includes("is-single")) {
+    fail("Mixed ratios produced the wrong stages", { mixedFirstClass, mixedSecondClass });
+  }'''
+assert old in s
+s = s.replace(old, new)
+s = s.replace('await desktop.getByRole("button", { name: "Próxima imagem da galeria" }).click();', 'await desktop.getByRole("button", { name: "Próximo slide da galeria" }).click();')
+s = s.replace('await recordScenario("desktop-two-mixed-stage", { presentation: mixedPresentation });', 'await recordScenario("desktop-two-mixed-stage", { presentation: [mixedFirstClass, mixedSecondClass] });')
+
+p.write_text(s)

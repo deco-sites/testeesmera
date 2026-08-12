@@ -1,3 +1,4 @@
+import Icon from "../../components/ui/Icon.tsx";
 import {
   loadResolvedHome,
   type ResolvedHome,
@@ -86,6 +87,7 @@ export default function Footer(
           rel="noopener noreferrer"
           aria-label="Falar com a Esméra no WhatsApp"
         >
+          <Icon id="WhatsApp" size={18} aria-hidden="true" />
           <span class="esv-whatsapp-label">
             {source.whatsappLabel || "WhatsApp"}
           </span>

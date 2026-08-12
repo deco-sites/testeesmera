@@ -19,8 +19,6 @@ interface ProductModalImage {
   fullHeight?: number;
 }
 
-type RuntimeGalleryMedia = EsmeraObject["gallery"][number];
-
 interface ProductFact {
   label: string;
   value: string;
@@ -56,7 +54,7 @@ function formatImagePosition(value: number): string {
 function toModalImage(
   src: string,
   alt: string,
-  media?: RuntimeGalleryMedia,
+  media?: EsmeraObject["gallery"][number],
 ): ProductModalImage {
   return {
     src,

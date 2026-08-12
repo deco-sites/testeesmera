@@ -51,7 +51,8 @@ function imageField(value: unknown): {
 function resolveImageField(
   value: unknown,
   baseURL: string,
-  preferred: "thumb" | "card" | "wide" | "territory" | "original" = "original",
+  preferred: "thumb" | "card" | "gallery" | "wide" | "territory" | "original" =
+    "original",
   fallbackAlt?: string | null,
 ) {
   const field = imageField(value);
@@ -190,7 +191,8 @@ export function resolveCallToAction(
 ): NavigationLink | null {
   const label = cta?.label?.trim();
   const destinationType = cta?.kind ?? cta?.destinationType;
-  const rawHref = cta?.href ?? (destinationType === "internal" ? cta?.path : cta?.url);
+  const rawHref = cta?.href ??
+    (destinationType === "internal" ? cta?.path : cta?.url);
   const href = sanitizePublicHref(rawHref);
   if (!label || !href) return null;
   return {

@@ -1,6 +1,6 @@
 /* ESMÉRA — Motion system v2
- * Source of truth: ESMERA_Auditoria_Motion_Transicoes_v1.pdf
- * Structural scroll scenes stay native: sticky + one lightweight RAF coordinator.
+ * Motion is intentionally non-structural: reveal, hero entrance and UI feedback.
+ * Scroll-driven section transforms were removed to preserve native document flow.
  */
 
 :root {
@@ -25,10 +25,7 @@
   animation-timing-function: var(--ease-out);
 }
 
-/* -------------------------------------------------------------------------- */
-/* Reveal contract                                                             */
-/* -------------------------------------------------------------------------- */
-
+/* Reveal contract */
 .esv-motion-ready .esv-reveal {
   opacity: 0;
   transform: translate3d(0, 12px, 0);
@@ -75,20 +72,7 @@
   transform: translate3d(0, 0, 0) scale(1);
 }
 
-/* -------------------------------------------------------------------------- */
-/* Hero — masked copy + contained parallax; never fixed                        */
-/* -------------------------------------------------------------------------- */
-
-.esv-hero {
-  overflow: hidden;
-  --esv-hero-y: 0px;
-}
-
-.esv-hero-picture {
-  transform: translate3d(0, var(--esv-hero-y), 0);
-  will-change: transform;
-}
-
+/* Hero entrance only — no scroll-linked parallax. */
 .esv-hero-picture img {
   transform-origin: center center;
   animation: esv-hero-settle 1000ms var(--ease-out) both;
@@ -129,52 +113,7 @@
   to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
-/* -------------------------------------------------------------------------- */
-/* Maison — editorial sticky composition                                      */
-/* -------------------------------------------------------------------------- */
-
-@media (min-width: 1024px) {
-  .esv-maison-scene {
-    height: 195svh;
-    padding-block: 0;
-  }
-
-  .esv-maison-scene .esv-maison-grid {
-    position: sticky;
-    top: var(--header-h);
-    min-height: calc(100svh - var(--header-h));
-  }
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-  .esv-maison-scene {
-    height: 150svh;
-    padding-block: 0;
-  }
-
-  .esv-maison-scene .esv-maison-grid {
-    position: sticky;
-    top: var(--header-h);
-    min-height: calc(100svh - var(--header-h));
-  }
-}
-
-.esv-maison-scene .esv-maison-main {
-  clip-path: inset(0 0 var(--esv-maison-main-clip, 0%) 0);
-  transform: translate3d(0, var(--esv-maison-main-y, 0px), 0);
-  will-change: transform, clip-path;
-}
-
-.esv-maison-scene .esv-maison-secondary {
-  clip-path: inset(0 0 var(--esv-maison-secondary-clip, 0%) 0);
-  transform: translate3d(0, var(--esv-maison-secondary-y, 0px), 0);
-  will-change: transform, clip-path;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Selection — media first, copy second                                        */
-/* -------------------------------------------------------------------------- */
-
+/* Selection */
 .esv-product-card .esv-product-media {
   transition: clip-path var(--motion-editorial) var(--ease-out);
 }
@@ -183,62 +122,7 @@
   margin-top: var(--space-8);
 }
 
-/* -------------------------------------------------------------------------- */
-/* Territory — three-panel curtain stack                                       */
-/* -------------------------------------------------------------------------- */
-
-@media (min-width: 768px) {
-  .esv-territory-track {
-    display: block;
-    height: auto;
-  }
-
-  .esv-territory-panel {
-    position: sticky;
-    top: var(--header-h);
-    height: calc(100svh - var(--header-h));
-    min-height: 680px;
-  }
-
-  .esv-territory-panel:nth-child(1) { z-index: 1; }
-  .esv-territory-panel:nth-child(2) { z-index: 2; }
-  .esv-territory-panel:nth-child(3) { z-index: 3; }
-
-  .esv-territory-panel::after {
-    content: "";
-    position: absolute;
-    z-index: 1;
-    inset: 0;
-    pointer-events: none;
-    background: #111210;
-    opacity: var(--esv-territory-dim, 0);
-  }
-
-  .esv-territory-media img,
-  .esv-territory-panel:hover .esv-territory-media img {
-    transform: scale(var(--esv-territory-scale, 1.02));
-    transition: none;
-    will-change: transform;
-  }
-
-  .esv-scenes-ready .esv-territory-copy {
-    opacity: .46;
-    clip-path: inset(0 0 16% 0);
-    transform: translate3d(0, 10px, 0);
-    transition:
-      opacity var(--motion-reveal) var(--ease-out),
-      transform var(--motion-reveal) var(--ease-out),
-      clip-path var(--motion-editorial) var(--ease-out);
-  }
-
-  .esv-scenes-ready .esv-territory-panel.is-active .esv-territory-copy {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-/* Remove legacy CTA styling accidentally attached to the kicker span. */
+/* Territory copy normalization retained for the current static three-column section. */
 .esv-territory-copy > .esv-kicker {
   display: block;
   min-height: 0;
@@ -247,10 +131,7 @@
   font-size: 11px;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Signature — safe hover + staged facts                                       */
-/* -------------------------------------------------------------------------- */
-
+/* Signature hover */
 @media (hover: hover) and (pointer: fine) {
   .esv-signature-media:not(.has-detail):hover .esv-signature-image-primary {
     opacity: 1;
@@ -267,21 +148,7 @@
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/* Matter interlude — breathing image                                          */
-/* -------------------------------------------------------------------------- */
-
-.esv-matter-interlude-media {
-  transform: translate3d(0, var(--esv-interlude-y, 0px), 0)
-    scale(var(--esv-interlude-scale, 1));
-  transform-origin: center center;
-  will-change: transform;
-}
-
-/* -------------------------------------------------------------------------- */
-/* UI state motion: overlays, modal, search and selection feedback             */
-/* -------------------------------------------------------------------------- */
-
+/* UI state motion */
 .esv-header-overlay,
 .esv-object-modal-backdrop {
   animation: esv-backdrop-in var(--motion-fast) var(--ease-standard) both;
@@ -339,59 +206,6 @@
   to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
-/* -------------------------------------------------------------------------- */
-/* Responsive degradation                                                      */
-/* -------------------------------------------------------------------------- */
-
-@media (max-width: 1023px) and (min-width: 768px) {
-  .esv-territory-panel {
-    min-height: 560px;
-  }
-}
-
-@media (max-width: 767px) {
-  .esv-maison-scene {
-    height: auto;
-    padding-block: var(--section-y);
-  }
-
-  .esv-maison-scene .esv-maison-grid {
-    position: relative;
-    top: auto;
-    min-height: 0;
-  }
-
-  .esv-maison-scene .esv-maison-main,
-  .esv-maison-scene .esv-maison-secondary,
-  .esv-matter-interlude-media {
-    clip-path: none;
-    transform: none;
-    will-change: auto;
-  }
-
-  .esv-territory-track {
-    display: block;
-    height: auto;
-  }
-
-  .esv-territory-panel {
-    position: relative;
-    top: auto;
-    height: clamp(420px, 70svh, 560px);
-    min-height: 0;
-  }
-
-  .esv-territory-media img,
-  .esv-territory-panel:hover .esv-territory-media img {
-    transform: none;
-    transition: transform var(--motion-medium) var(--ease-standard);
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/* Reduced motion                                                              */
-/* -------------------------------------------------------------------------- */
-
 @media (prefers-reduced-motion: reduce) {
   .esv-header,
   .esv-header-panel,
@@ -404,13 +218,9 @@
   .esv-enquiry-link sup,
   .esv-search-results,
   .esv-enquiry-list > div,
-  .esv-hero-picture,
   .esv-hero-picture img,
   .esv-hero-line,
   .esv-hero-cta,
-  .esv-maison-main,
-  .esv-maison-secondary,
-  .esv-matter-interlude-media,
   .esv-motion-ready .esv-reveal,
   .esv-motion-ready .esv-reveal-media {
     transition: none !important;
@@ -418,38 +228,9 @@
   }
 
   .esv-hero-line,
-  .esv-hero-cta {
-    opacity: 1;
-    clip-path: none;
-    transform: none;
-  }
-
-  .esv-maison-scene {
-    height: auto;
-    padding-block: var(--section-y);
-  }
-
-  .esv-maison-scene .esv-maison-grid,
-  .esv-territory-panel {
-    position: relative;
-    top: auto;
-    min-height: 0;
-  }
-
-  .esv-territory-panel {
-    height: clamp(420px, 70svh, 620px);
-  }
-
-  .esv-maison-main,
-  .esv-maison-secondary,
-  .esv-territory-media img,
-  .esv-matter-interlude-media {
-    clip-path: none !important;
-    transform: none !important;
-    will-change: auto !important;
-  }
-
-  .esv-scenes-ready .esv-territory-copy {
+  .esv-hero-cta,
+  .esv-motion-ready .esv-reveal,
+  .esv-motion-ready .esv-reveal-media {
     opacity: 1;
     clip-path: none;
     transform: none;

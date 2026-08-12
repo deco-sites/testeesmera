@@ -112,11 +112,14 @@ jobs:
             echo "::error title=P3 runtime::Canonical /contato missing from sitemap"
             exit 1
           fi
-          if [[ "$sitemap" == *'/pagina/sobre'* ]]; then
+
+          legacy_sobre_re='<loc>[^<]*/pagina/sobre/?</loc>'
+          legacy_contato_re='<loc>[^<]*/pagina/contato/?</loc>'
+          if [[ "$sitemap" =~ $legacy_sobre_re ]]; then
             echo "::error title=P3 runtime::Legacy /pagina/sobre leaked into sitemap"
             exit 1
           fi
-          if [[ "$sitemap" == *'/pagina/contato'* ]]; then
+          if [[ "$sitemap" =~ $legacy_contato_re ]]; then
             echo "::error title=P3 runtime::Legacy /pagina/contato leaked into sitemap"
             exit 1
           fi

@@ -1,4 +1,4 @@
-/* ESMÉRA — P1 accessibility correction
+/* ESMÉRA — accessibility correction layer
  * Keeps the quiet-luxury hierarchy while making secondary text AA-compliant
  * on the two light storefront surfaces. Loaded last on purpose.
  */
@@ -11,4 +11,12 @@
 .esv-collection-v2-search input::placeholder {
   color: var(--muted);
   opacity: 1;
+}
+
+.esv-whatsapp-sticky > svg {
+  display: block;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: currentColor;
 }

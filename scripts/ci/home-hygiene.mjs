@@ -33,6 +33,8 @@ try {
   const top = await page.evaluate(() => {
     const hero = document.querySelector(".esv-hero");
     const picture = document.querySelector(".esv-hero-picture");
+    const maisonMain = document.querySelector(".esv-maison-main");
+    const maisonSecondary = document.querySelector(".esv-maison-secondary");
     return {
       mainContentCount: document.querySelectorAll("#main-content").length,
       sceneHookCount: document.querySelectorAll("[data-motion-scene]").length,
@@ -41,6 +43,12 @@ try {
         : null,
       heroImageTransform: document.querySelector(".esv-hero-picture img")
         ? getComputedStyle(document.querySelector(".esv-hero-picture img")).transform
+        : null,
+      maisonMainTransform: maisonMain
+        ? getComputedStyle(maisonMain).transform
+        : null,
+      maisonSecondaryTransform: maisonSecondary
+        ? getComputedStyle(maisonSecondary).transform
         : null,
       heroHeight: hero?.getBoundingClientRect().height ?? 0,
     };
@@ -92,12 +100,12 @@ try {
     `Hero picture changed transform on scroll: ${top.heroPictureTransform} -> ${transition.heroPictureTransform}`,
   );
   invariant(
-    transition.maisonMainTransform === "none",
-    `Maison primary media still drifts on scroll: ${transition.maisonMainTransform}`,
+    transition.maisonMainTransform === top.maisonMainTransform,
+    `Maison primary media changed transform on scroll: ${top.maisonMainTransform} -> ${transition.maisonMainTransform}`,
   );
   invariant(
-    transition.maisonSecondaryTransform === null || transition.maisonSecondaryTransform === "none",
-    `Maison secondary media still drifts on scroll: ${transition.maisonSecondaryTransform}`,
+    transition.maisonSecondaryTransform === top.maisonSecondaryTransform,
+    `Maison secondary media changed transform on scroll: ${top.maisonSecondaryTransform} -> ${transition.maisonSecondaryTransform}`,
   );
   invariant(transition.sceneHookCount === 0, "Legacy scene hooks reappeared after scroll");
 

@@ -52,6 +52,7 @@ export default function PayloadHome({ data }: { data: Data }) {
       {resolved.signature?.map((slide, index) => (
         <SignatureObject
           key={`${slide.product?.id ?? "signature"}-${index}`}
+          instanceKey={`${slide.product?.id ?? "signature"}-${index}`}
           {...slide}
         />
       ))}

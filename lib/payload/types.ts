@@ -34,6 +34,7 @@ export interface PayloadMedia {
     thumb?: PayloadMediaSize | null;
     card?: PayloadMediaSize | null;
     wide?: PayloadMediaSize | null;
+    gallery?: PayloadMediaSize | null;
     territory?: PayloadMediaSize | null;
   } | null;
   _status?: "draft" | "published" | null;
@@ -290,6 +291,11 @@ export interface EsmeraObject {
   gallery: Array<{
     url: string;
     alt: string;
+    width?: number;
+    height?: number;
+    fullUrl?: string;
+    fullWidth?: number;
+    fullHeight?: number;
     key: string;
     role: "cover" | "detail" | "context" | "scale";
   }>;

@@ -88,26 +88,35 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          home_html="$(curl --silent --fail http://127.0.0.1:8000/)"
+
+          if ! home_html="$(curl --silent --show-error --fail http://127.0.0.1:8000/)"; then
+            echo "::error title=P3 runtime::Home request failed"
+            tail -n 80 /tmp/esmera-p3-preview.log || true
+            exit 1
+          fi
           if [[ "$home_html" != *'rel="canonical"'* ]]; then
-            echo "Home canonical missing"
+            echo "::error title=P3 runtime::Home canonical missing"
             exit 1
           fi
 
-          sitemap="$(curl --silent --fail http://127.0.0.1:8000/sitemap.xml)"
+          if ! sitemap="$(curl --silent --show-error --fail http://127.0.0.1:8000/sitemap.xml)"; then
+            echo "::error title=P3 runtime::Sitemap request failed"
+            tail -n 80 /tmp/esmera-p3-preview.log || true
+            exit 1
+          fi
           if [[ "$sitemap" != *'/sobre</loc>'* ]]; then
-            echo "Canonical /sobre missing from sitemap"
+            echo "::error title=P3 runtime::Canonical /sobre missing from sitemap"
             exit 1
           fi
           if [[ "$sitemap" != *'/contato</loc>'* ]]; then
-            echo "Canonical /contato missing from sitemap"
+            echo "::error title=P3 runtime::Canonical /contato missing from sitemap"
             exit 1
           fi
           if [[ "$sitemap" == *'/pagina/sobre'* ]]; then
-            echo "Legacy /pagina/sobre leaked into sitemap"
+            echo "::error title=P3 runtime::Legacy /pagina/sobre leaked into sitemap"
             exit 1
           fi
           if [[ "$sitemap" == *'/pagina/contato'* ]]; then
-            echo "Legacy /pagina/contato leaked into sitemap"
+            echo "::error title=P3 runtime::Legacy /pagina/contato leaked into sitemap"
             exit 1
           fi

@@ -57,7 +57,7 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
   };
 
   return (
-    <article
+    <div
       class={`esv-product-card${vm.hoverImage ? " has-detail" : ""}`}
       role="listitem"
       data-product-id={vm.id}
@@ -147,6 +147,6 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
             )}
         </div>
       </div>
-    </article>
+    </div>
   );
 }

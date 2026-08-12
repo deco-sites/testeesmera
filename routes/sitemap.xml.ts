@@ -1,4 +1,5 @@
 import type { Handlers } from "$fresh/server.ts";
+import { isLegacyEditorialAlias } from "../lib/esmera/canonicalRoutes.ts";
 import { listProducts } from "../lib/payload/loaders.ts";
 import { listStorefrontCategories } from "../lib/payload/navigationLoader.ts";
 
@@ -30,7 +31,10 @@ export const handler: Handlers = {
       "/politica-de-privacidade",
       "/termos",
       ...categoryItems
-        .filter((category) => !category.external && category.href.startsWith("/"))
+        .filter((category) =>
+          !category.external && category.href.startsWith("/") &&
+          !isLegacyEditorialAlias(category.href)
+        )
         .map((category) => category.href),
       ...products.map((product) => `/produto/${product.slug}`),
     ]);

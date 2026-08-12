@@ -1,0 +1,98 @@
+name: Storefront P3 validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "components/esmera/ObjectCard.tsx"
+      - "components/esmera/StorefrontSEO.tsx"
+      - "lib/esmera/canonicalRoutes.ts"
+      - "routes/pagina/[slug].tsx"
+      - "routes/sitemap.xml.ts"
+      - "sections/Esmera/PayloadHome.tsx"
+      - "tests/seo/storefront_p3_contract_test.ts"
+      - ".github/workflows/storefront-p3-validation.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "components/esmera/ObjectCard.tsx"
+      - "components/esmera/StorefrontSEO.tsx"
+      - "lib/esmera/canonicalRoutes.ts"
+      - "routes/pagina/[slug].tsx"
+      - "routes/sitemap.xml.ts"
+      - "sections/Esmera/PayloadHome.tsx"
+      - "tests/seo/storefront_p3_contract_test.ts"
+      - ".github/workflows/storefront-p3-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  p3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      PAYLOAD_API_URL: https://esmeracms-green.vercel.app
+      PORT: "8000"
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Format P3 files
+        run: >-
+          deno fmt --check
+          components/esmera/ObjectCard.tsx
+          lib/esmera/canonicalRoutes.ts
+          'routes/pagina/[slug].tsx'
+          routes/sitemap.xml.ts
+          sections/Esmera/PayloadHome.tsx
+          tests/seo/storefront_p3_contract_test.ts
+          .github/workflows/storefront-p3-validation.yml
+
+      - name: Lint P3 files
+        run: >-
+          deno lint
+          components/esmera/ObjectCard.tsx
+          lib/esmera/canonicalRoutes.ts
+          'routes/pagina/[slug].tsx'
+          routes/sitemap.xml.ts
+          sections/Esmera/PayloadHome.tsx
+          tests/seo/storefront_p3_contract_test.ts
+
+      - name: Typecheck
+        run: deno check dev.ts main.ts
+
+      - name: P3 contracts
+        run: deno test -A tests/seo/storefront_p3_contract_test.ts
+
+      - name: Build
+        run: deno task build
+
+      - name: Start preview
+        shell: bash
+        run: |
+          deno task preview > /tmp/esmera-p3-preview.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --silent --fail http://127.0.0.1:8000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/esmera-p3-preview.log
+          exit 1
+
+      - name: Verify canonical and sitemap
+        shell: bash
+        run: |
+          set -euo pipefail
+          home_html="$(curl --silent --fail http://127.0.0.1:8000/)"
+          echo "$home_html" | grep -Eiq '<link[^>]+rel="canonical"[^>]+href="[^"]+"|<link[^>]+href="[^"]+"[^>]+rel="canonical"'
+
+          sitemap="$(curl --silent --fail http://127.0.0.1:8000/sitemap.xml)"
+          echo "$sitemap" | grep -q '<loc>http://127.0.0.1:8000/sobre</loc>'
+          echo "$sitemap" | grep -q '<loc>http://127.0.0.1:8000/contato</loc>'
+          if echo "$sitemap" | grep -q '/pagina/sobre'; then exit 1; fi
+          if echo "$sitemap" | grep -q '/pagina/contato'; then exit 1; fi

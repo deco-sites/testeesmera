@@ -14,12 +14,12 @@ import SignatureObject from "./SignatureObject.tsx";
 export const loader = async () => ({ data: await StorefrontPageData() });
 type Data = Awaited<ReturnType<typeof StorefrontPageData>>;
 
-function homeCanonical(frontendURL?: string | null): string | undefined {
-  if (!frontendURL) return undefined;
+function homeCanonical(frontendURL?: string | null): string {
+  if (!frontendURL) return "/";
   try {
     return new URL("/", frontendURL).toString();
   } catch {
-    return undefined;
+    return "/";
   }
 }
 

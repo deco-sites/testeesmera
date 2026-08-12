@@ -1,5 +1,6 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import StorefrontLayout from "../../components/esmera/StorefrontLayout.tsx";
+import { getDedicatedEditorialPath } from "../../lib/esmera/canonicalRoutes.ts";
 import { toSEO } from "../../lib/payload/adapters.ts";
 import { getStorefrontCategoryBySlug } from "../../lib/payload/navigationLoader.ts";
 import { getPageChrome } from "../../lib/payload/pageData.ts";
@@ -13,8 +14,9 @@ interface Data {
 
 export const handler: Handlers<Data> = {
   async GET(req, ctx) {
-    if (ctx.params.slug === "sobre" || ctx.params.slug === "contato") {
-      return Response.redirect(new URL(`/${ctx.params.slug}`, req.url), 308);
+    const dedicatedPath = getDedicatedEditorialPath(ctx.params.slug);
+    if (dedicatedPath) {
+      return Response.redirect(new URL(dedicatedPath, req.url), 308);
     }
     const [category, chrome] = await Promise.all([
       getStorefrontCategoryBySlug(ctx.params.slug),

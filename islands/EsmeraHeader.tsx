@@ -470,6 +470,7 @@ export default function EsmeraHeader({
             height="369"
             loading="eager"
             decoding="async"
+            style={isSolid ? undefined : "filter:brightness(0) invert(1)"}
           />
         </a>
         <div class="esv-header-actions">

@@ -300,11 +300,29 @@ body.esv-product-modal-open {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  padding: clamp(54px, 5vw, 78px) clamp(34px, 4vw, 64px) clamp(34px, 4vw, 60px);
-  overflow-y: auto;
+  overflow: hidden;
   border-left: 1px solid var(--line);
+}
+
+.esv-product-modal-buybox-scroll {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(54px, 5vw, 78px) clamp(34px, 4vw, 64px) 30px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--muted) transparent;
+}
+
+.esv-product-modal-buybox-footer {
+  position: sticky;
+  z-index: 4;
+  bottom: 0;
+  flex: 0 0 auto;
+  padding: 12px clamp(34px, 4vw, 64px) clamp(26px, 3vw, 40px);
+  border-top: 1px solid var(--line);
+  background: var(--bg);
 }
 
 .esv-product-modal-heading h2 {
@@ -419,8 +437,8 @@ body.esv-product-modal-open {
   gap: 24px;
   width: 100%;
   min-height: 54px;
-  margin-top: auto;
-  padding: 24px 0 0;
+  margin: 0;
+  padding: 0;
   border: 0;
   border-bottom: 1px solid var(--ink);
   background: transparent;
@@ -455,8 +473,8 @@ body.esv-product-modal-open {
 
 .esv-product-modal-related-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 12px;
 }
 
 .esv-product-modal-related-card {
@@ -752,8 +770,12 @@ body.esv-product-modal-open {
     border-left: 0;
   }
 
-  .esv-product-modal-add {
-    margin-top: 34px;
+  .esv-product-modal-buybox-scroll {
+    overflow: visible;
+  }
+
+  .esv-product-modal-buybox-footer {
+    padding-bottom: 30px;
   }
 
   .esv-product-modal-related-grid {
@@ -856,7 +878,14 @@ body.esv-product-modal-open {
 
   .esv-product-modal-buybox {
     min-height: auto;
-    padding: 40px var(--page-x) max(48px, env(safe-area-inset-bottom));
+  }
+
+  .esv-product-modal-buybox-scroll {
+    padding: 40px var(--page-x) 24px;
+  }
+
+  .esv-product-modal-buybox-footer {
+    padding: 10px var(--page-x) max(24px, env(safe-area-inset-bottom));
   }
 
   .esv-product-modal-related-grid {
@@ -906,7 +935,8 @@ body.esv-product-modal-open {
 }
 
 @media (max-width: 429px) {
-  .esv-product-modal-buybox {
+  .esv-product-modal-buybox-scroll,
+  .esv-product-modal-buybox-footer {
     padding-inline: 18px;
   }
 }

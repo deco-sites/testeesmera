@@ -2,8 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import ProductMediaViewer from "../components/esmera/ProductMediaViewer.tsx";
 import { getAvailabilityMeta } from "../components/esmera/availability.ts";
 import {
-  getTwoImagePresentation,
-  type TwoImagePresentation,
+  buildGallerySlides,
+  calculateGalleryFrameRatio,
+  type GallerySlide,
 } from "../lib/esmera/productMediaPresentation.ts";
 import { buildInstallmentFromPriceCents } from "../lib/esmera/productCard.ts";
 import type { EsmeraObject, EsmeraVariant } from "../lib/payload/types.ts";
@@ -170,6 +171,127 @@ function ArrowIcon({ direction }: { direction: "previous" | "next" }) {
   );
 }
 
+function modalImageSrcSet(image: ProductModalImage): string | undefined {
+  const candidates = [
+    image.width && `${image.src} ${image.width}w`,
+    image.fullWidth && image.fullSrc && image.fullSrc !== image.src &&
+    `${image.fullSrc} ${image.fullWidth}w`,
+  ].filter((candidate): candidate is string => Boolean(candidate));
+  return candidates.length > 1 ? candidates.join(", ") : undefined;
+}
+
+interface GalleryFrameProps {
+  view: "desktop" | "compact";
+  slides: GallerySlide[];
+  frameRatio: number;
+  activeIndex: number;
+  images: ProductModalImage[];
+  galleryRef: { current: HTMLDivElement | null };
+  onActiveIndexChange: (index: number) => void;
+  onOpenViewer: (index: number, trigger: HTMLElement) => void;
+}
+
+function GalleryFrame({
+  view,
+  slides,
+  frameRatio,
+  activeIndex,
+  images,
+  galleryRef,
+  onActiveIndexChange,
+  onOpenViewer,
+}: GalleryFrameProps) {
+  const positionLabel = `${formatImagePosition(activeIndex + 1)} / ${
+    formatImagePosition(slides.length)
+  }`;
+  const changeSlide = (delta: number) => {
+    onActiveIndexChange(
+      (activeIndex + delta + slides.length) % slides.length,
+    );
+  };
+
+  return (
+    <div
+      class={`esv-product-modal-gallery-frame is-${view}`}
+      style={`--esv-modal-gallery-ratio:${frameRatio}`}
+    >
+      <div ref={galleryRef} class="esv-product-modal-gallery">
+        {slides.map((slide, slideIndex) => (
+          <div
+            class={`esv-product-modal-slide is-${slide.kind}${
+              slideIndex === activeIndex ? " is-active" : ""
+            }`}
+            data-gallery-index={slideIndex}
+            key={`${slide.kind}-${slide.indices.join("-")}`}
+          >
+            {slide.indices.map((imageIndex) => {
+              const image = images[imageIndex];
+              return (
+                <button
+                  key={image.src}
+                  class="esv-product-modal-image"
+                  type="button"
+                  aria-label={`Ampliar imagem ${
+                    imageIndex + 1
+                  } de ${images.length}`}
+                  onClick={(event) =>
+                    onOpenViewer(imageIndex, event.currentTarget)}
+                >
+                  <img
+                    src={image.src}
+                    srcSet={modalImageSrcSet(image)}
+                    sizes={slide.kind === "pair"
+                      ? "(min-width: 1024px) 35vw, 100vw"
+                      : "(min-width: 1024px) 70vw, 100vw"}
+                    alt={image.alt}
+                    width={image.width ?? 900}
+                    height={image.height ?? 1125}
+                    loading={imageIndex === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                  />
+                  <span aria-hidden="true">Ampliar</span>
+                </button>
+              );
+            })}
+            {slide.kind === "pair" && slide.indices.length === 1 && (
+              <div class="esv-product-modal-empty-cell" aria-hidden="true" />
+            )}
+          </div>
+        ))}
+
+        {slides.length > 1 && (
+          <div class="esv-product-modal-gallery-controls">
+            <button
+              type="button"
+              aria-label="Slide anterior da galeria"
+              onClick={() => changeSlide(-1)}
+            >
+              <ArrowIcon direction="previous" />
+            </button>
+            <span aria-live="polite">{positionLabel}</span>
+            <button
+              type="button"
+              aria-label="Próximo slide da galeria"
+              onClick={() => changeSlide(1)}
+            >
+              <ArrowIcon direction="next" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {slides.length > 1 && (
+        <span
+          class="esv-product-modal-gallery-mobile-counter"
+          aria-hidden="true"
+        >
+          {positionLabel}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export default function ProductModal() {
   const [product, setProduct] = useState<EsmeraObject | null>(null);
   const [phase, setPhase] = useState<ModalPhase>("unmounted");
@@ -180,13 +302,13 @@ export default function ProductModal() {
   const [selectedVariant, setSelectedVariant] = useState<
     EsmeraVariant | undefined
   >();
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeDesktopIndex, setActiveDesktopIndex] = useState(0);
+  const [activeCompactIndex, setActiveCompactIndex] = useState(0);
   const [zoomIndex, setZoomIndex] = useState<number | null>(null);
-  const [gallerySize, setGallerySize] = useState({ width: 0, height: 0 });
   const zoomIndexRef = useRef<number | null>(null);
   const modalRef = useRef<HTMLElement>(null);
-  const galleryRef = useRef<HTMLDivElement>(null);
-  const galleryFrameRef = useRef<HTMLDivElement>(null);
+  const desktopGalleryRef = useRef<HTMLDivElement>(null);
+  const compactGalleryRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
   const viewerTriggerRef = useRef<HTMLElement | null>(null);
   const phaseRef = useRef<ModalPhase>("unmounted");
@@ -201,6 +323,22 @@ export default function ProductModal() {
   const images = useMemo(
     () => product ? getProductModalImages(product) : [],
     [product],
+  );
+  const desktopSlides = useMemo(
+    () => buildGallerySlides(images, "desktop"),
+    [images],
+  );
+  const compactSlides = useMemo(
+    () => buildGallerySlides(images, "compact"),
+    [images],
+  );
+  const desktopFrameRatio = useMemo(
+    () => calculateGalleryFrameRatio(desktopSlides, "desktop"),
+    [desktopSlides],
+  );
+  const compactFrameRatio = useMemo(
+    () => calculateGalleryFrameRatio(compactSlides, "compact"),
+    [compactSlides],
   );
   const facts = useMemo(
     () => product ? getProductFacts(product) : [],
@@ -257,8 +395,8 @@ export default function ProductModal() {
   };
 
   const selectProduct = (next: EsmeraObject) => {
-    setActiveIndex(0);
-    setGallerySize({ width: 0, height: 0 });
+    setActiveDesktopIndex(0);
+    setActiveCompactIndex(0);
     setProduct(next);
     setSelectedVariant(
       next.variants.find((variant) => !variant.disabled),
@@ -268,7 +406,8 @@ export default function ProductModal() {
     updateZoomIndex(null);
     requestAnimationFrame(() => {
       modalRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
-      galleryRef.current?.scrollTo({ left: 0, behavior: "auto" });
+      desktopGalleryRef.current?.scrollTo({ left: 0, behavior: "auto" });
+      compactGalleryRef.current?.scrollTo({ left: 0, behavior: "auto" });
     });
   };
 
@@ -403,29 +542,8 @@ export default function ProductModal() {
   }, [isMounted, product?.id, product?.category]);
 
   useEffect(() => {
-    if (!product || images.length !== 2) return;
-    const frame = galleryFrameRef.current;
-    if (!frame) return;
-
-    const measure = () => {
-      const rect = frame.getBoundingClientRect();
-      setGallerySize({ width: rect.width, height: rect.height });
-    };
-
-    measure();
-    if (typeof ResizeObserver !== "undefined") {
-      const observer = new ResizeObserver(measure);
-      observer.observe(frame);
-      return () => observer.disconnect();
-    }
-
-    globalThis.addEventListener("resize", measure);
-    return () => globalThis.removeEventListener("resize", measure);
-  }, [product, images.length]);
-
-  useEffect(() => {
     if (!product || images.length < 2) return;
-    const gallery = galleryRef.current;
+    const gallery = compactGalleryRef.current;
     if (!gallery || typeof globalThis.matchMedia !== "function") return;
     if (typeof IntersectionObserver === "undefined") return;
 
@@ -446,7 +564,7 @@ export default function ProductModal() {
             .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
           if (!(visible?.target instanceof HTMLElement)) return;
           const nextIndex = Number(visible.target.dataset.galleryIndex);
-          if (Number.isInteger(nextIndex)) setActiveIndex(nextIndex);
+          if (Number.isInteger(nextIndex)) setActiveCompactIndex(nextIndex);
         },
         { root: gallery, threshold: [0.65, 0.85] },
       );
@@ -516,27 +634,6 @@ export default function ProductModal() {
   const installment = activeIsInquiry
     ? null
     : buildInstallmentFromPriceCents(activePriceCents);
-  const twoImagePresentation: TwoImagePresentation = images.length === 2
-    ? getTwoImagePresentation(
-      images,
-      gallerySize.width,
-      gallerySize.height,
-    )
-    : "stage";
-  const usesStage = images.length > 2 ||
-    (images.length === 2 && twoImagePresentation === "stage");
-  const galleryMode = images.length === 1
-    ? "is-single"
-    : images.length === 2 && !usesStage
-    ? "is-double"
-    : "is-multiple";
-  const galleryClass = `${galleryMode}${
-    images.length === 2 && usesStage ? " is-two-stage" : ""
-  }`;
-  const positionLabel = `${formatImagePosition(activeIndex + 1)} / ${
-    formatImagePosition(images.length)
-  }`;
-
   const addToCart = () => {
     const cartProduct = selectedVariant
       ? {
@@ -589,76 +686,26 @@ export default function ProductModal() {
             <CloseIcon />
           </button>
 
-          <div
-            ref={galleryFrameRef}
-            class="esv-product-modal-gallery-frame"
-            data-two-image-presentation={images.length === 2
-              ? twoImagePresentation
-              : undefined}
-          >
-            <div
-              ref={galleryRef}
-              class={`esv-product-modal-gallery ${galleryClass}`}
-            >
-              {images.map((image, index) => (
-                <button
-                  key={image.src}
-                  class={`esv-product-modal-image ${
-                    index === activeIndex ? "is-active" : ""
-                  }`}
-                  type="button"
-                  aria-label={`Ampliar imagem ${index + 1} de ${product.title}`}
-                  data-gallery-index={index}
-                  onClick={(event) => openViewer(index, event.currentTarget)}
-                >
-                  <img
-                    src={image.src}
-                    alt={image.alt}
-                    width={image.width ?? 900}
-                    height={image.height ?? 1125}
-                    loading={index === 0 ? "eager" : "lazy"}
-                    decoding="async"
-                  />
-                  <span aria-hidden="true">Ampliar</span>
-                </button>
-              ))}
-
-              {usesStage && images.length > 1 && (
-                <div class="esv-product-modal-gallery-controls">
-                  <button
-                    type="button"
-                    aria-label="Imagem anterior da galeria"
-                    onClick={() =>
-                      setActiveIndex((current) =>
-                        (current - 1 + images.length) % images.length
-                      )}
-                  >
-                    <ArrowIcon direction="previous" />
-                  </button>
-                  <span aria-live="polite">{positionLabel}</span>
-                  <button
-                    type="button"
-                    aria-label="Próxima imagem da galeria"
-                    onClick={() =>
-                      setActiveIndex((current) =>
-                        (current + 1) % images.length
-                      )}
-                  >
-                    <ArrowIcon direction="next" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {images.length > 1 && (
-              <span
-                class="esv-product-modal-gallery-mobile-counter"
-                aria-hidden="true"
-              >
-                {positionLabel}
-              </span>
-            )}
-          </div>
+          <GalleryFrame
+            view="desktop"
+            slides={desktopSlides}
+            frameRatio={desktopFrameRatio}
+            activeIndex={activeDesktopIndex}
+            images={images}
+            galleryRef={desktopGalleryRef}
+            onActiveIndexChange={setActiveDesktopIndex}
+            onOpenViewer={openViewer}
+          />
+          <GalleryFrame
+            view="compact"
+            slides={compactSlides}
+            frameRatio={compactFrameRatio}
+            activeIndex={activeCompactIndex}
+            images={images}
+            galleryRef={compactGalleryRef}
+            onActiveIndexChange={setActiveCompactIndex}
+            onOpenViewer={openViewer}
+          />
 
           <div class="esv-product-modal-buybox">
             <div class="esv-product-modal-heading">

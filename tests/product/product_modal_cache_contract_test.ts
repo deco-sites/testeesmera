@@ -1,48 +1,26 @@
-import { assert, assertStringIncludes } from "@std/assert";
+import { assert, assertFalse, assertStringIncludes } from "@std/assert";
 
-Deno.test("product modal styles are revisioned and media fidelity layer loads last", async () => {
+Deno.test("product modal has one revisioned stylesheet with no override layers", async () => {
   const app = await Deno.readTextFile("routes/_app.tsx");
-  const guard = await Deno.readTextFile(
-    "static/esmera-product-modal-frame-fix.css",
-  );
-  const fidelity = await Deno.readTextFile(
-    "static/esmera-product-media-v16.css",
-  );
+  const css = await Deno.readTextFile("static/esmera-product-modal.css");
 
   assertStringIncludes(
     app,
-    'const storefrontStyleRevision = "2026-08-12-responsive-modal-header-v19";',
+    'const storefrontStyleRevision = "2026-08-12-orientation-gallery-header-v22";',
   );
   assertStringIncludes(
     app,
-    "/esmera-product-modal-v2.css?v=${storefrontStyleRevision}",
+    "/esmera-product-modal.css?v=${storefrontStyleRevision}",
   );
-  assertStringIncludes(
-    app,
-    "/esmera-product-modal-frame-fix.css?v=${storefrontStyleRevision}",
-  );
-  assertStringIncludes(
-    app,
-    "/esmera-product-media-v16.css?v=${storefrontStyleRevision}",
-  );
-
-  const modalStyles = app.indexOf("/esmera-product-modal-v2.css");
-  const frameGuard = app.indexOf("/esmera-product-modal-frame-fix.css");
-  const mediaFidelity = app.indexOf("/esmera-product-media-v16.css");
-  assert(modalStyles >= 0);
-  assert(frameGuard > modalStyles);
-  assert(mediaFidelity > frameGuard);
-
-  assertStringIncludes(guard, ".esv-product-modal-gallery-frame");
-  assertStringIncludes(guard, "width: 100%;");
-  assertStringIncludes(guard, "height: auto;");
-  assertStringIncludes(guard, "--esv-modal-gallery-ratio: 6 / 5;");
-  assertStringIncludes(guard, "--esv-modal-gallery-ratio: 1 / 1;");
-  assertStringIncludes(guard, "--esv-modal-gallery-ratio: 4 / 5;");
-  assertStringIncludes(guard, "aspect-ratio: var(--esv-modal-gallery-ratio);");
-  assertStringIncludes(guard, "align-self: stretch;");
-  assertStringIncludes(guard, "justify-self: stretch;");
-  assertStringIncludes(fidelity, "object-fit: cover !important");
-  assertStringIncludes(fidelity, ".esv-product-viewer-stage");
-  assertStringIncludes(fidelity, "touch-action: none;");
+  assertFalse(app.includes("esmera-product-modal-v2.css"));
+  assertFalse(app.includes("esmera-product-modal-frame-fix.css"));
+  assertFalse(app.includes("esmera-product-media-v16.css"));
+  assertFalse(app.includes("esmera-hotfix-product-modal.css"));
+  assertFalse(css.includes("!important"));
+  assertStringIncludes(css, "aspect-ratio: var(--esv-modal-gallery-ratio);");
+  assertStringIncludes(css, "object-fit: contain;");
+  assertStringIncludes(css, "--esv-gallery-pair-gap: 0px;");
+  assertStringIncludes(css, ".esv-product-viewer-stage");
+  assertStringIncludes(css, "touch-action: none;");
+  assert(css.match(/\.esv-product-modal-gallery-frame\s*\{/g)?.length === 1);
 });

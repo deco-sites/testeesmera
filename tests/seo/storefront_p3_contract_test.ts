@@ -5,7 +5,8 @@ import {
 } from "../../lib/esmera/canonicalRoutes.ts";
 
 Deno.test("P3 product cards keep list semantics on an allowed host element", async () => {
-  const card = await Deno.readTextFile("components/esmera/ObjectCard.tsx");
+  const card = (await Deno.readTextFile("components/esmera/ObjectCard.tsx"))
+    .replaceAll("\r\n", "\n");
 
   assertStringIncludes(card, 'role="listitem"');
   assertStringIncludes(card, "<div\n      class={`esv-product-card");

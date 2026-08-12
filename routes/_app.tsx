@@ -8,13 +8,10 @@ export default defineApp(async (_req, ctx) => {
   // Static CSS can outlive a branch deploy in Deco's CDN when the release
   // revision remains stable. Bump this token whenever the storefront chrome
   // changes so preview environments cannot mix new JSX with stale styles.
-  const storefrontStyleRevision = "2026-08-12-responsive-modal-header-v19";
+  const storefrontStyleRevision = "2026-08-12-orientation-gallery-header-v22";
   // Home-only cache bust. Keeps the independently certified product-media
   // contract stable while invalidating homepage motion/interaction CSS.
   const homeStyleRevision = "2026-08-11-home-hygiene-v20";
-  // Modal-only cache bust. Keeps unrelated storefront CSS on the stable v16
-  // revision while forcing Deco/CDN to fetch the corrected media layer.
-  const productMediaPatchRevision = "2026-08-12-modal-gallery-v19";
   return (
     <>
       <Theme colorScheme="any" />
@@ -46,27 +43,7 @@ export default defineApp(async (_req, ctx) => {
         <link rel="stylesheet" href={asset("/esmera-commerce-refine.css")} />
         <link
           rel="stylesheet"
-          href={asset("/esmera-hotfix-product-modal.css")}
-        />
-        <link
-          rel="stylesheet"
-          href={asset(
-            `/esmera-product-modal-v2.css?v=${storefrontStyleRevision}`,
-          )}
-        />
-        <link
-          rel="stylesheet"
-          href={asset(
-            `/esmera-product-modal-frame-fix.css?v=${storefrontStyleRevision}`,
-          )}
-        />
-        <link
-          rel="stylesheet"
-          href={`${
-            asset(
-              `/esmera-product-media-v16.css?v=${storefrontStyleRevision}`,
-            )
-          }&patch=${productMediaPatchRevision}`}
+          href={asset(`/esmera-product-modal.css?v=${storefrontStyleRevision}`)}
         />
         <link
           rel="stylesheet"

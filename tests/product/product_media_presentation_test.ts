@@ -1,8 +1,9 @@
 import { assert, assertAlmostEquals, assertEquals } from "@std/assert";
 import {
+  buildGallerySlides,
+  calculateGalleryFrameRatio,
   clampViewerTransform,
-  getContainCoverage,
-  getTwoImagePresentation,
+  classifyOrientation,
   mediaAspectRatio,
 } from "../../lib/esmera/productMediaPresentation.ts";
 import { resolvePayloadMedia } from "../../lib/payload/media.ts";
@@ -17,50 +18,81 @@ Deno.test("media aspect ratio requires real positive dimensions", () => {
   assertEquals(mediaAspectRatio({}), null);
 });
 
-Deno.test("contain coverage reports how much of the stage can be used without crop", () => {
-  assertAlmostEquals(getContainCoverage(0.8, 0.568), 0.71, 0.01);
-  assert(getContainCoverage(16 / 9, 0.568) < 0.35);
+Deno.test("one horizontal image keeps its natural desktop ratio", () => {
+  const slides = buildGallerySlides([{ width: 1500, height: 1000 }], "desktop");
+  assertEquals(slides, [{ kind: "single", indices: [0], ratio: 1.5 }]);
+  assertAlmostEquals(calculateGalleryFrameRatio(slides, "desktop"), 1.5);
 });
 
-Deno.test("two compatible portrait photos keep editorial split", () => {
-  assertEquals(
-    getTwoImagePresentation(
-      [{ width: 900, height: 1125 }, { width: 900, height: 1125 }],
-      900,
-      792,
-    ),
-    "split",
-  );
+Deno.test("one vertical image uses an editorial half-pair only on desktop", () => {
+  const images = [{ width: 800, height: 1000 }];
+  const desktop = buildGallerySlides(images, "desktop");
+  const compact = buildGallerySlides(images, "compact");
+  assertEquals(desktop, [{ kind: "pair", indices: [0], ratio: 1.6 }]);
+  assertEquals(compact, [{ kind: "single", indices: [0], ratio: 0.8 }]);
+  assertAlmostEquals(calculateGalleryFrameRatio(desktop, "desktop"), 1.6);
+  assertAlmostEquals(calculateGalleryFrameRatio(compact, "compact"), 0.8);
 });
 
-Deno.test("mixed or unknown ratios fall back to one dominant stage", () => {
-  assertEquals(
-    getTwoImagePresentation(
-      [{ width: 900, height: 1125 }, { width: 1600, height: 900 }],
-      900,
-      792,
-    ),
-    "stage",
+Deno.test("two vertical images become one continuous diptych", () => {
+  const slides = buildGallerySlides(
+    [{ width: 800, height: 1000 }, { width: 760, height: 1000 }],
+    "desktop",
   );
-  assertEquals(
-    getTwoImagePresentation(
-      [{ width: 900, height: 1125 }, {}],
-      900,
-      792,
-    ),
-    "stage",
-  );
+  assertEquals(slides, [{ kind: "pair", indices: [0, 1], ratio: 1.52 }]);
+  assertAlmostEquals(calculateGalleryFrameRatio(slides, "desktop"), 1.52);
 });
 
-Deno.test("mixed ratios never become split just because the modal is shallow", () => {
-  assertEquals(
-    getTwoImagePresentation(
-      [{ width: 900, height: 1125 }, { width: 1600, height: 900 }],
-      954,
-      400,
-    ),
-    "stage",
+Deno.test("three vertical images leave the last right cell intentionally empty", () => {
+  const slides = buildGallerySlides(
+    Array.from({ length: 3 }, () => ({ width: 800, height: 1000 })),
+    "desktop",
   );
+  assertEquals(slides, [
+    { kind: "pair", indices: [0, 1], ratio: 1.6 },
+    { kind: "pair", indices: [2], ratio: 1.6 },
+  ]);
+  assertAlmostEquals(calculateGalleryFrameRatio(slides, "desktop"), 1.6);
+});
+
+Deno.test("four vertical images become two diptychs", () => {
+  const slides = buildGallerySlides(
+    Array.from({ length: 4 }, () => ({ width: 900, height: 1125 })),
+    "desktop",
+  );
+  assertEquals(slides, [
+    { kind: "pair", indices: [0, 1], ratio: 1.6 },
+    { kind: "pair", indices: [2, 3], ratio: 1.6 },
+  ]);
+});
+
+Deno.test("interleaved vertical and horizontal media preserve order", () => {
+  const slides = buildGallerySlides([
+    { width: 800, height: 1000 },
+    { width: 1500, height: 1000 },
+    { width: 800, height: 1000 },
+  ], "desktop");
+  assertEquals(slides, [
+    { kind: "pair", indices: [0], ratio: 1.6 },
+    { kind: "single", indices: [1], ratio: 1.5 },
+    { kind: "pair", indices: [2], ratio: 1.6 },
+  ]);
+  assertAlmostEquals(calculateGalleryFrameRatio(slides, "desktop"), 1.5);
+});
+
+Deno.test("unknown dimensions use a single fallback slide", () => {
+  assertEquals(classifyOrientation({}), "unknown");
+  const slides = buildGallerySlides([{}], "desktop");
+  assertEquals(slides, [{ kind: "single", indices: [0], ratio: 0.8 }]);
+  assertAlmostEquals(calculateGalleryFrameRatio(slides, "desktop"), 0.8);
+});
+
+Deno.test("square media is landscape-oriented and never paired", () => {
+  const square = { width: 1000, height: 1000 };
+  assertEquals(classifyOrientation(square), "landscape");
+  assertEquals(buildGallerySlides([square], "desktop"), [
+    { kind: "single", indices: [0], ratio: 1 },
+  ]);
 });
 
 Deno.test("viewer transform resets at 1x and clamps pan at 3x", () => {

@@ -112,7 +112,9 @@ Deno.test("P2 accessibility keeps collection headings, landmarks and WhatsApp af
   );
 
   const h1 = collection.indexOf('<h1 id="esv-collection-title">');
-  const h2 = collection.indexOf('<h2 class="esv-sr-only">Peças da coleção</h2>');
+  const h2 = collection.indexOf(
+    '<h2 class="esv-sr-only">Peças da coleção</h2>',
+  );
   const explorer = collection.indexOf("<CollectionExplorer");
   assert(h1 >= 0 && h2 > h1 && explorer > h2);
 
@@ -125,7 +127,10 @@ Deno.test("P2 accessibility keeps collection headings, landmarks and WhatsApp af
     '<a class="esv-skip" href="#main-content">Pular para o conteúdo</a>',
   );
 
-  assertStringIncludes(footer, 'import Icon from "../../components/ui/Icon.tsx";');
+  assertStringIncludes(
+    footer,
+    'import Icon from "../../components/ui/Icon.tsx";',
+  );
   assertStringIncludes(
     footer,
     '<Icon id="WhatsApp" size={18} aria-hidden="true" />',

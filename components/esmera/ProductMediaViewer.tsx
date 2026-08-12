@@ -136,8 +136,14 @@ export default function ProductMediaViewer({
     return clamped;
   };
 
+  const resetTransform = () => {
+    transformRef.current = INITIAL_TRANSFORM;
+    setTransform(INITIAL_TRANSFORM);
+  };
+
   const changeIndex = (delta: number) => {
     if (images.length < 2) return;
+    resetTransform();
     onIndexChange((index + delta + images.length) % images.length);
   };
 
@@ -150,8 +156,7 @@ export default function ProductMediaViewer({
   };
 
   useEffect(() => {
-    transformRef.current = INITIAL_TRANSFORM;
-    setTransform(INITIAL_TRANSFORM);
+    resetTransform();
     pointersRef.current.clear();
     dragRef.current = null;
     swipeRef.current = null;

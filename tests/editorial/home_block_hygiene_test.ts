@@ -2,13 +2,17 @@ import { assertEquals, assertStringIncludes } from "@std/assert";
 
 function emptyObjectPaths(value: unknown, path = "root"): string[] {
   if (Array.isArray(value)) {
-    return value.flatMap((item, index) => emptyObjectPaths(item, `${path}.${index}`));
+    return value.flatMap((item, index) =>
+      emptyObjectPaths(item, `${path}.${index}`)
+    );
   }
   if (!value || typeof value !== "object") return [];
 
   const entries = Object.entries(value as Record<string, unknown>);
   if (entries.length === 0) return [path];
-  return entries.flatMap(([key, item]) => emptyObjectPaths(item, `${path}.${key}`));
+  return entries.flatMap(([key, item]) =>
+    emptyObjectPaths(item, `${path}.${key}`)
+  );
 }
 
 Deno.test("Home block does not persist empty or incomplete object overrides", async () => {
@@ -36,7 +40,9 @@ Deno.test("Home has no legacy scroll-scene coordinator or scene hooks", async ()
   const carousel = await Deno.readTextFile("islands/HeroCarousel.tsx");
   const manifesto = await Deno.readTextFile("sections/Esmera/Manifesto.tsx");
   const matter = await Deno.readTextFile("sections/Esmera/Matter.tsx");
-  const interlude = await Deno.readTextFile("sections/Esmera/MatterInterlude.tsx");
+  const interlude = await Deno.readTextFile(
+    "sections/Esmera/MatterInterlude.tsx",
+  );
   const freshManifest = await Deno.readTextFile("fresh.gen.ts");
   const motion = await Deno.readTextFile("static/esmera-motion-v2.css");
   const matterStyles = await Deno.readTextFile(
@@ -83,11 +89,16 @@ Deno.test("Home keeps main-content and signature ids unique by construction", as
   const signature = await Deno.readTextFile(
     "sections/Esmera/SignatureObject.tsx",
   );
-  const payloadHome = await Deno.readTextFile("sections/Esmera/PayloadHome.tsx");
+  const payloadHome = await Deno.readTextFile(
+    "sections/Esmera/PayloadHome.tsx",
+  );
 
   assertStringIncludes(layout, '<main id="main-content">');
   assertEquals(signature.includes('id="signature"'), false);
   assertEquals(signature.includes('id="esv-signature-title"'), false);
   assertStringIncludes(signature, "const sectionId = `signature-${domToken}`;");
-  assertStringIncludes(payloadHome, "instanceKey={`${slide.product?.id ?? \"signature\"}-${index}`}");
+  assertStringIncludes(
+    payloadHome,
+    'instanceKey={`${slide.product?.id ?? "signature"}-${index}`}',
+  );
 });

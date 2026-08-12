@@ -1,0 +1,34 @@
+name: Gallery PR2 diagnostic
+
+on:
+  push:
+    branches:
+      - agent/gallery-pr2-media-contract
+
+permissions:
+  contents: read
+
+jobs:
+  test-diagnostic:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Run full test suite and capture output
+        shell: bash
+        run: |
+          set +e
+          deno task test 2>&1 | tee gallery-pr2-test.log
+          status=${PIPESTATUS[0]}
+          echo "$status" > gallery-pr2-exit-code.txt
+          exit 0
+      - name: Upload diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: gallery-pr2-diagnostic
+          path: |
+            gallery-pr2-test.log
+            gallery-pr2-exit-code.txt

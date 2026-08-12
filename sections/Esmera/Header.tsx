@@ -24,7 +24,9 @@ export default function Header({
 }: Props) {
   return (
     <>
-      <a class="esv-skip" href="#main-content">Pular para o conteúdo</a>
+      <nav class="esv-skip-landmark" aria-label="Acessibilidade">
+        <a class="esv-skip" href="#main-content">Pular para o conteúdo</a>
+      </nav>
       <EsmeraHeader
         logo={logo.trim() || "ESMÉRA"}
         enquiryLabel={enquiryLabel}

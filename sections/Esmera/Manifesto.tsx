@@ -36,7 +36,6 @@ export default function Manifesto(
       id="about"
       class="esv-maison"
       aria-labelledby="esv-maison-title"
-      data-motion-scene="maison"
     >
       <div class="esv-shell esv-maison-grid">
         <div class="esv-maison-copy" data-motion="reveal">

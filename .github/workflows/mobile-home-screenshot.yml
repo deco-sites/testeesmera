@@ -1,0 +1,87 @@
+name: Mobile home screenshot
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/mobile-home-screenshot.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  capture-mobile-home:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PAYLOAD_API_URL: https://esmeracms-green.vercel.app
+      PORT: "8000"
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Build
+        run: deno task build
+
+      - name: Start preview
+        shell: bash
+        run: |
+          deno task preview > /tmp/esmera-mobile-home-preview.log 2>&1 &
+          for attempt in $(seq 1 90); do
+            if curl --silent --fail http://127.0.0.1:8000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/esmera-mobile-home-preview.log
+          exit 1
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.54.2
+          npx playwright install --with-deps chromium
+
+      - name: Capture mobile home
+        shell: bash
+        run: |
+          mkdir -p mobile-home-artifacts
+          cat > /tmp/mobile-home-shot.mjs <<'JS'
+          import { chromium } from "playwright";
+
+          const browser = await chromium.launch({ headless: true });
+          const context = await browser.newContext({
+            viewport: { width: 390, height: 844 },
+            deviceScaleFactor: 1,
+            isMobile: true,
+            hasTouch: true,
+          });
+          const page = await context.newPage();
+          await page.goto("http://127.0.0.1:8000/", {
+            waitUntil: "domcontentloaded",
+            timeout: 120000,
+          });
+          await page.waitForSelector(".esv-hero", { state: "visible", timeout: 30000 });
+          await page.waitForTimeout(1600);
+          await page.screenshot({
+            path: "mobile-home-artifacts/esmera-home-mobile-390x844.png",
+            fullPage: false,
+          });
+          await context.close();
+          await browser.close();
+          JS
+          node /tmp/mobile-home-shot.mjs
+
+      - name: Upload mobile screenshot
+        uses: actions/upload-artifact@v6
+        with:
+          name: esmera-home-mobile-390x844
+          path: mobile-home-artifacts/esmera-home-mobile-390x844.png
+          if-no-files-found: error
+          retention-days: 1

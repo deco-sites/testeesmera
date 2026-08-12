@@ -94,7 +94,7 @@ export function toProductGallery(
   baseURL = getPayloadBaseURL(),
 ) {
   return (product.gallery ?? []).flatMap((item) => {
-    const media = resolvePayloadMedia(item.image, baseURL, "wide", item.alt);
+    const media = resolvePayloadMedia(item.image, baseURL, "gallery", item.alt);
     return media
       ? [{ ...media, key: item.mediaKey ?? "", role: item.role ?? "detail" }]
       : [];

@@ -11,7 +11,7 @@ export default defineApp(async (_req, ctx) => {
   const storefrontStyleRevision = "2026-08-11-product-media-fidelity-v16";
   // Modal-only cache bust. Keeps unrelated storefront CSS on the stable v16
   // revision while forcing Deco/CDN to fetch the corrected media layer.
-  const productMediaPatchRevision = "2026-08-11-popup-gallery-zoom-v17";
+  const productMediaPatchRevision = "2026-08-11-popup-gallery-zoom-v18";
   return (
     <>
       <Theme colorScheme="any" />

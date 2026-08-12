@@ -18,63 +18,15 @@ const metrics = {
   status: "started",
   top: null,
   transition: null,
+  afterScroll: null,
 };
 
 function invariant(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-try {
-  await page.goto(`${BASE_URL}/`, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector(".esv-hero");
-  // Let the intentional one-shot hero entrance finish before measuring scroll.
-  await page.waitForTimeout(1200);
-
-  const top = await page.evaluate(() => {
-    const hero = document.querySelector(".esv-hero");
-    const picture = document.querySelector(".esv-hero-picture");
-    const maisonMain = document.querySelector(".esv-maison-main");
-    const maisonSecondary = document.querySelector(".esv-maison-secondary");
-    return {
-      mainContentCount: document.querySelectorAll("#main-content").length,
-      sceneHookCount: document.querySelectorAll("[data-motion-scene]").length,
-      heroPictureTransform: picture
-        ? getComputedStyle(picture).transform
-        : null,
-      heroImageTransform: document.querySelector(".esv-hero-picture img")
-        ? getComputedStyle(document.querySelector(".esv-hero-picture img")).transform
-        : null,
-      maisonMainTransform: maisonMain
-        ? getComputedStyle(maisonMain).transform
-        : null,
-      maisonSecondaryTransform: maisonSecondary
-        ? getComputedStyle(maisonSecondary).transform
-        : null,
-      heroHeight: hero?.getBoundingClientRect().height ?? 0,
-    };
-  });
-  metrics.top = top;
-
-  invariant(top.mainContentCount === 1, `Expected one #main-content, got ${top.mainContentCount}`);
-  invariant(top.sceneHookCount === 0, `Expected zero data-motion-scene hooks, got ${top.sceneHookCount}`);
-  invariant(top.heroPictureTransform === "none", `Hero picture starts transformed: ${top.heroPictureTransform}`);
-  invariant(top.heroHeight > 0, "Hero has no measurable height");
-
-  await page.screenshot({
-    path: `${ARTIFACT_DIR}/home-top.png`,
-    fullPage: false,
-  });
-
-  await page.evaluate((heroHeight) => {
-    globalThis.scrollTo({
-      top: Math.max(1, heroHeight * 0.88),
-      left: 0,
-      behavior: "instant",
-    });
-  }, top.heroHeight);
-  await page.waitForTimeout(180);
-
-  const transition = await page.evaluate(() => {
+async function readScrollState() {
+  return await page.evaluate(() => {
     const picture = document.querySelector(".esv-hero-picture");
     const maisonMain = document.querySelector(".esv-maison-main");
     const maisonSecondary = document.querySelector(".esv-maison-secondary");
@@ -92,25 +44,120 @@ try {
       sceneHookCount: document.querySelectorAll("[data-motion-scene]").length,
     };
   });
+}
+
+try {
+  await page.goto(`${BASE_URL}/`, { waitUntil: "domcontentloaded" });
+  await page.waitForSelector(".esv-hero");
+  // Let the intentional one-shot hero entrance finish before measuring scroll.
+  await page.waitForTimeout(1200);
+
+  const top = await page.evaluate(() => {
+    const hero = document.querySelector(".esv-hero");
+    const picture = document.querySelector(".esv-hero-picture");
+    return {
+      mainContentCount: document.querySelectorAll("#main-content").length,
+      sceneHookCount: document.querySelectorAll("[data-motion-scene]").length,
+      heroPictureTransform: picture
+        ? getComputedStyle(picture).transform
+        : null,
+      heroImageTransform: document.querySelector(".esv-hero-picture img")
+        ? getComputedStyle(document.querySelector(".esv-hero-picture img")).transform
+        : null,
+      heroHeight: hero?.getBoundingClientRect().height ?? 0,
+    };
+  });
+  metrics.top = top;
+
+  invariant(
+    top.mainContentCount === 1,
+    `Expected one #main-content, got ${top.mainContentCount}`,
+  );
+  invariant(
+    top.sceneHookCount === 0,
+    `Expected zero data-motion-scene hooks, got ${top.sceneHookCount}`,
+  );
+  invariant(
+    top.heroPictureTransform === "none",
+    `Hero picture starts transformed: ${top.heroPictureTransform}`,
+  );
+  invariant(top.heroHeight > 0, "Hero has no measurable height");
+
+  await page.screenshot({
+    path: `${ARTIFACT_DIR}/home-top.png`,
+    fullPage: false,
+  });
+
+  await page.evaluate((heroHeight) => {
+    globalThis.scrollTo({
+      top: Math.max(1, heroHeight * 0.88),
+      left: 0,
+      behavior: "instant",
+    });
+  }, top.heroHeight);
+
+  // Maison uses an intentional one-shot reveal. Wait for it to become visible and
+  // settle before testing whether additional scroll causes any transform drift.
+  await page.waitForFunction(() =>
+    [".esv-maison-main", ".esv-maison-secondary"].every((selector) => {
+      const element = document.querySelector(selector);
+      return !element || element.classList.contains("is-visible");
+    })
+  );
+  await page.waitForTimeout(700);
+
+  const transition = await readScrollState();
   metrics.transition = transition;
 
-  invariant(transition.scrollY > 0, "Home did not scroll into the Hero → Maison transition");
+  invariant(
+    transition.scrollY > 0,
+    "Home did not scroll into the Hero → Maison transition",
+  );
   invariant(
     transition.heroPictureTransform === top.heroPictureTransform,
     `Hero picture changed transform on scroll: ${top.heroPictureTransform} -> ${transition.heroPictureTransform}`,
   );
   invariant(
-    transition.maisonMainTransform === top.maisonMainTransform,
-    `Maison primary media changed transform on scroll: ${top.maisonMainTransform} -> ${transition.maisonMainTransform}`,
+    transition.sceneHookCount === 0,
+    "Legacy scene hooks reappeared after entering Maison",
   );
-  invariant(
-    transition.maisonSecondaryTransform === top.maisonSecondaryTransform,
-    `Maison secondary media changed transform on scroll: ${top.maisonSecondaryTransform} -> ${transition.maisonSecondaryTransform}`,
-  );
-  invariant(transition.sceneHookCount === 0, "Legacy scene hooks reappeared after scroll");
 
   await page.screenshot({
     path: `${ARTIFACT_DIR}/hero-to-maison-transition.png`,
+    fullPage: false,
+  });
+
+  await page.evaluate(() => {
+    globalThis.scrollBy({ top: 140, left: 0, behavior: "instant" });
+  });
+  await page.waitForTimeout(180);
+
+  const afterScroll = await readScrollState();
+  metrics.afterScroll = afterScroll;
+
+  invariant(
+    afterScroll.scrollY > transition.scrollY,
+    "Second scroll did not move deeper into Maison",
+  );
+  invariant(
+    afterScroll.heroPictureTransform === transition.heroPictureTransform,
+    `Hero picture drifted after reveal settled: ${transition.heroPictureTransform} -> ${afterScroll.heroPictureTransform}`,
+  );
+  invariant(
+    afterScroll.maisonMainTransform === transition.maisonMainTransform,
+    `Maison primary media drifted after reveal settled: ${transition.maisonMainTransform} -> ${afterScroll.maisonMainTransform}`,
+  );
+  invariant(
+    afterScroll.maisonSecondaryTransform === transition.maisonSecondaryTransform,
+    `Maison secondary media drifted after reveal settled: ${transition.maisonSecondaryTransform} -> ${afterScroll.maisonSecondaryTransform}`,
+  );
+  invariant(
+    afterScroll.sceneHookCount === 0,
+    "Legacy scene hooks reappeared after additional scroll",
+  );
+
+  await page.screenshot({
+    path: `${ARTIFACT_DIR}/maison-after-scroll.png`,
     fullPage: false,
   });
 

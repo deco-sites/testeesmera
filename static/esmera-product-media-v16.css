@@ -35,9 +35,27 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-.esv-product-modal-gallery.is-two-stage
-  .esv-product-modal-image:not(.is-active) {
-  display: none;
+/* Keep inactive desktop stage media laid out (but non-interactive and hidden)
+ * instead of display:none. This lets the browser resolve lazy image requests
+ * while the modal is open, so moving to the next product/image never exposes
+ * an unloaded stage. Mobile keeps its horizontal scroll-snap layout below. */
+@media (min-width: 768px) {
+  .esv-product-modal-gallery.is-multiple
+    .esv-product-modal-image:not(.is-active),
+  .esv-product-modal-gallery.is-two-stage
+    .esv-product-modal-image:not(.is-active) {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .esv-product-modal-gallery.is-multiple .esv-product-modal-image.is-active,
+  .esv-product-modal-gallery.is-two-stage .esv-product-modal-image.is-active {
+    position: relative;
+    visibility: visible;
+  }
 }
 
 /* Viewer */

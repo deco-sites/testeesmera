@@ -1,0 +1,120 @@
+name: Home hygiene validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "sections/Esmera/Hero.tsx"
+      - "sections/Esmera/Manifesto.tsx"
+      - "sections/Esmera/Matter.tsx"
+      - "sections/Esmera/MatterInterlude.tsx"
+      - "sections/Esmera/Header.tsx"
+      - "sections/Esmera/PayloadHome.tsx"
+      - "sections/Esmera/SignatureObject.tsx"
+      - "components/esmera/StorefrontLayout.tsx"
+      - "islands/HeroCarousel.tsx"
+      - "islands/EsmeraMotion.tsx"
+      - "fresh.gen.ts"
+      - "routes/_app.tsx"
+      - "static/esmera-master.css"
+      - "static/esmera-finish.css"
+      - "static/esmera-motion-v2.css"
+      - "static/esmera-matter-interaction.css"
+      - "tests/editorial/home_block_hygiene_test.ts"
+      - "scripts/ci/home-hygiene.mjs"
+      - ".github/workflows/home-hygiene-validation.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "sections/Esmera/**"
+      - "components/esmera/StorefrontLayout.tsx"
+      - "islands/HeroCarousel.tsx"
+      - "islands/EsmeraMotion.tsx"
+      - "fresh.gen.ts"
+      - "routes/_app.tsx"
+      - "static/esmera-master.css"
+      - "static/esmera-finish.css"
+      - "static/esmera-motion-v2.css"
+      - "static/esmera-matter-interaction.css"
+      - "tests/editorial/home_block_hygiene_test.ts"
+      - "scripts/ci/home-hygiene.mjs"
+      - ".github/workflows/home-hygiene-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  home-hygiene:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PAYLOAD_API_URL: https://esmeracms-green.vercel.app
+      PORT: "8000"
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Format home hygiene files
+        run: >-
+          deno fmt --check
+          sections/Esmera/Header.tsx
+          sections/Esmera/Hero.tsx
+          sections/Esmera/Manifesto.tsx
+          sections/Esmera/Matter.tsx
+          sections/Esmera/MatterInterlude.tsx
+          sections/Esmera/PayloadHome.tsx
+          sections/Esmera/SignatureObject.tsx
+          islands/HeroCarousel.tsx
+          static/esmera-motion-v2.css
+          static/esmera-matter-interaction.css
+          routes/_app.tsx
+          tests/editorial/home_block_hygiene_test.ts
+
+      - name: Lint
+        run: deno lint
+
+      - name: Typecheck
+        run: deno check dev.ts main.ts
+
+      - name: Home hygiene contracts
+        run: deno test -A tests/editorial/home_block_hygiene_test.ts
+
+      - name: Build
+        run: deno task build
+
+      - name: Start preview
+        shell: bash
+        run: |
+          deno task preview > /tmp/esmera-home-hygiene-preview.log 2>&1 &
+          for attempt in $(seq 1 90); do
+            if curl --silent --fail http://127.0.0.1:8000/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/esmera-home-hygiene-preview.log
+          exit 1
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.54.2
+          npx playwright install --with-deps chromium
+
+      - name: Validate Hero to Maison native scroll
+        run: node scripts/ci/home-hygiene.mjs
+
+      - name: Upload home hygiene evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: home-hygiene-evidence
+          path: home-hygiene-artifacts
+          if-no-files-found: warn
+          retention-days: 7

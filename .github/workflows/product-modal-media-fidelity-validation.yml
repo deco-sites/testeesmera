@@ -3,8 +3,50 @@ name: Product modal media fidelity validation
 on:
   push:
     branches: [main]
+    paths:
+      - "components/esmera/ProductMediaViewer.tsx"
+      - "components/esmera/StorefrontLayout.tsx"
+      - "islands/ProductModal.tsx"
+      - "lib/esmera/productMediaPresentation.ts"
+      - "lib/payload/media.ts"
+      - "routes/_app.tsx"
+      - "static/esmera-master.css"
+      - "static/esmera-commerce-refine.css"
+      - "static/esmera-hotfix-product-modal.css"
+      - "static/esmera-product-modal-v2.css"
+      - "static/esmera-product-modal-frame-fix.css"
+      - "static/esmera-product-media-v16.css"
+      - "scripts/ci/product-modal-media-fidelity.mjs"
+      - "tests/product/**"
+      - "deno.json"
+      - "deno.lock"
+      - "dev.ts"
+      - "main.ts"
+      - "fresh.gen.ts"
+      - ".github/workflows/product-modal-media-fidelity-validation.yml"
   pull_request:
     branches: [main]
+    paths:
+      - "components/esmera/ProductMediaViewer.tsx"
+      - "components/esmera/StorefrontLayout.tsx"
+      - "islands/ProductModal.tsx"
+      - "lib/esmera/productMediaPresentation.ts"
+      - "lib/payload/media.ts"
+      - "routes/_app.tsx"
+      - "static/esmera-master.css"
+      - "static/esmera-commerce-refine.css"
+      - "static/esmera-hotfix-product-modal.css"
+      - "static/esmera-product-modal-v2.css"
+      - "static/esmera-product-modal-frame-fix.css"
+      - "static/esmera-product-media-v16.css"
+      - "scripts/ci/product-modal-media-fidelity.mjs"
+      - "tests/product/**"
+      - "deno.json"
+      - "deno.lock"
+      - "dev.ts"
+      - "main.ts"
+      - "fresh.gen.ts"
+      - ".github/workflows/product-modal-media-fidelity-validation.yml"
 
 permissions:
   contents: read

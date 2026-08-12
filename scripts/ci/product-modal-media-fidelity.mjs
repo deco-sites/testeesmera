@@ -181,11 +181,13 @@ try {
     fail("Media fidelity stylesheet revision is stale", { cssHref });
   }
 
+  const desktopFrame = desktop.locator(".esv-product-modal-gallery-frame.is-desktop");
+
   await openFixture(desktop, fixtures.singleLandscape);
-  const singleClass = await desktop.locator(".esv-product-modal-slide").first().getAttribute("class");
+  const singleClass = await desktopFrame.locator(".esv-product-modal-slide").first().getAttribute("class");
   if (!singleClass?.includes("is-single")) fail("Single image mode missing", { singleClass });
   const singleGeometry = await imageGeometry(
-    desktop.locator(".esv-product-modal-gallery img").first(),
+    desktopFrame.locator(".esv-product-modal-gallery img").first(),
     ".esv-product-modal-image",
   );
   assertComplete(singleGeometry, "single landscape");
@@ -193,9 +195,9 @@ try {
   await recordScenario("desktop-single-landscape", singleGeometry);
 
   await openFixture(desktop, fixtures.twoPortrait);
-  const splitClass = await desktop.locator(".esv-product-modal-slide").first().getAttribute("class");
+  const splitClass = await desktopFrame.locator(".esv-product-modal-slide").first().getAttribute("class");
   if (!splitClass?.includes("is-pair")) fail("Compatible portraits did not keep split", { splitClass });
-  const splitImages = desktop.locator(".esv-product-modal-gallery img");
+  const splitImages = desktopFrame.locator(".esv-product-modal-gallery img");
   for (let index = 0; index < 2; index++) {
     assertComplete(
       await imageGeometry(splitImages.nth(index), ".esv-product-modal-image"),
@@ -206,7 +208,7 @@ try {
   await recordScenario("desktop-two-portrait-split", { presentation: splitClass });
 
   await openFixture(desktop, fixtures.twoMixed);
-  const mixedSlides = desktop.locator(".esv-product-modal-slide");
+  const mixedSlides = desktopFrame.locator(".esv-product-modal-slide");
   if (await mixedSlides.count() !== 2) fail("Mixed ratios did not keep two stages");
   const mixedFirstClass = await mixedSlides.nth(0).getAttribute("class");
   const mixedSecondClass = await mixedSlides.nth(1).getAttribute("class");
@@ -214,31 +216,30 @@ try {
     fail("Mixed ratios produced the wrong stages", { mixedFirstClass, mixedSecondClass });
   }
   assertComplete(
-    await imageGeometry(desktop.locator(".esv-product-modal-image.is-active img"), ".esv-product-modal-image"),
+    await imageGeometry(desktopFrame.locator(".esv-product-modal-image.is-active img"), ".esv-product-modal-image"),
     "mixed active portrait",
   );
   await desktop.screenshot({ path: `${ARTIFACT_DIR}/desktop-two-mixed-stage-1.png` });
-  await desktop.getByRole("button", { name: "Próximo slide da galeria" }).click();
-  await desktop.waitForFunction(() =>
-    document.querySelector(".esv-product-modal-gallery-controls span")?.textContent?.trim() === "02 / 02"
-  );
+  await desktopFrame.getByRole("button", { name: "Próximo slide da galeria" }).click();
+  await desktopFrame.locator(".esv-product-modal-gallery-controls span").waitFor({ state: "visible" });
+  await desktopFrame.locator(".esv-product-modal-gallery-controls span").filter({ hasText: "02 / 02" }).waitFor();
   assertComplete(
-    await imageGeometry(desktop.locator(".esv-product-modal-image.is-active img"), ".esv-product-modal-image"),
+    await imageGeometry(desktopFrame.locator(".esv-product-modal-image.is-active img"), ".esv-product-modal-image"),
     "mixed active landscape",
   );
   await desktop.screenshot({ path: `${ARTIFACT_DIR}/desktop-two-mixed-stage-2.png` });
   await recordScenario("desktop-two-mixed-stage", { presentation: [mixedFirstClass, mixedSecondClass] });
 
   await openFixture(desktop, fixtures.threeMixed);
-  const threeCount = await desktop.locator(".esv-product-modal-image").count();
+  const threeCount = await desktopFrame.locator(".esv-product-modal-image").count();
   if (threeCount !== 3) fail("Three-image gallery lost media", { threeCount });
   assertComplete(
-    await imageGeometry(desktop.locator(".esv-product-modal-image.is-active img"), ".esv-product-modal-image"),
+    await imageGeometry(desktopFrame.locator(".esv-product-modal-image.is-active img"), ".esv-product-modal-image"),
     "three mixed active",
   );
   await desktop.screenshot({ path: `${ARTIFACT_DIR}/desktop-three-mixed.png` });
 
-  const opener = desktop.locator(".esv-product-modal-image.is-active");
+  const opener = desktopFrame.locator(".esv-product-modal-image.is-active");
   await opener.click();
   await desktop.waitForSelector(".esv-product-viewer", { state: "visible" });
   await desktop.waitForFunction(() => {
@@ -296,7 +297,8 @@ try {
   await mobile.goto(BASE_URL, { waitUntil: "networkidle", timeout: 120000 });
   await openFixture(mobile, fixtures.twoMixed);
 
-  const mobileGallery = mobile.locator(".esv-product-modal-gallery");
+  const mobileFrame = mobile.locator(".esv-product-modal-gallery-frame.is-compact");
+  const mobileGallery = mobileFrame.locator(".esv-product-modal-gallery");
   const mobileSlides = mobileGallery.locator(".esv-product-modal-image");
   if (await mobileSlides.count() !== 2) fail("Mobile two-image gallery lost media");
   const mobileWidths = await mobileGallery.evaluate((gallery) => ({
@@ -313,9 +315,7 @@ try {
     "mobile portrait slide",
   );
   await mobileGallery.evaluate((gallery) => gallery.scrollTo({ left: gallery.clientWidth, behavior: "auto" }));
-  await mobile.waitForFunction(() =>
-    document.querySelector(".esv-product-modal-gallery-mobile-counter")?.textContent?.trim() === "02 / 02"
-  );
+  await mobileFrame.locator(".esv-product-modal-gallery-mobile-counter").filter({ hasText: "02 / 02" }).waitFor();
   assertComplete(
     await imageGeometry(mobileSlides.nth(1).locator("img"), ".esv-product-modal-image"),
     "mobile landscape slide",

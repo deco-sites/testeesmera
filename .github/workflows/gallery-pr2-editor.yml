@@ -1,0 +1,89 @@
+name: Gallery PR2 editor
+
+on:
+  push:
+    branches: [agent/gallery-pr2-media-contract]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Apply PR2 media contract
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          def edit(path, fn):
+              p = Path(path)
+              text = p.read_text()
+              new = fn(text)
+              if new == text:
+                  print(f'unchanged: {path}')
+              p.write_text(new)
+
+          edit('lib/payload/adapters.ts', lambda s: s.replace(
+              'preferred: "thumb" | "card" | "wide" | "territory" | "original" = "original",',
+              'preferred: "thumb" | "card" | "gallery" | "wide" | "territory" | "original" = "original",'
+          ))
+
+          def modal(s):
+              s = s.replace('\ntype RuntimeGalleryMedia = EsmeraObject["gallery"][number];\n', '\n')
+              s = s.replace('media?: RuntimeGalleryMedia,', 'media?: EsmeraObject["gallery"][number],')
+              return s
+          edit('islands/ProductModal.tsx', modal)
+
+          media_path = Path('tests/payload/media_test.ts')
+          media = media_path.read_text()
+          marker = 'Deno.test("gallery rendition preserves derivative and original dimensions"'
+          if marker not in media:
+              media += '''\n\nDeno.test("gallery rendition preserves derivative and original dimensions", () => {\n  const resolved = resolvePayloadMedia({\n    id: 4,\n    url: "/media/original-portrait.jpg",\n    width: 1200,\n    height: 1600,\n    alt: "Retrato",\n    _status: "published",\n    sizes: {\n      gallery: {\n        url: "/media/portrait-gallery.jpg",\n        width: 1350,\n        height: 1800,\n      },\n    },\n  }, "https://cms.example.com", "gallery");\n\n  assertEquals(resolved?.url, "https://cms.example.com/media/portrait-gallery.jpg");\n  assertEquals(resolved?.width, 1350);\n  assertEquals(resolved?.height, 1800);\n  assertEquals(resolved?.fullUrl, "https://cms.example.com/media/original-portrait.jpg");\n  assertEquals(resolved?.fullWidth, 1200);\n  assertEquals(resolved?.fullHeight, 1600);\n});\n\nDeno.test("gallery falls back to the original when the derivative is missing", () => {\n  const resolved = resolvePayloadMedia({\n    id: 5,\n    url: "/media/legacy-portrait.jpg",\n    width: 1000,\n    height: 1500,\n    alt: "Legado",\n    _status: "published",\n    sizes: {\n      wide: { url: "/media/legacy-wide.jpg", width: 1800, height: 1200 },\n    },\n  }, "https://cms.example.com", "gallery");\n\n  assertEquals(resolved?.url, "https://cms.example.com/media/legacy-portrait.jpg");\n  assertEquals(resolved?.width, 1000);\n  assertEquals(resolved?.height, 1500);\n  assertEquals(resolved?.fullWidth, 1000);\n  assertEquals(resolved?.fullHeight, 1500);\n});\n'''
+          media_path.write_text(media)
+
+          storefront_path = Path('tests/payload/storefront_products_test.ts')
+          storefront = storefront_path.read_text()
+          if 'toProductGallery' not in storefront:
+              storefront = storefront.replace(
+                  'import { assertEquals } from "@std/assert";\n',
+                  'import { assertEquals } from "@std/assert";\nimport { toProductGallery } from "../../lib/payload/adapters.ts";\nimport type { PayloadProduct } from "../../lib/payload/types.ts";\n'
+              )
+              storefront += '''\n\nDeno.test("product gallery exposes derivative and original dimensions", () => {\n  const product = {\n    gallery: [{\n      image: {\n        id: 10,\n        url: "/media/original.jpg",\n        width: 1200,\n        height: 1600,\n        alt: "Objeto",\n        _status: "published",\n        sizes: {\n          gallery: { url: "/media/gallery.jpg", width: 1350, height: 1800 },\n        },\n      },\n      alt: "Objeto na galeria",\n      mediaKey: "cover-main",\n      role: "cover",\n    }],\n  } as PayloadProduct;\n\n  const [media] = toProductGallery(product, "https://cms.example.com");\n  assertEquals(media.width, 1350);\n  assertEquals(media.height, 1800);\n  assertEquals(media.fullWidth, 1200);\n  assertEquals(media.fullHeight, 1600);\n  assertEquals(media.fullUrl, "https://cms.example.com/media/original.jpg");\n  assertEquals(media.key, "cover-main");\n  assertEquals(media.role, "cover");\n});\n'''
+          storefront_path.write_text(storefront)
+
+          for path in [
+              '.github/workflows/editorial-modal-matter-validation.yml',
+              '.github/workflows/product-modal-media-fidelity-validation.yml',
+          ]:
+              p = Path(path)
+              if not p.exists():
+                  continue
+              s = p.read_text()
+              for old in [
+                  'static/esmera-product-modal-v2.css',
+                  'static/esmera-product-modal-frame-fix.css',
+                  'static/esmera-product-media-v16.css',
+                  'static/esmera-product-modal-hotfix.css',
+              ]:
+                  s = s.replace(old, 'static/esmera-product-modal.css')
+              lines = s.splitlines()
+              out = []
+              for line in lines:
+                  if out and line == out[-1] and 'static/esmera-product-modal.css' in line:
+                      continue
+                  out.append(line)
+              p.write_text('\n'.join(out) + '\n')
+          PY
+          deno fmt lib/payload/adapters.ts islands/ProductModal.tsx tests/payload/media_test.ts tests/payload/storefront_products_test.ts .github/workflows/editorial-modal-matter-validation.yml .github/workflows/product-modal-media-fidelity-validation.yml
+          git rm .github/workflows/gallery-pr2-editor.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "PR 2/6: type gallery media contract"
+          git push

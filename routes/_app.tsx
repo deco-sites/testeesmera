@@ -43,7 +43,6 @@ export default defineApp(async (_req, ctx) => {
           rel="stylesheet"
           href={asset(`/esmera-motion-v2.css?v=${homeStyleRevision}`)}
         />
-        <link rel="stylesheet" href={asset("/esmera-structure-guard.css")} />
         <link rel="stylesheet" href={asset("/esmera-commerce-refine.css")} />
         <link
           rel="stylesheet"

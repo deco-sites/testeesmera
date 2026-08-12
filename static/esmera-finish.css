@@ -502,18 +502,6 @@
     gap: var(--space-6);
   }
 
-  .esv-product-subtitle {
-    -webkit-line-clamp: 1;
-  }
-
-  .esv-product-commercial {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) max-content;
-    gap: var(--space-3);
-    margin-top: 12px;
-    padding-top: 12px;
-  }
-
   .esv-territory-panel {
     height: clamp(400px, 122vw, 520px);
   }

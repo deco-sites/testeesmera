@@ -25,7 +25,6 @@ import * as $CollectionExplorer from "./islands/CollectionExplorer.tsx";
 import * as $DynamicMenu from "./islands/DynamicMenu.tsx";
 import * as $EsmeraHeader from "./islands/EsmeraHeader.tsx";
 import * as $EsmeraMotion from "./islands/EsmeraMotion.tsx";
-import * as $EsmeraScrollScenes from "./islands/EsmeraScrollScenes.tsx";
 import * as $HeroCarousel from "./islands/HeroCarousel.tsx";
 import * as $ProductActions from "./islands/ProductActions.tsx";
 import * as $ProductModal from "./islands/ProductModal.tsx";
@@ -60,7 +59,6 @@ const manifest = {
     "./islands/DynamicMenu.tsx": $DynamicMenu,
     "./islands/EsmeraHeader.tsx": $EsmeraHeader,
     "./islands/EsmeraMotion.tsx": $EsmeraMotion,
-    "./islands/EsmeraScrollScenes.tsx": $EsmeraScrollScenes,
     "./islands/HeroCarousel.tsx": $HeroCarousel,
     "./islands/ProductActions.tsx": $ProductActions,
     "./islands/ProductModal.tsx": $ProductModal,

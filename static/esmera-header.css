@@ -8,6 +8,7 @@ html:root {
   --esv-layer-header: 120;
   --esv-layer-overlay: 200;
   --esv-layer-drawer: 210;
+  --esv-header-logo-h: 34px;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -51,7 +52,14 @@ html:root {
 }
 
 .esv-header.esv-header[data-header-variant="transparent"]:not(.is-solid)::before {
-  opacity: 0;
+  height: calc(var(--header-h) * 2 + env(safe-area-inset-top));
+  background: linear-gradient(
+    to bottom,
+    rgba(17, 18, 16, .28),
+    rgba(17, 18, 16, 0)
+  );
+  backdrop-filter: none;
+  opacity: 1;
 }
 
 .esv-header.esv-header.is-solid {
@@ -70,12 +78,11 @@ html:root {
 }
 
 .esv-header .esv-wordmark {
-  position: static;
-  inset: auto;
   display: inline-flex;
   align-items: center;
   order: 1;
-  width: clamp(128px, 9vw, 144px);
+  width: auto;
+  height: 100%;
   min-height: 44px;
   padding: 0;
   border: 0;
@@ -93,12 +100,17 @@ html:root {
 
 .esv-brand-image {
   display: block;
-  width: 100%;
-  height: auto;
 }
 
 .esv-header-logo-image {
-  max-height: 44px;
+  width: auto;
+  height: var(--esv-header-logo-h);
+  max-width: min(34vw, 150px);
+}
+
+.esv-panel-logo-image {
+  width: 100%;
+  height: auto;
 }
 
 .esv-panel-wordmark {
@@ -113,6 +125,8 @@ html:root {
   gap: var(--esv-header-group-gap);
   min-width: 0;
   color: inherit;
+  height: 100%;
+  overflow: visible;
 }
 
 .esv-header .esv-header-icon,
@@ -210,12 +224,10 @@ html:root {
   margin-right: var(--esv-header-group-gap);
   margin-left: auto;
   color: inherit;
+  height: 100%;
 }
 
 .esv-header .esv-nav-v2-desktop {
-  position: static;
-  z-index: auto;
-  inset: auto;
   display: flex;
   align-items: center;
   gap: clamp(10px, 1vw, 14px);
@@ -268,9 +280,8 @@ html:root {
 }
 
 .esv-header .esv-nav-v2-mobile-trigger {
-  position: static;
   display: none;
-  height: var(--header-h);
+  height: 100%;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -679,32 +690,44 @@ html:root {
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1023.98px) {
+  html:root {
+    --esv-header-logo-h: 30px;
+  }
+
   .esv-header.esv-header {
     display: grid;
-    grid-template-columns: 88px minmax(0, 1fr) 88px;
+    grid-template-columns:
+      minmax(88px, auto) minmax(0, 1fr) minmax(88px, auto);
     align-items: center;
+    padding-inline: var(--page-x);
   }
   .esv-header .esv-nav-v2-desktop { display: none; }
   .esv-header .esv-nav-v2-mobile-trigger { display: grid; }
   .esv-header .esv-nav-v2-root {
     display: grid;
     grid-column: 1;
-    align-items: center;
-    justify-self: start;
-    width: 88px;
-    height: var(--header-h);
+    place-items: center start;
+    align-self: stretch;
+    width: 100%;
+    height: 100%;
     margin: 0;
   }
   .esv-header .esv-wordmark {
     grid-column: 2;
+    grid-row: 1;
     justify-self: center;
-    width: clamp(108px, 18vw, 132px);
+    align-self: stretch;
+    width: auto;
+    height: 100%;
   }
   .esv-header .esv-header-actions {
     grid-column: 3;
+    grid-row: 1;
     justify-self: end;
+    align-self: stretch;
     width: 88px;
+    height: 100%;
     gap: 0;
   }
   .esv-header .esv-cart-label {
@@ -719,6 +742,7 @@ html:root {
     width: 44px;
     min-width: 44px;
     height: 44px;
+    overflow: visible;
   }
   .esv-header .esv-enquiry-link sup {
     position: absolute;
@@ -740,15 +764,12 @@ html:root {
 }
 
 @media (max-width: 767px) {
-  .esv-header.esv-header {
-    grid-template-columns: 88px minmax(0, 1fr) 88px;
-    padding-inline: 12px;
+  html:root {
+    --esv-header-logo-h: 26px;
   }
-  .esv-header .esv-wordmark {
-    position: static;
-    left: auto;
-    width: clamp(108px, 30vw, 126px);
-    transform: none;
+
+  .esv-header.esv-header {
+    padding-inline: var(--page-x);
   }
   .esv-header .esv-header-actions { gap: 0; }
   .esv-header .esv-enquiry-link {
@@ -760,8 +781,6 @@ html:root {
 }
 
 @media (max-width: 360px) {
-  .esv-header.esv-header { padding-inline: 8px 10px; }
-  .esv-header .esv-wordmark { width: clamp(96px, 30vw, 108px); }
   .esv-header .esv-header-actions { gap: 0; }
   .esv-header .esv-enquiry-link { min-width: 44px; }
 }

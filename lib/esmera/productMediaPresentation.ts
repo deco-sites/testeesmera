@@ -3,7 +3,15 @@ export interface MediaDimensions {
   height?: number;
 }
 
-export type TwoImagePresentation = "split" | "stage";
+export type Orientation = "portrait" | "landscape" | "unknown";
+
+export interface GallerySlide {
+  kind: "single" | "pair";
+  indices: number[];
+  ratio: number;
+}
+
+export type GalleryLayout = "desktop" | "compact";
 
 export interface ViewerTransform {
   scale: number;
@@ -13,7 +21,12 @@ export interface ViewerTransform {
 
 export const MIN_VIEWER_SCALE = 1;
 export const MAX_VIEWER_SCALE = 3;
-export const TWO_IMAGE_MIN_COVERAGE = 0.66;
+export const PORTRAIT_MAX_RATIO = 0.95;
+export const PAIR_GAP_PX = 0;
+export const FALLBACK_MEDIA_RATIO = 4 / 5;
+export const DESKTOP_MIN_FRAME_RATIO = 4 / 5;
+export const COMPACT_MIN_FRAME_RATIO = 3 / 4;
+export const MAX_FRAME_RATIO = 16 / 9;
 
 function positive(value: number | undefined): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
@@ -24,44 +37,70 @@ export function mediaAspectRatio(media: MediaDimensions): number | null {
   return media.width / media.height;
 }
 
-export function getContainCoverage(
-  mediaAspect: number,
-  panelAspect: number,
-): number {
-  if (
-    !Number.isFinite(mediaAspect) || mediaAspect <= 0 ||
-    !Number.isFinite(panelAspect) || panelAspect <= 0
-  ) {
-    return 0;
-  }
-  return Math.min(mediaAspect / panelAspect, panelAspect / mediaAspect);
+export function classifyOrientation(media: MediaDimensions): Orientation {
+  const ratio = mediaAspectRatio(media);
+  if (ratio === null) return "unknown";
+  return ratio <= PORTRAIT_MAX_RATIO ? "portrait" : "landscape";
 }
 
-export function getTwoImagePresentation(
+function ratioOrFallback(media: MediaDimensions): number {
+  return mediaAspectRatio(media) ?? FALLBACK_MEDIA_RATIO;
+}
+
+export function buildGallerySlides(
   images: readonly MediaDimensions[],
-  galleryWidth: number,
-  galleryHeight: number,
-  minCoverage = TWO_IMAGE_MIN_COVERAGE,
-): TwoImagePresentation {
-  if (images.length !== 2) return "stage";
-  if (galleryWidth <= 0 || galleryHeight <= 0) return "stage";
+  layout: GalleryLayout,
+): GallerySlide[] {
+  if (layout === "compact") {
+    return images.map((image, index) => ({
+      kind: "single",
+      indices: [index],
+      ratio: ratioOrFallback(image),
+    }));
+  }
 
-  const aspects = images.map(mediaAspectRatio);
-  if (aspects.some((aspect) => aspect === null)) return "stage";
+  const slides: GallerySlide[] = [];
+  let index = 0;
+  while (index < images.length) {
+    const image = images[index];
+    if (classifyOrientation(image) !== "portrait") {
+      slides.push({
+        kind: "single",
+        indices: [index],
+        ratio: ratioOrFallback(image),
+      });
+      index += 1;
+      continue;
+    }
 
-  const firstAspect = aspects[0] as number;
-  const secondAspect = aspects[1] as number;
-  const pairCompatibility = getContainCoverage(firstAspect, secondAspect);
-  if (pairCompatibility < minCoverage) return "stage";
+    const next = images[index + 1];
+    const pairIndices = next && classifyOrientation(next) === "portrait"
+      ? [index, index + 1]
+      : [index];
+    const pairRatios = pairIndices.map((mediaIndex) =>
+      ratioOrFallback(images[mediaIndex])
+    );
+    slides.push({
+      kind: "pair",
+      indices: pairIndices,
+      ratio: 2 * Math.min(...pairRatios),
+    });
+    index += pairIndices.length;
+  }
+  return slides;
+}
 
-  const panelAspect = (galleryWidth / 2) / galleryHeight;
-  const coverages = [firstAspect, secondAspect].map((aspect) =>
-    getContainCoverage(aspect, panelAspect)
-  );
-
-  return coverages.every((coverage) => coverage >= minCoverage)
-    ? "split"
-    : "stage";
+export function calculateGalleryFrameRatio(
+  slides: readonly GallerySlide[],
+  layout: GalleryLayout,
+): number {
+  const minimum = layout === "desktop"
+    ? DESKTOP_MIN_FRAME_RATIO
+    : COMPACT_MIN_FRAME_RATIO;
+  const raw = slides.length > 0
+    ? Math.min(...slides.map((slide) => slide.ratio))
+    : FALLBACK_MEDIA_RATIO;
+  return Math.min(MAX_FRAME_RATIO, Math.max(minimum, raw));
 }
 
 export function clampViewerScale(scale: number): number {

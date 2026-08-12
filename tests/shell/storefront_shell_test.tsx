@@ -84,6 +84,7 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
     "static/esmera-commerce-refine.css",
   );
   const finishCss = await Deno.readTextFile("static/esmera-finish.css");
+  const catalogCss = await Deno.readTextFile("static/esmera-catalog-v2.css");
   const headerCss = await Deno.readTextFile("static/esmera-header.css");
   const headerCssWithoutComments = headerCss.replace(/\/\*[\s\S]*?\*\//g, "");
   const app = await Deno.readTextFile("routes/_app.tsx");
@@ -194,15 +195,28 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   );
   assertStringIncludes(headerIsland, 'width="1225"');
   assertStringIncludes(headerIsland, 'height="369"');
-  assertStringIncludes(headerCss, "width: clamp(108px, 30vw, 126px)");
+  assertStringIncludes(headerCss, "height: var(--esv-header-logo-h)");
   assertStringIncludes(headerCss, "justify-content: space-between");
   assertStringIncludes(headerCss, "--esv-header-group-gap:");
   assertStringIncludes(
     headerCss,
-    "grid-template-columns: 88px minmax(0, 1fr) 88px",
+    "minmax(88px, auto) minmax(0, 1fr) minmax(88px, auto)",
   );
   assertStringIncludes(headerCss, ".esv-header .esv-cart-label");
   assertStringIncludes(headerCss, ".esv-header .esv-cart-icon");
+  assertStringIncludes(headerCss, "--esv-header-logo-h: 34px");
+  assertStringIncludes(headerCss, "--esv-header-logo-h: 30px");
+  assertStringIncludes(headerCss, "--esv-header-logo-h: 26px");
+  assertStringIncludes(headerCss, "padding-inline: var(--page-x)");
+  assertStringIncludes(headerCss, "rgba(17, 18, 16, .28)");
+  assertFalse(headerCss.includes("padding-inline: 12px"));
+  assertFalse(headerCss.includes(".esv-nav-v2-desktop {\n  position: static"));
+  assertFalse(
+    headerCss.includes(".esv-nav-v2-mobile-trigger {\n  position: static"),
+  );
+  assertFalse(catalogCss.includes(".esv-nav-v2-desktop{position:fixed"));
+  assertFalse(catalogCss.includes(".esv-nav-v2-mobile-trigger{position:fixed"));
+  assertFalse(catalogCss.includes("!important"));
   assertStringIncludes(headerIsland, "function BagIcon()");
   assertStringIncludes(headerIsland, 'class="esv-cart-icon"');
   assertStringIncludes(commerceCss, "@media (max-width: 520px)");

@@ -205,13 +205,7 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   const viewer = await Deno.readTextFile(
     "components/esmera/ProductMediaViewer.tsx",
   );
-  const css = await Deno.readTextFile("static/esmera-product-modal-v2.css");
-  const fidelityCss = await Deno.readTextFile(
-    "static/esmera-product-media-v16.css",
-  );
-  const frameCss = await Deno.readTextFile(
-    "static/esmera-product-modal-frame-fix.css",
-  );
+  const css = await Deno.readTextFile("static/esmera-product-modal.css");
   const recommendationsRoute = await Deno.readTextFile(
     "routes/api/esmera-recommendations.ts",
   );
@@ -224,10 +218,12 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(modal, 'class="esv-product-modal-buybox"');
   assertStringIncludes(modal, 'class="esv-product-modal-installment"');
   assertStringIncludes(modal, "buildInstallmentFromPriceCents");
-  assertStringIncludes(modal, '"is-single"');
-  assertStringIncludes(modal, '"is-double"');
-  assertStringIncludes(modal, '"is-multiple"');
-  assertStringIncludes(modal, "getTwoImagePresentation");
+  assertStringIncludes(modal, "buildGallerySlides");
+  assertStringIncludes(modal, "calculateGalleryFrameRatio");
+  assertStringIncludes(modal, 'view="desktop"');
+  assertStringIncludes(modal, 'view="compact"');
+  assertStringIncludes(modal, "esv-product-modal-empty-cell");
+  assertStringIncludes(modal, "slide.indices.map");
   assertStringIncludes(modal, "ProductMediaViewer");
   assertFalse(modal.includes(".slice(0, 2)"));
   assertStringIncludes(viewer, 'event.key === "ArrowLeft"');
@@ -238,15 +234,12 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(modal, 'root.style.overflow = "hidden"');
   assertStringIncludes(modal, "root.style.overflow = previous.rootOverflow");
   assertStringIncludes(modal, "if (!product || images.length === 0) return;");
-  assertStringIncludes(css, ".esv-product-modal-gallery.is-single");
-  assertStringIncludes(css, ".esv-product-modal-gallery.is-double");
-  assertStringIncludes(css, ".esv-product-modal-gallery.is-multiple");
+  assertStringIncludes(css, ".esv-product-modal-slide.is-pair");
+  assertStringIncludes(css, ".esv-product-modal-empty-cell");
   assertStringIncludes(css, "scroll-snap-type: x mandatory");
   assertStringIncludes(css, ".esv-product-modal-gallery-mobile-counter");
-  assertStringIncludes(fidelityCss, "object-fit: cover !important");
-  assertStringIncludes(frameCss, "--esv-modal-gallery-ratio: 6 / 5");
-  assertStringIncludes(frameCss, "--esv-modal-gallery-ratio: 1 / 1");
-  assertStringIncludes(frameCss, "--esv-modal-gallery-ratio: 4 / 5");
+  assertStringIncludes(css, "object-fit: contain");
+  assertFalse(css.includes("!important"));
   assertStringIncludes(modal, 'type ModalPhase = "unmounted" | "opening"');
   assertStringIncludes(modal, 'updatePhase("closing")');
   assertStringIncludes(modal, "onTransitionEnd");
@@ -257,7 +250,7 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(recommendationsRoute, "MAX_RECOMMENDATIONS = 4");
   assertStringIncludes(recommendationsRoute, "new Set([productId])");
   assertStringIncludes(recommendationsRoute, 'sort: "newest"');
-  assertStringIncludes(fidelityCss, ".esv-product-viewer-stage");
+  assertStringIncludes(css, ".esv-product-viewer-stage");
 });
 
 Deno.test("Matter is a whole-panel category link with stable overlay CSS", async () => {

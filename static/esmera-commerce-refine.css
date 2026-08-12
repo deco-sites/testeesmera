@@ -552,7 +552,8 @@ main {
   justify-content: center;
   width: 46px;
   height: 46px;
-  overflow: hidden;
+  overflow: visible;
+  gap: 0;
   border: 1px solid rgba(243, 240, 232, .2);
   border-radius: 999px;
   background: rgba(17, 18, 16, .94);
@@ -564,17 +565,34 @@ main {
 
 .esv-whatsapp-label {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  right: 54px;
+  width: max-content;
+  padding: 7px 9px;
+  border: 1px solid rgba(243, 240, 232, .14);
+  border-radius: 999px;
+  background: rgba(17, 18, 16, .92);
+  color: var(--ink-inverse);
+  opacity: 0;
+  transform: translate3d(5px, 0, 0);
+  pointer-events: none;
   white-space: nowrap;
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: .04em;
+  transition:
+    opacity 160ms var(--ease-esmera),
+    transform 180ms var(--ease-esmera);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .esv-whatsapp-sticky:hover {
-  opacity: .86;
-}
+    transform: translateY(-2px);
+  }
+
+  .esv-whatsapp-sticky:hover .esv-whatsapp-label {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -756,6 +774,10 @@ main {
     height: 44px;
   }
 
+  .esv-whatsapp-label {
+    display: none;
+  }
+
   .esv-footer {
     padding-block: 36px 20px;
   }
@@ -849,7 +871,7 @@ main {
   .esv-header-overlay,
   .esv-header-panel,
   .esv-whatsapp-sticky {
-    transition: none !important;
-    animation: none !important;
+    transition: none;
+    animation: none;
   }
 }

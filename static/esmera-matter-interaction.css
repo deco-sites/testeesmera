@@ -1,6 +1,6 @@
 /* ESMÉRA — Matter category interaction
- * Final positioning contract for the existing three-panel composition.
- * It stabilizes media/shade/copy layers without changing the section grid.
+ * Interaction-only layer for the current static three-panel composition.
+ * Grid and responsive structure remain owned by esmera-master.css.
  */
 
 .esv-territory-panel,
@@ -45,8 +45,6 @@
   transition: background 260ms var(--ease-esmera);
 }
 
-.esv-scenes-ready .esv-territory-copy,
-.esv-scenes-ready .esv-territory-panel.is-active .esv-territory-copy,
 .esv-territory-copy {
   position: absolute;
   z-index: 2;
@@ -112,8 +110,6 @@
 }
 
 @media (max-width: 1100px) and (min-width: 768px) {
-  .esv-scenes-ready .esv-territory-copy,
-  .esv-scenes-ready .esv-territory-panel.is-active .esv-territory-copy,
   .esv-territory-copy {
     right: 20px;
     bottom: 28px;
@@ -122,8 +118,6 @@
 }
 
 @media (max-width: 767px) {
-  .esv-scenes-ready .esv-territory-copy,
-  .esv-scenes-ready .esv-territory-panel.is-active .esv-territory-copy,
   .esv-territory-copy {
     right: var(--page-x);
     bottom: clamp(28px, 8vw, 44px);

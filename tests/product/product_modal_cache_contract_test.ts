@@ -1,4 +1,4 @@
-import { assert, assertFalse, assertStringIncludes } from "@std/assert";
+import { assertFalse, assertStringIncludes } from "@std/assert";
 
 Deno.test("product modal has one revisioned stylesheet with no override layers", async () => {
   const app = await Deno.readTextFile("routes/_app.tsx");
@@ -17,10 +17,11 @@ Deno.test("product modal has one revisioned stylesheet with no override layers",
   assertFalse(app.includes("esmera-product-media-v16.css"));
   assertFalse(app.includes("esmera-hotfix-product-modal.css"));
   assertFalse(css.includes("!important"));
-  assertStringIncludes(css, "aspect-ratio: var(--esv-modal-gallery-ratio);");
-  assertStringIncludes(css, "object-fit: contain;");
+  assertFalse(css.includes("--esv-modal-gallery-ratio"));
+  assertStringIncludes(css, "aspect-ratio: 3 / 2;");
+  assertStringIncludes(css, "aspect-ratio: 1 / 1;");
+  assertStringIncludes(css, "--esv-stage-inset:");
   assertStringIncludes(css, "--esv-gallery-pair-gap: 0px;");
   assertStringIncludes(css, ".esv-product-viewer-stage");
   assertStringIncludes(css, "touch-action: none;");
-  assert(css.match(/\.esv-product-modal-gallery-frame\s*\{/g)?.length === 1);
 });

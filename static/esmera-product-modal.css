@@ -81,12 +81,13 @@ body.esv-product-modal-open {
 }
 
 .esv-product-modal {
+  --esv-modal-buybox-w: clamp(380px, 27vw, 440px);
+  --esv-modal-w: min(1440px, 96vw, calc(88dvh * 1.5 + var(--esv-modal-buybox-w)));
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.42fr) minmax(340px, .72fr);
-  width: min(1440px, 100%, calc(88dvh * 1.8));
+  grid-template-columns: minmax(0, 1fr) var(--esv-modal-buybox-w);
+  width: var(--esv-modal-w);
   height: auto;
-  max-height: 88dvh;
   overflow: hidden;
   border: 1px solid rgba(243, 240, 232, .12);
   background: var(--bg);
@@ -142,15 +143,15 @@ body.esv-product-modal-open {
   transform: rotate(2deg);
 }
 
-/* Orientation-aware gallery. The inline ratio is computed from Payload media. */
+/* Canonical gallery stage. Ratio belongs to the brand, not to each file. */
 .esv-product-modal-gallery-frame {
+  --esv-stage-inset: clamp(20px, 2.4vw, 48px);
   position: relative;
   width: 100%;
   height: auto;
   min-width: 0;
   min-height: 0;
-  aspect-ratio: var(--esv-modal-gallery-ratio);
-  align-self: start;
+  aspect-ratio: 3 / 2;
   justify-self: stretch;
   overflow: hidden;
   background: var(--bg);
@@ -196,31 +197,36 @@ body.esv-product-modal-open {
   gap: var(--esv-gallery-pair-gap);
 }
 
+.esv-product-modal-slide.is-mounted {
+  grid-template-columns: 50%;
+  justify-content: center;
+}
+
 .esv-product-modal-image {
   appearance: none;
+  box-sizing: border-box;
   position: relative;
-  display: block;
+  display: grid;
+  place-items: center;
   min-width: 0;
   min-height: 0;
   width: 100%;
   height: 100%;
-  padding: 0;
+  padding: var(--esv-stage-inset);
   overflow: hidden;
   border: 0;
-  background: var(--bg);
+  background: transparent;
   cursor: zoom-in;
 }
 
-.esv-product-modal-empty-cell {
+.esv-product-modal-image img {
+  position: absolute;
+  inset: var(--esv-stage-inset);
+  display: block;
+  width: calc(100% - (2 * var(--esv-stage-inset)));
+  height: calc(100% - (2 * var(--esv-stage-inset)));
   min-width: 0;
   min-height: 0;
-  background: var(--bg);
-}
-
-.esv-product-modal-image img {
-  display: block;
-  width: 100%;
-  height: 100%;
   object-fit: contain;
   object-position: center;
 }
@@ -300,7 +306,7 @@ body.esv-product-modal-open {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
   border-left: 1px solid var(--line);
 }
 
@@ -309,7 +315,7 @@ body.esv-product-modal-open {
   min-width: 0;
   min-height: 0;
   padding: clamp(54px, 5vw, 78px) clamp(34px, 4vw, 64px) 30px;
-  overflow-y: auto;
+  overflow-y: visible;
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--muted) transparent;
@@ -431,6 +437,9 @@ body.esv-product-modal-open {
 
 .esv-product-modal-add {
   appearance: none;
+  position: sticky;
+  z-index: 4;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -493,9 +502,10 @@ body.esv-product-modal-open {
 
 .esv-product-modal-related-media,
 .esv-product-modal-related-skeleton > span {
+  --esv-related-card-ratio: 4 / 5;
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: var(--esv-related-card-ratio);
   overflow: hidden;
   background: var(--bg-alt);
 }
@@ -747,6 +757,10 @@ body.esv-product-modal-open {
 }
 
 @media (max-width: 1023.98px) {
+  .esv-product-modal-gallery-frame {
+    aspect-ratio: 1 / 1;
+  }
+
   .esv-product-modal-gallery-frame.is-desktop {
     display: none;
   }
@@ -789,6 +803,10 @@ body.esv-product-modal-open {
 }
 
 @media (max-width: 767px) {
+  .esv-product-modal-gallery-frame {
+    --esv-stage-inset: 14px;
+  }
+
   .esv-product-modal-backdrop {
     place-items: stretch;
     padding: 0;

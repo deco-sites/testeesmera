@@ -234,7 +234,7 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(modal, "orderGalleryMedia");
   assertStringIncludes(modal, 'view="desktop"');
   assertStringIncludes(modal, 'view="compact"');
-  assertStringIncludes(modal, "esv-product-modal-empty-cell");
+  assertFalse(modal.includes("esv-product-modal-empty-cell"));
   assertStringIncludes(modal, "plate.indices.map");
   assertStringIncludes(modal, "ProductMediaViewer");
   assertFalse(modal.includes(".slice(0, 2)"));
@@ -247,7 +247,11 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(modal, "root.style.overflow = previous.rootOverflow");
   assertStringIncludes(modal, "if (!product || images.length === 0) return;");
   assertStringIncludes(css, ".esv-product-modal-slide.is-pair");
-  assertStringIncludes(css, ".esv-product-modal-empty-cell");
+  assertStringIncludes(css, ".esv-product-modal-slide.is-mounted");
+  assertStringIncludes(css, "aspect-ratio: 3 / 2");
+  assertStringIncludes(css, "aspect-ratio: 1 / 1");
+  assertFalse(css.includes("--esv-modal-gallery-ratio"));
+  assertFalse(css.includes(".esv-product-modal-empty-cell"));
   assertStringIncludes(css, "scroll-snap-type: x mandatory");
   assertStringIncludes(css, ".esv-product-modal-gallery-mobile-counter");
   assertStringIncludes(css, "object-fit: contain");

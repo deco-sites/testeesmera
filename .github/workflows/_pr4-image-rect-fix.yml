@@ -1,0 +1,43 @@
+name: Stage final PR4 image rect fix
+on:
+  push:
+    branches: [agent/gallery-pr4-geometry]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: agent/gallery-pr4-geometry
+          fetch-depth: 0
+      - name: Pin image rect inside passe-partout
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('static/esmera-product-modal.css')
+          s = p.read_text()
+          start = s.index('.esv-product-modal-image img {')
+          end = s.index('\n}', start) + 2
+          new = '''.esv-product-modal-image img {
+  position: absolute;
+  inset: var(--esv-stage-inset);
+  display: block;
+  width: calc(100% - (2 * var(--esv-stage-inset)));
+  height: calc(100% - (2 * var(--esv-stage-inset)));
+  min-width: 0;
+  min-height: 0;
+  object-fit: contain;
+  object-position: center;
+}'''
+          p.write_text(s[:start] + new + s[end:])
+          PY
+      - name: Commit verified rect fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add static/esmera-product-modal.css
+          git commit -m 'fix(modal): pin contained media inside stage inset'
+          git push origin HEAD:agent/gallery-pr4-geometry

@@ -32,7 +32,7 @@
   --section-y: clamp(128px, 10vw, 192px);
   --content-max: 1600px;
   --grid-gap: clamp(20px, 1.8vw, 28px);
-  --header-h: 60px;
+  --header-h: 72px;
   --ease-esmera: cubic-bezier(.16, 1, .3, 1);
 
   /* Compatibility aliases used by existing components. */

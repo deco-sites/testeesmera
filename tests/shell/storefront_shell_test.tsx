@@ -126,7 +126,7 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   assertStringIncludes(megaOpenHeader, "border-bottom: 0");
   assertStringIncludes(megaBase, "border-top: 0");
 
-  assertStringIncludes(masterCss, "--header-h: 60px");
+  assertStringIncludes(masterCss, "--header-h: 72px");
   assert(masterCss.match(/--header-h:/g)?.length === 1);
   assertStringIncludes(masterCss, "--ease-esmera: cubic-bezier(.16, 1, .3, 1)");
   assertFalse(masterCss.includes(".esv-header.is-scrolled"));
@@ -204,9 +204,9 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   );
   assertStringIncludes(headerCss, ".esv-header .esv-cart-label");
   assertStringIncludes(headerCss, ".esv-header .esv-cart-icon");
+  assertStringIncludes(headerCss, "--esv-header-logo-h: 44px");
   assertStringIncludes(headerCss, "--esv-header-logo-h: 34px");
   assertStringIncludes(headerCss, "--esv-header-logo-h: 30px");
-  assertStringIncludes(headerCss, "--esv-header-logo-h: 26px");
   assertStringIncludes(headerCss, "padding-inline: var(--page-x)");
   assertStringIncludes(headerCss, "rgba(17, 18, 16, .28)");
   assertFalse(headerCss.includes("padding-inline: 12px"));

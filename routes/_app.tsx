@@ -8,7 +8,7 @@ export default defineApp(async (_req, ctx) => {
   // Static CSS can outlive a branch deploy in Deco's CDN when the release
   // revision remains stable. Bump this token whenever the storefront chrome
   // changes so preview environments cannot mix new JSX with stale styles.
-  const storefrontStyleRevision = "2026-08-13-header-menu-card-v30";
+  const storefrontStyleRevision = "2026-08-13-header-menu-card-v31";
   // Home-only cache bust. Keeps the independently certified product-media
   // contract stable while invalidating homepage motion/interaction CSS.
   const homeStyleRevision = "2026-08-13-home-corrections-v22";
@@ -17,67 +17,23 @@ export default defineApp(async (_req, ctx) => {
       <Theme colorScheme="any" />
 
       <Head>
-        <link
-          href={asset(`/styles.css?revision=${revision}`)}
-          rel="stylesheet"
-        />
-
+        <link href={asset(`/styles.css?revision=${revision}`)} rel="stylesheet" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossorigin=""
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap"
-          rel="stylesheet"
-        />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
         <link rel="stylesheet" href={asset("/esmera-master.css")} />
         <link rel="stylesheet" href={asset("/esmera-finish.css")} />
-        <link
-          rel="stylesheet"
-          href={asset(`/esmera-motion-v2.css?v=${homeStyleRevision}`)}
-        />
+        <link rel="stylesheet" href={asset(`/esmera-motion-v2.css?v=${homeStyleRevision}`)} />
         <link rel="stylesheet" href={asset("/esmera-commerce-refine.css")} />
-        <link
-          rel="stylesheet"
-          href={asset(`/esmera-product-modal.css?v=${storefrontStyleRevision}`)}
-        />
-        <link
-          rel="stylesheet"
-          href={asset(`/esmera-matter-interaction.css?v=${homeStyleRevision}`)}
-        />
-        <link
-          rel="stylesheet"
-          href={asset(`/esmera-catalog-v2.css?v=${storefrontStyleRevision}`)}
-        />
-        <link
-          rel="stylesheet"
-          href={asset(
-            `/esmera-collection-filter-v3.css?v=${storefrontStyleRevision}`,
-          )}
-        />
-        <link
-          rel="stylesheet"
-          href={asset(
-            `/esmera-collection-filter-label-fix.css?v=${storefrontStyleRevision}`,
-          )}
-        />
-        <link
-          rel="stylesheet"
-          href={asset(`/esmera-header.css?v=${storefrontStyleRevision}`)}
-        />
-        <link
-          rel="stylesheet"
-          href={asset(
-            `/esmera-product-card.css?v=${storefrontStyleRevision}`,
-          )}
-        />
-        <link
-          rel="stylesheet"
-          href={asset("/esmera-accessibility-p1-v1.css")}
-        />
-
+        <link rel="stylesheet" href={asset(`/esmera-product-modal.css?v=${storefrontStyleRevision}`)} />
+        <link rel="stylesheet" href={asset(`/esmera-matter-interaction.css?v=${homeStyleRevision}`)} />
+        <link rel="stylesheet" href={asset(`/esmera-catalog-v2.css?v=${storefrontStyleRevision}`)} />
+        <link rel="stylesheet" href={asset(`/esmera-collection-filter-v3.css?v=${storefrontStyleRevision}`)} />
+        <link rel="stylesheet" href={asset(`/esmera-collection-filter-label-fix.css?v=${storefrontStyleRevision}`)} />
+        <link rel="stylesheet" href={asset(`/esmera-header.css?v=${storefrontStyleRevision}`)} />
+        <link rel="stylesheet" href={asset(`/esmera-header-proportions.css?v=${storefrontStyleRevision}`)} />
+        <link rel="stylesheet" href={asset(`/esmera-product-card.css?v=${storefrontStyleRevision}`)} />
+        <link rel="stylesheet" href={asset("/esmera-accessibility-p1-v1.css")} />
         <link rel="manifest" href={asset("/site.webmanifest")} />
         <link rel="icon" href={asset("/favicon.ico")} />
         <link rel="apple-touch-icon" href={asset("/apple-touch-icon.png")} />

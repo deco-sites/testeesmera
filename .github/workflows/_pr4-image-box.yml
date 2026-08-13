@@ -1,0 +1,36 @@
+name: Apply PR4 image box fix
+on:
+  push:
+    branches: [agent/gallery-pr4-geometry]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: agent/gallery-pr4-geometry
+          fetch-depth: 0
+      - name: Bind media element to the gallery cell
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('static/esmera-product-modal.css')
+          s=p.read_text()
+          selector='.esv-product-modal-image img {'
+          start=s.index(selector)
+          close=s.index('\n}', start)
+          block=s[start:close]
+          block=block.replace('  width: auto;\n  height: auto;\n  max-width: 100%;\n  max-height: 100%;\n', '  width: 100%;\n  height: 100%;\n  max-width: 100%;\n  max-height: 100%;\n')
+          s=s[:start]+block+s[close:]
+          p.write_text(s)
+          PY
+      - name: Commit image box fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add static/esmera-product-modal.css
+          git commit -m 'fix(modal): bind contained media to stage cell'
+          git push origin HEAD:agent/gallery-pr4-geometry

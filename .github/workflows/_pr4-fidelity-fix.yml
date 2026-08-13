@@ -1,0 +1,39 @@
+name: Apply PR4 fidelity fix
+on:
+  push:
+    branches: [agent/gallery-pr4-geometry]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: agent/gallery-pr4-geometry
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Make containment explicit
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('static/esmera-product-modal.css')
+          s=p.read_text()
+          old='''  max-width: 100%;\n  max-height: 100%;\n  object-position: center;\n}'''
+          new='''  max-width: 100%;\n  max-height: 100%;\n  object-fit: contain;\n  object-position: center;\n}'''
+          if old not in s:
+            raise SystemExit('modal image block not found')
+          p.write_text(s.replace(old,new,1))
+          PY
+          deno fmt static/esmera-product-modal.css
+          deno task check
+          deno task test
+      - name: Commit fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add static/esmera-product-modal.css
+          git commit -m 'fix(modal): keep explicit contained media'
+          git push origin HEAD:agent/gallery-pr4-geometry

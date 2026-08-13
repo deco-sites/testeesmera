@@ -264,6 +264,16 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(css, ".esv-product-modal-slide.is-mounted");
   assertStringIncludes(css, "aspect-ratio: 3 / 2");
   assertStringIncludes(css, "aspect-ratio: 1 / 1");
+  assertStringIncludes(
+    css,
+    "calc(132dvh + var(--esv-modal-buybox-w))",
+  );
+  assertFalse(css.includes("88dvh * 1.5"));
+  assertStringIncludes(css, "contain: size;");
+  assertStringIncludes(
+    css,
+    "(max-width: 1180px) and (orientation: portrait)",
+  );
   assertFalse(css.includes("--esv-modal-gallery-ratio"));
   assertFalse(css.includes(".esv-product-modal-empty-cell"));
   assertStringIncludes(css, "scroll-snap-type: x mandatory");

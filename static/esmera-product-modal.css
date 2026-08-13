@@ -82,7 +82,7 @@ body.esv-product-modal-open {
 
 .esv-product-modal {
   --esv-modal-buybox-w: clamp(380px, 27vw, 440px);
-  --esv-modal-w: min(1440px, 96vw, calc(88dvh * 1.5 + var(--esv-modal-buybox-w)));
+  --esv-modal-w: min(1440px, 96vw, calc(132dvh + var(--esv-modal-buybox-w)));
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--esv-modal-buybox-w);
@@ -326,7 +326,8 @@ body.esv-product-modal-open {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
+  contain: size;
   border-left: 1px solid var(--line);
 }
 
@@ -335,7 +336,7 @@ body.esv-product-modal-open {
   min-width: 0;
   min-height: 0;
   padding: clamp(54px, 5vw, 78px) clamp(34px, 4vw, 64px) 30px;
-  overflow-y: visible;
+  overflow-y: auto;
   overscroll-behavior: contain;
 }
 
@@ -771,7 +772,8 @@ body.esv-product-modal-open {
   }
 }
 
-@media (max-width: 1023.98px) {
+@media (max-width: 1023.98px),
+  (max-width: 1180px) and (orientation: portrait) {
   .esv-product-modal-gallery-frame {
     aspect-ratio: 1 / 1;
   }

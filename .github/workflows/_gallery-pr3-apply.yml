@@ -1,0 +1,44 @@
+name: Apply PR3 gallery plate refactor
+
+on:
+  push:
+    branches:
+      - agent/gallery-pr3-plate-logic
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Apply plate refactor
+        run: python scripts/ci/_gallery_pr3_patch.py
+      - name: Format PR3 files
+        run: >-
+          deno fmt
+          islands/ProductModal.tsx
+          lib/esmera/gallery.ts
+          lib/esmera/productMediaPresentation.ts
+          tests/product/gallery_test.ts
+          tests/product/product_media_presentation_test.ts
+          tests/product/product_modal_contract_test.ts
+      - name: Check
+        run: deno task check
+      - name: Test
+        run: deno task test
+      - name: Commit verified PR3 implementation
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm scripts/ci/_gallery_pr3_patch.py
+          git add islands/ProductModal.tsx lib/esmera/gallery.ts lib/esmera/productMediaPresentation.ts tests/product/gallery_test.ts tests/product/product_media_presentation_test.ts tests/product/product_modal_contract_test.ts
+          git commit -m "refactor(gallery): plan product media as pure plates"
+          git push

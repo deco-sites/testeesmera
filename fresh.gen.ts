@@ -6,6 +6,7 @@ import * as $_404 from "./routes/_404.tsx";
 import * as $_500 from "./routes/_500.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $api_esmera_collection from "./routes/api/esmera-collection.ts";
+import * as $api_esmera_recommendations from "./routes/api/esmera-recommendations.ts";
 import * as $api_esmera_renderability from "./routes/api/esmera-renderability.ts";
 import * as $api_esmera_reserve from "./routes/api/esmera-reserve.ts";
 import * as $api_esmera_search from "./routes/api/esmera-search.ts";
@@ -37,6 +38,7 @@ const manifest = {
     "./routes/_500.tsx": $_500,
     "./routes/_app.tsx": $_app,
     "./routes/api/esmera-collection.ts": $api_esmera_collection,
+    "./routes/api/esmera-recommendations.ts": $api_esmera_recommendations,
     "./routes/api/esmera-renderability.ts": $api_esmera_renderability,
     "./routes/api/esmera-reserve.ts": $api_esmera_reserve,
     "./routes/api/esmera-search.ts": $api_esmera_search,

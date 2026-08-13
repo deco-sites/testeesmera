@@ -1,4 +1,6 @@
 import { assertEquals } from "@std/assert";
+import { toProductGallery } from "../../lib/payload/adapters.ts";
+import type { PayloadProduct } from "../../lib/payload/types.ts";
 import {
   fetchStorefrontProducts,
   type StorefrontProductsV2,
@@ -57,4 +59,33 @@ Deno.test("ObjectCard consumes Storefront and keeps the resolved Home fallback",
   );
   assertEquals(source.includes("toProductCardViewModel(item)"), true);
   assertEquals(source.includes("esmeraObjectToCardViewModel(item)"), true);
+});
+
+Deno.test("product gallery exposes derivative and original dimensions", () => {
+  const product = {
+    gallery: [{
+      image: {
+        id: 10,
+        url: "/media/original.jpg",
+        width: 1200,
+        height: 1600,
+        alt: "Objeto",
+        _status: "published",
+        sizes: {
+          gallery: { url: "/media/gallery.jpg", width: 1350, height: 1800 },
+        },
+      },
+      alt: "Objeto na galeria",
+      mediaKey: "cover-main",
+      role: "cover",
+    }],
+  } as PayloadProduct;
+  const [media] = toProductGallery(product, "https://cms.example.com");
+  assertEquals(media.width, 1350);
+  assertEquals(media.height, 1800);
+  assertEquals(media.fullWidth, 1200);
+  assertEquals(media.fullHeight, 1600);
+  assertEquals(media.fullUrl, "https://cms.example.com/media/original.jpg");
+  assertEquals(media.key, "cover-main");
+  assertEquals(media.role, "cover");
 });

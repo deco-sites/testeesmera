@@ -1,0 +1,37 @@
+name: Apply PR4 mobile containment fix
+on:
+  push:
+    branches: [agent/gallery-pr4-geometry]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: agent/gallery-pr4-geometry
+          fetch-depth: 0
+      - name: Keep padded gallery cells inside the stage
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('static/esmera-product-modal.css')
+          s=p.read_text()
+          selector='.esv-product-modal-image {'
+          start=s.index(selector)
+          close=s.index('\n}', start)
+          block=s[start:close]
+          if 'box-sizing: border-box;' not in block:
+            block=block.replace('  appearance: none;\n', '  appearance: none;\n  box-sizing: border-box;\n', 1)
+            s=s[:start]+block+s[close:]
+            p.write_text(s)
+          PY
+      - name: Commit mobile containment fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add static/esmera-product-modal.css
+          git commit -m 'fix(modal): contain padded cells on compact stages'
+          git push origin HEAD:agent/gallery-pr4-geometry

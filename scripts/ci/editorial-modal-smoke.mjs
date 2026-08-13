@@ -160,7 +160,7 @@ async function validateDesktop(browser) {
     ).first();
     await opener.click();
     await page.waitForSelector(".esv-product-viewer", { state: "visible" });
-    await page.keyboard.press("Escape");
+    await page.getByRole("button", { name: "Fechar visualizador" }).click();
     await page.waitForSelector(".esv-product-viewer", { state: "detached" });
     await page.waitForSelector(".esv-product-modal", { state: "visible" });
     await page.screenshot({ path: `${ARTIFACT_DIR}/desktop-modal.png` });

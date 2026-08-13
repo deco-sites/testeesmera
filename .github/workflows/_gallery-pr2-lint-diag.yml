@@ -1,4 +1,4 @@
-name: Gallery PR2 lint diagnostic
+name: Gallery PR2 lint fix
 
 on:
   push:
@@ -6,26 +6,19 @@ on:
       - agent/gallery-pr2-media-contract
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  lint:
+  fix:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
       - shell: bash
         run: |
-          set +e
-          deno lint 2>&1 | tee lint.log
-          echo "${PIPESTATUS[0]}" > lint-exit.txt
-          exit 0
-      - uses: actions/upload-artifact@v4
-        with:
-          name: gallery-pr2-lint
-          path: |
-            lint.log
-            lint-exit.txt
+          sed -i 's/window\.innerWidth/globalThis.innerWidth/g' scripts/ci/editorial-modal-smoke.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/ci/editorial-modal-smoke.mjs
+          git commit -m "fix(ci): satisfy Deno lint in editorial smoke"
+          git push

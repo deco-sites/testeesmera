@@ -272,7 +272,7 @@ try {
   const mixedFirstClass = await mixedSlides.nth(0).getAttribute("class");
   const mixedSecondClass = await mixedSlides.nth(1).getAttribute("class");
   if (
-    !mixedFirstClass?.includes("is-pair") ||
+    !mixedFirstClass?.includes("is-mounted") ||
     !mixedSecondClass?.includes("is-single")
   ) {
     fail("Mixed ratios produced the wrong stages", {

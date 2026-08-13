@@ -232,6 +232,20 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(modal, "buildInstallmentFromPriceCents");
   assertStringIncludes(modal, "buildGalleryPlates");
   assertStringIncludes(modal, "orderGalleryMedia");
+  assertStringIncludes(modal, "plateLabel(activeIndex, plates.length)");
+  assertStringIncludes(modal, "cellSizes(plate)");
+  assertStringIncludes(modal, "mediaIndexForKeys(images, next.mediaKeys)");
+  assertStringIncludes(modal, "plateIndexOfMedia(desktopPlates, mediaIndex)");
+  assertStringIncludes(modal, 'event.key === "ArrowLeft"');
+  assertStringIncludes(modal, 'event.key === "ArrowRight"');
+  assertStringIncludes(modal, 'event.key === "Home"');
+  assertStringIncludes(modal, 'event.key === "End"');
+  assertStringIncludes(
+    modal,
+    'fetchPriority: plateIndex === 0 ? "high" : "auto"',
+  );
+  assertFalse(modal.includes("(min-width: 1024px) 35vw, 100vw"));
+  assertFalse(modal.includes("(min-width: 1024px) 70vw, 100vw"));
   assertStringIncludes(modal, 'view="desktop"');
   assertStringIncludes(modal, 'view="compact"');
   assertFalse(modal.includes("esv-product-modal-empty-cell"));
@@ -255,6 +269,8 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(css, "scroll-snap-type: x mandatory");
   assertStringIncludes(css, ".esv-product-modal-gallery-mobile-counter");
   assertStringIncludes(css, "object-fit: contain");
+  assertStringIncludes(css, "opacity 240ms cubic-bezier(.4, 0, .2, 1)");
+  assertStringIncludes(css, "@media (prefers-reduced-motion: reduce)");
   assertFalse(css.includes("!important"));
   assertStringIncludes(modal, 'type ModalPhase = "unmounted" | "opening"');
   assertStringIncludes(modal, 'updatePhase("closing")');

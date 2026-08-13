@@ -3,8 +3,12 @@ import ProductMediaViewer from "../components/esmera/ProductMediaViewer.tsx";
 import { getAvailabilityMeta } from "../components/esmera/availability.ts";
 import {
   buildGalleryPlates,
+  cellSizes,
   type GalleryPlate,
+  mediaIndexForKeys,
   orderGalleryMedia,
+  plateIndexOfMedia,
+  plateLabel,
 } from "../lib/esmera/gallery.ts";
 import { buildInstallmentFromPriceCents } from "../lib/esmera/productCard.ts";
 import type { EsmeraObject, EsmeraVariant } from "../lib/payload/types.ts";
@@ -47,10 +51,6 @@ const FOCUSABLE_SELECTOR = [
 
 function normalized(value?: string | null): string {
   return value?.trim() ?? "";
-}
-
-function formatImagePosition(value: number): string {
-  return String(value).padStart(2, "0");
 }
 
 function toModalImage(
@@ -185,21 +185,50 @@ function GalleryFrame({
   onActiveIndexChange,
   onOpenViewer,
 }: GalleryFrameProps) {
-  const positionLabel = `${formatImagePosition(activeIndex + 1)} / ${
-    formatImagePosition(plates.length)
-  }`;
+  const positionLabel = plateLabel(activeIndex, plates.length);
   const changeSlide = (delta: number) => {
     onActiveIndexChange(
       (activeIndex + delta + plates.length) % plates.length,
     );
   };
+  const preloadPlate = (index: number) => {
+    if (plates.length === 0 || typeof Image === "undefined") return;
+    const normalizedIndex = (index + plates.length) % plates.length;
+    const plate = plates[normalizedIndex];
+    plate.indices.forEach((imageIndex) => {
+      const image = images[imageIndex];
+      if (!image?.src) return;
+      const preload = new Image();
+      const srcSet = modalImageSrcSet(image);
+      if (srcSet) preload.srcset = srcSet;
+      preload.sizes = cellSizes(plate);
+      preload.src = image.src;
+    });
+  };
+  const onGalleryKeyDown = (event: KeyboardEvent) => {
+    if (plates.length < 2) return;
+    let nextIndex: number | null = null;
+    if (event.key === "ArrowLeft") {
+      nextIndex = (activeIndex - 1 + plates.length) % plates.length;
+    } else if (event.key === "ArrowRight") {
+      nextIndex = (activeIndex + 1) % plates.length;
+    } else if (event.key === "Home") {
+      nextIndex = 0;
+    } else if (event.key === "End") {
+      nextIndex = plates.length - 1;
+    }
+    if (nextIndex === null) return;
+    event.preventDefault();
+    onActiveIndexChange(nextIndex);
+  };
 
   return (
-    <div class={`esv-product-modal-gallery-frame is-${view}`}>
+    <div
+      class={`esv-product-modal-gallery-frame is-${view}`}
+      onKeyDown={onGalleryKeyDown}
+    >
       <div ref={galleryRef} class="esv-product-modal-gallery">
         {plates.map((plate, plateIndex) => {
-          const pairPresentation = plate.columns === 2 ||
-            plate.mount === "mounted";
           return (
             <div
               class={`esv-product-modal-slide ${
@@ -228,13 +257,14 @@ function GalleryFrame({
                     <img
                       src={image.src}
                       srcSet={modalImageSrcSet(image)}
-                      sizes={pairPresentation
-                        ? "(min-width: 1024px) 35vw, 100vw"
-                        : "(min-width: 1024px) 70vw, 100vw"}
+                      sizes={cellSizes(plate)}
                       alt={image.alt}
                       width={image.width ?? image.fullWidth}
                       height={image.height ?? image.fullHeight}
-                      loading={imageIndex === 0 ? "eager" : "lazy"}
+                      loading={plateIndex === 0 ? "eager" : "lazy"}
+                      {...{
+                        fetchPriority: plateIndex === 0 ? "high" : "auto",
+                      }}
                       decoding="async"
                     />
                     <span aria-hidden="true">Ampliar</span>
@@ -250,6 +280,7 @@ function GalleryFrame({
             <button
               type="button"
               aria-label="Slide anterior da galeria"
+              onPointerEnter={() => preloadPlate(activeIndex - 1)}
               onClick={() => changeSlide(-1)}
             >
               <ArrowIcon direction="previous" />
@@ -258,6 +289,7 @@ function GalleryFrame({
             <button
               type="button"
               aria-label="Próximo slide da galeria"
+              onPointerEnter={() => preloadPlate(activeIndex + 1)}
               onClick={() => changeSlide(1)}
             >
               <ArrowIcon direction="next" />
@@ -340,6 +372,34 @@ export default function ProductModal() {
   const closeViewer = () => {
     updateZoomIndex(null);
     globalThis.setTimeout(() => viewerTriggerRef.current?.focus(), 0);
+  };
+
+  const chooseVariant = (next: EsmeraVariant | undefined) => {
+    setSelectedVariant(next);
+    if (!next || next.mediaKeys.length === 0) return;
+    const mediaIndex = mediaIndexForKeys(images, next.mediaKeys);
+    if (mediaIndex < 0) return;
+
+    const desktopIndex = plateIndexOfMedia(desktopPlates, mediaIndex);
+    if (desktopIndex >= 0) setActiveDesktopIndex(desktopIndex);
+
+    const compactIndex = plateIndexOfMedia(compactPlates, mediaIndex);
+    if (compactIndex < 0) return;
+    setActiveCompactIndex(compactIndex);
+
+    if (
+      typeof globalThis.matchMedia === "function" &&
+      globalThis.matchMedia("(max-width: 767px)").matches
+    ) {
+      requestAnimationFrame(() => {
+        const gallery = compactGalleryRef.current;
+        if (!gallery) return;
+        gallery.scrollTo({
+          left: compactIndex * gallery.clientWidth,
+          behavior: "smooth",
+        });
+      });
+    }
   };
 
   const finalizeClose = () => {
@@ -726,7 +786,7 @@ export default function ProductModal() {
                   <select
                     value={selectedVariant?.sku}
                     onChange={(event) =>
-                      setSelectedVariant(
+                      chooseVariant(
                         availableVariants.find((variant) =>
                           variant.sku === event.currentTarget.value
                         ),

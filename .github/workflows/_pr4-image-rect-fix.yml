@@ -21,20 +21,22 @@ jobs:
           s = p.read_text()
           start = s.index('.esv-product-modal-image img {')
           end = s.index('\n}', start) + 2
-          new = '''.esv-product-modal-image img {
-  position: absolute;
-  inset: var(--esv-stage-inset);
-  display: block;
-  width: calc(100% - (2 * var(--esv-stage-inset)));
-  height: calc(100% - (2 * var(--esv-stage-inset)));
-  min-width: 0;
-  min-height: 0;
-  object-fit: contain;
-  object-position: center;
-}'''
-          p.write_text(s[:start] + new + s[end:])
+          lines = [
+            '.esv-product-modal-image img {',
+            '  position: absolute;',
+            '  inset: var(--esv-stage-inset);',
+            '  display: block;',
+            '  width: calc(100% - (2 * var(--esv-stage-inset)));',
+            '  height: calc(100% - (2 * var(--esv-stage-inset)));',
+            '  min-width: 0;',
+            '  min-height: 0;',
+            '  object-fit: contain;',
+            '  object-position: center;',
+            '}',
+          ]
+          p.write_text(s[:start] + '\n'.join(lines) + s[end:])
           PY
-      - name: Commit verified rect fix
+      - name: Commit rect fix
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'

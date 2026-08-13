@@ -230,16 +230,9 @@ img {
   background: rgba(17, 18, 16, .62);
 }
 
-.esv-header-panel {
-  position: relative;
-  width: min(100%, 560px);
-  height: 100%;
-  padding: clamp(32px, 5vw, 72px);
-  overflow-y: auto;
-  background: var(--bg);
-  color: var(--ink);
-  animation: esv-panel-in 360ms var(--ease-esmera) both;
-}
+/* .esv-header-panel base lives in esmera-commerce-refine.css (loaded after
+ * this file), which overrode every property declared here. The dead copy
+ * was removed to keep a single production source for the header panel. */
 
 .esv-panel-close {
   position: absolute;
@@ -1495,10 +1488,8 @@ img {
 
 
 
-  .esv-header-panel {
-    width: 100%;
-    padding: 28px var(--page-x) 56px;
-  }
+  /* .esv-header-panel responsive override removed: the commerce-refine base
+   * (later source, equal specificity) already won width and padding here. */
 
 
 

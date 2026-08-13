@@ -12,9 +12,6 @@ jobs:
         with:
           ref: agent/gallery-pr4-geometry
           fetch-depth: 0
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
       - name: Make containment explicit
         shell: bash
         run: |
@@ -22,21 +19,17 @@ jobs:
           from pathlib import Path
           p=Path('static/esmera-product-modal.css')
           s=p.read_text()
-          marker='.esv-product-modal-image img {'
-          start=s.index(marker)
-          end=s.index('\n}', start)
-          block=s[start:end]
+          selector='.esv-product-modal-image img {'
+          start=s.index(selector)
+          close=s.index('\n}', start)
+          block=s[start:close]
           if 'object-fit: contain;' not in block:
-            block=block.replace('  object-position: center;', '  object-fit: contain;\n  object-position: center;')
-          s=s[:start]+block+s[end:]
-          p.write_text(s)
+            pos=block.index('object-position: center;')
+            block=block[:pos]+'object-fit: contain;\n  '+block[pos:]
+            s=s[:start]+block+s[close:]
+            p.write_text(s)
           PY
-          deno fmt static/esmera-product-modal.css
-          grep -A10 -F '.esv-product-modal-image img {' static/esmera-product-modal.css | grep -F 'object-fit: contain;'
-      - name: Check
-        run: deno task check
-      - name: Test
-        run: deno task test
+          git diff -- static/esmera-product-modal.css
       - name: Commit fix
         run: |
           git config user.name 'github-actions[bot]'

@@ -220,7 +220,7 @@ try {
   const cssHref = await desktop.locator(
     'link[href*="esmera-product-modal.css"]',
   ).getAttribute("href");
-  if (!cssHref?.includes("2026-08-12-media-fidelity-modal-v23")) {
+  if (!cssHref?.includes("2026-08-12-gallery-behavior-v24")) {
     fail("Media fidelity stylesheet revision is stale", { cssHref });
   }
 
@@ -295,7 +295,7 @@ try {
   await desktopFrame.locator(".esv-product-modal-gallery-controls span")
     .waitFor({ state: "visible" });
   await desktopFrame.locator(".esv-product-modal-gallery-controls span").filter(
-    { hasText: "02 / 02" },
+    { hasText: "02 — 02" },
   ).waitFor();
   assertComplete(
     await imageGeometry(
@@ -435,7 +435,7 @@ try {
     gallery.scrollTo({ left: gallery.clientWidth, behavior: "auto" })
   );
   await mobileFrame.locator(".esv-product-modal-gallery-mobile-counter").filter(
-    { hasText: "02 / 02" },
+    { hasText: "02 — 02" },
   ).waitFor();
   assertComplete(
     await imageGeometry(

@@ -24,7 +24,23 @@ jobs:
       - name: Check
         run: deno task check
       - name: Test
-        run: deno task test
+        id: test
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          deno task test > pr5-test.txt 2>&1
+          status=$?
+          cat pr5-test.txt
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pr5-test-diagnostics
+          path: pr5-test.txt
+      - name: Stop on test failure
+        if: steps.test.outputs.exit_code != '0'
+        run: exit 1
       - name: Commit verified PR5 changes
         run: |
           git config user.name 'github-actions[bot]'

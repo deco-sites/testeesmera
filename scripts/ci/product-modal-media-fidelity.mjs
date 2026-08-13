@@ -216,7 +216,7 @@ try {
     fail("Mixed ratios produced the wrong stages", { mixedFirstClass, mixedSecondClass });
   }
   assertComplete(
-    await imageGeometry(desktopFrame.locator(".esv-product-modal-image.is-active img"), ".esv-product-modal-image"),
+    await imageGeometry(desktopFrame.locator(".esv-product-modal-slide.is-active img").first(), ".esv-product-modal-image"),
     "mixed active portrait",
   );
   await desktop.screenshot({ path: `${ARTIFACT_DIR}/desktop-two-mixed-stage-1.png` });
@@ -224,7 +224,7 @@ try {
   await desktopFrame.locator(".esv-product-modal-gallery-controls span").waitFor({ state: "visible" });
   await desktopFrame.locator(".esv-product-modal-gallery-controls span").filter({ hasText: "02 / 02" }).waitFor();
   assertComplete(
-    await imageGeometry(desktopFrame.locator(".esv-product-modal-image.is-active img"), ".esv-product-modal-image"),
+    await imageGeometry(desktopFrame.locator(".esv-product-modal-slide.is-active img").first(), ".esv-product-modal-image"),
     "mixed active landscape",
   );
   await desktop.screenshot({ path: `${ARTIFACT_DIR}/desktop-two-mixed-stage-2.png` });
@@ -234,12 +234,12 @@ try {
   const threeCount = await desktopFrame.locator(".esv-product-modal-image").count();
   if (threeCount !== 3) fail("Three-image gallery lost media", { threeCount });
   assertComplete(
-    await imageGeometry(desktopFrame.locator(".esv-product-modal-image.is-active img"), ".esv-product-modal-image"),
+    await imageGeometry(desktopFrame.locator(".esv-product-modal-slide.is-active img").first(), ".esv-product-modal-image"),
     "three mixed active",
   );
   await desktop.screenshot({ path: `${ARTIFACT_DIR}/desktop-three-mixed.png` });
 
-  const opener = desktopFrame.locator(".esv-product-modal-image.is-active");
+  const opener = desktopFrame.locator(".esv-product-modal-slide.is-active .esv-product-modal-image").first();
   await opener.click();
   await desktop.waitForSelector(".esv-product-viewer", { state: "visible" });
   await desktop.waitForFunction(() => {

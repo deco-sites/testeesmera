@@ -72,25 +72,34 @@
   transform: translate3d(0, 0, 0) scale(1);
 }
 
-/* Hero entrance only — no scroll-linked parallax. */
-.esv-hero-picture img {
-  transform-origin: center center;
-  animation: esv-hero-settle 1000ms var(--ease-out) both;
-}
-
+/* Hero entrance only — no scroll-linked parallax.
+ * Gated behind .esv-motion-ready (same contract as .esv-reveal) so the
+ * entrance runs exactly once, after the motion JS is ready. Without the
+ * gate these fired at first paint and any post-paint layout change (late
+ * CSS, injected styles) restarted them. Before motion-ready the hero is
+ * simply visible in its resting state. */
 .esv-hero-statement {
   overflow: hidden;
 }
 
+/* Structural: keep block layout regardless of motion state. */
 .esv-hero-line {
   display: block;
+}
+
+.esv-motion-ready .esv-hero-picture img {
+  transform-origin: center center;
+  animation: esv-hero-settle 1000ms var(--ease-out) both;
+}
+
+.esv-motion-ready .esv-hero-line {
   opacity: 0;
   clip-path: inset(0 0 100% 0);
   transform: translate3d(0, 18px, 0);
   animation: esv-hero-line-in var(--motion-editorial) var(--ease-out) both;
 }
 
-.esv-hero-cta {
+.esv-motion-ready .esv-hero-cta {
   opacity: 0;
   transform: translate3d(0, 10px, 0);
   animation: esv-hero-cta-in var(--motion-reveal) var(--ease-out) 150ms both;
@@ -242,8 +251,8 @@ html.esv-vt-nav .esv-hero-cta {
     animation: none !important;
   }
 
-  .esv-hero-line,
-  .esv-hero-cta,
+  .esv-motion-ready .esv-hero-line,
+  .esv-motion-ready .esv-hero-cta,
   .esv-motion-ready .esv-reveal,
   .esv-motion-ready .esv-reveal-media {
     opacity: 1;

@@ -2,10 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import ProductMediaViewer from "../components/esmera/ProductMediaViewer.tsx";
 import { getAvailabilityMeta } from "../components/esmera/availability.ts";
 import {
-  buildGallerySlides,
-  calculateGalleryFrameRatio,
-  type GallerySlide,
-} from "../lib/esmera/productMediaPresentation.ts";
+  buildGalleryPlates,
+  type GalleryPlate,
+  mediaAspectRatio,
+  orderGalleryMedia,
+} from "../lib/esmera/gallery.ts";
 import { buildInstallmentFromPriceCents } from "../lib/esmera/productCard.ts";
 import type { EsmeraObject, EsmeraVariant } from "../lib/payload/types.ts";
 
@@ -13,6 +14,8 @@ interface ProductModalImage {
   src: string;
   fullSrc?: string;
   alt: string;
+  key?: string;
+  role?: string;
   width?: number;
   height?: number;
   fullWidth?: number;
@@ -52,54 +55,46 @@ function formatImagePosition(value: number): string {
 }
 
 function toModalImage(
-  src: string,
-  alt: string,
-  media?: EsmeraObject["gallery"][number],
+  media: EsmeraObject["gallery"][number],
+  product: EsmeraObject,
 ): ProductModalImage {
+  const src = normalized(media.url);
   return {
     src,
-    fullSrc: normalized(media?.fullUrl) || src,
-    alt,
-    width: media?.width,
-    height: media?.height,
-    fullWidth: media?.fullWidth,
-    fullHeight: media?.fullHeight,
+    fullSrc: normalized(media.fullUrl) || src,
+    alt: normalized(media.alt) || `${product.title} — ${media.role}`,
+    key: media.key,
+    role: media.role,
+    width: media.width,
+    height: media.height,
+    fullWidth: media.fullWidth,
+    fullHeight: media.fullHeight,
   };
 }
 
 export function getProductModalImages(
   product: EsmeraObject,
 ): ProductModalImage[] {
-  const gallery = product.gallery;
-  const byUrl = new Map(
-    gallery.map((media) => [normalized(media.url), media] as const),
-  );
-  const primarySrc = normalized(product.image);
-  const candidates: ProductModalImage[] = [
-    toModalImage(
-      primarySrc,
-      normalized(product.alt),
-      byUrl.get(primarySrc),
-    ),
-  ];
+  const ordered = orderGalleryMedia(product.gallery);
+  const candidates = ordered.map((media) => toModalImage(media, product));
 
-  if (product.detailImage) {
-    const detailSrc = normalized(product.detailImage);
-    candidates.push(toModalImage(
-      detailSrc,
-      `${product.title} — detalhe`,
-      byUrl.get(detailSrc),
-    ));
-  }
-
-  for (const media of gallery) {
-    if (media.role === "cover") continue;
-    const src = normalized(media.url);
-    candidates.push(toModalImage(
-      src,
-      normalized(media.alt) || `${product.title} — ${media.role}`,
-      media,
-    ));
+  if (candidates.length === 0) {
+    const primarySrc = normalized(product.image);
+    candidates.push({
+      src: primarySrc,
+      fullSrc: primarySrc,
+      alt: normalized(product.alt),
+      role: "cover",
+    });
+    if (product.detailImage) {
+      const detailSrc = normalized(product.detailImage);
+      candidates.push({
+        src: detailSrc,
+        fullSrc: detailSrc,
+        alt: `${product.title} — detalhe`,
+        role: "detail",
+      });
+    }
   }
 
   const seen = new Set<string>();
@@ -172,9 +167,29 @@ function modalImageSrcSet(image: ProductModalImage): string | undefined {
   return candidates.length > 1 ? candidates.join(", ") : undefined;
 }
 
+// PR 3 keeps the previous frame geometry until PR 4 moves the stage ratio to CSS.
+function legacyGalleryFrameRatio(
+  plates: readonly GalleryPlate[],
+  images: readonly ProductModalImage[],
+  view: "desktop" | "compact",
+): number {
+  const minimum = view === "desktop" ? 4 / 5 : 3 / 4;
+  const ratios = plates.map((plate) => {
+    const mediaRatios = plate.indices.map((index) =>
+      mediaAspectRatio(images[index]) ?? 4 / 5
+    );
+    if (plate.columns === 2 || plate.mount === "mounted") {
+      return 2 * Math.min(...mediaRatios);
+    }
+    return mediaRatios[0] ?? 4 / 5;
+  });
+  const raw = ratios.length > 0 ? Math.min(...ratios) : 4 / 5;
+  return Math.min(16 / 9, Math.max(minimum, raw));
+}
+
 interface GalleryFrameProps {
   view: "desktop" | "compact";
-  slides: GallerySlide[];
+  plates: GalleryPlate[];
   frameRatio: number;
   activeIndex: number;
   images: ProductModalImage[];
@@ -185,7 +200,7 @@ interface GalleryFrameProps {
 
 function GalleryFrame({
   view,
-  slides,
+  plates,
   frameRatio,
   activeIndex,
   images,
@@ -194,11 +209,11 @@ function GalleryFrame({
   onOpenViewer,
 }: GalleryFrameProps) {
   const positionLabel = `${formatImagePosition(activeIndex + 1)} / ${
-    formatImagePosition(slides.length)
+    formatImagePosition(plates.length)
   }`;
   const changeSlide = (delta: number) => {
     onActiveIndexChange(
-      (activeIndex + delta + slides.length) % slides.length,
+      (activeIndex + delta + plates.length) % plates.length,
     );
   };
 
@@ -208,50 +223,54 @@ function GalleryFrame({
       style={`--esv-modal-gallery-ratio:${frameRatio}`}
     >
       <div ref={galleryRef} class="esv-product-modal-gallery">
-        {slides.map((slide, slideIndex) => (
-          <div
-            class={`esv-product-modal-slide is-${slide.kind}${
-              slideIndex === activeIndex ? " is-active" : ""
-            }`}
-            data-gallery-index={slideIndex}
-            key={`${slide.kind}-${slide.indices.join("-")}`}
-          >
-            {slide.indices.map((imageIndex) => {
-              const image = images[imageIndex];
-              return (
-                <button
-                  key={image.src}
-                  class="esv-product-modal-image"
-                  type="button"
-                  aria-label={`Ampliar imagem ${
-                    imageIndex + 1
-                  } de ${images.length}`}
-                  onClick={(event) =>
-                    onOpenViewer(imageIndex, event.currentTarget)}
-                >
-                  <img
-                    src={image.src}
-                    srcSet={modalImageSrcSet(image)}
-                    sizes={slide.kind === "pair"
-                      ? "(min-width: 1024px) 35vw, 100vw"
-                      : "(min-width: 1024px) 70vw, 100vw"}
-                    alt={image.alt}
-                    width={image.width ?? image.fullWidth}
-                    height={image.height ?? image.fullHeight}
-                    loading={imageIndex === 0 ? "eager" : "lazy"}
-                    decoding="async"
-                  />
-                  <span aria-hidden="true">Ampliar</span>
-                </button>
-              );
-            })}
-            {slide.kind === "pair" && slide.indices.length === 1 && (
-              <div class="esv-product-modal-empty-cell" aria-hidden="true" />
-            )}
-          </div>
-        ))}
+        {plates.map((plate, plateIndex) => {
+          const pairPresentation = plate.columns === 2 ||
+            plate.mount === "mounted";
+          return (
+            <div
+              class={`esv-product-modal-slide is-${
+                pairPresentation ? "pair" : "single"
+              }${plateIndex === activeIndex ? " is-active" : ""}`}
+              data-gallery-index={plateIndex}
+              key={`${plate.mount}-${plate.indices.join("-")}`}
+            >
+              {plate.indices.map((imageIndex) => {
+                const image = images[imageIndex];
+                return (
+                  <button
+                    key={image.src}
+                    class="esv-product-modal-image"
+                    type="button"
+                    aria-label={`Ampliar imagem ${
+                      imageIndex + 1
+                    } de ${images.length}`}
+                    onClick={(event) =>
+                      onOpenViewer(imageIndex, event.currentTarget)}
+                  >
+                    <img
+                      src={image.src}
+                      srcSet={modalImageSrcSet(image)}
+                      sizes={pairPresentation
+                        ? "(min-width: 1024px) 35vw, 100vw"
+                        : "(min-width: 1024px) 70vw, 100vw"}
+                      alt={image.alt}
+                      width={image.width ?? image.fullWidth}
+                      height={image.height ?? image.fullHeight}
+                      loading={imageIndex === 0 ? "eager" : "lazy"}
+                      decoding="async"
+                    />
+                    <span aria-hidden="true">Ampliar</span>
+                  </button>
+                );
+              })}
+              {plate.mount === "mounted" && (
+                <div class="esv-product-modal-empty-cell" aria-hidden="true" />
+              )}
+            </div>
+          );
+        })}
 
-        {slides.length > 1 && (
+        {plates.length > 1 && (
           <div class="esv-product-modal-gallery-controls">
             <button
               type="button"
@@ -272,7 +291,7 @@ function GalleryFrame({
         )}
       </div>
 
-      {slides.length > 1 && (
+      {plates.length > 1 && (
         <span
           class="esv-product-modal-gallery-mobile-counter"
           aria-hidden="true"
@@ -316,21 +335,21 @@ export default function ProductModal() {
     () => product ? getProductModalImages(product) : [],
     [product],
   );
-  const desktopSlides = useMemo(
-    () => buildGallerySlides(images, "desktop"),
+  const desktopPlates = useMemo(
+    () => buildGalleryPlates(images, "editorial"),
     [images],
   );
-  const compactSlides = useMemo(
-    () => buildGallerySlides(images, "compact"),
+  const compactPlates = useMemo(
+    () => buildGalleryPlates(images, "compact"),
     [images],
   );
   const desktopFrameRatio = useMemo(
-    () => calculateGalleryFrameRatio(desktopSlides, "desktop"),
-    [desktopSlides],
+    () => legacyGalleryFrameRatio(desktopPlates, images, "desktop"),
+    [desktopPlates, images],
   );
   const compactFrameRatio = useMemo(
-    () => calculateGalleryFrameRatio(compactSlides, "compact"),
-    [compactSlides],
+    () => legacyGalleryFrameRatio(compactPlates, images, "compact"),
+    [compactPlates, images],
   );
   const facts = useMemo(
     () => product ? getProductFacts(product) : [],
@@ -680,7 +699,7 @@ export default function ProductModal() {
 
           <GalleryFrame
             view="desktop"
-            slides={desktopSlides}
+            plates={desktopPlates}
             frameRatio={desktopFrameRatio}
             activeIndex={activeDesktopIndex}
             images={images}
@@ -690,7 +709,7 @@ export default function ProductModal() {
           />
           <GalleryFrame
             view="compact"
-            slides={compactSlides}
+            plates={compactPlates}
             frameRatio={compactFrameRatio}
             activeIndex={activeCompactIndex}
             images={images}

@@ -10,11 +10,7 @@
     "favicon": "/favicon.ico",
     "image": "/android-chrome-512x512.png"
   },
-  "global": [
-    {
-      "__resolveType": "htmx/sections/htmx.tsx"
-    }
-  ],
+  "global": [],
   "routes": [
     {
       "__resolveType": "website/loaders/pages.ts"

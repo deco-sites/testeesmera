@@ -489,7 +489,6 @@ export default function ProductModal() {
     const scrollY = globalThis.scrollY || 0;
     const previous = {
       rootOverflow: root.style.overflow,
-      rootScrollbarGutter: root.style.getPropertyValue("scrollbar-gutter"),
       position: body.style.position,
       top: body.style.top,
       left: body.style.left,
@@ -501,7 +500,6 @@ export default function ProductModal() {
     root.classList.add("esv-product-modal-active");
     body.classList.add("esv-product-modal-open");
     root.style.overflow = "hidden";
-    root.style.setProperty("scrollbar-gutter", "auto");
     body.style.position = "fixed";
     body.style.top = `-${scrollY}px`;
     body.style.left = "0";
@@ -513,14 +511,6 @@ export default function ProductModal() {
       root.classList.remove("esv-product-modal-active");
       body.classList.remove("esv-product-modal-open");
       root.style.overflow = previous.rootOverflow;
-      if (previous.rootScrollbarGutter) {
-        root.style.setProperty(
-          "scrollbar-gutter",
-          previous.rootScrollbarGutter,
-        );
-      } else {
-        root.style.removeProperty("scrollbar-gutter");
-      }
       body.style.position = previous.position;
       body.style.top = previous.top;
       body.style.left = previous.left;

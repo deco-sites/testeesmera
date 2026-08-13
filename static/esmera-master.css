@@ -51,6 +51,10 @@
 
 html {
   background: var(--bg);
+  /* Reserve the vertical scrollbar gutter permanently so locking scroll for the
+   * product modal / header overlays cannot shift the page and fixed header
+   * sideways when the scrollbar is removed. */
+  scrollbar-gutter: stable;
 }
 
 body {

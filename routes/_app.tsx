@@ -19,6 +19,20 @@ export default defineApp(async (_req, ctx) => {
       <Head>
         <style>{`@view-transition { navigation: auto; }`}</style>
 
+        {/* When the page is revealed through a cross-document view transition
+          * (reload or same-origin navigation), the VT already cross-fades the
+          * incoming page in. Flag the document so the hero's CSS entrance
+          * animation is suppressed and does not play a second, overlapping
+          * animation on top of the transition. On a cold load there is no view
+          * transition, so the entrance plays normally. Registered inline in the
+          * head so it runs before the reveal event fires. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              `addEventListener("pagereveal",function(e){if(e&&e.viewTransition){document.documentElement.classList.add("esv-vt-nav")}});`,
+          }}
+        />
+
         <link
           href={asset(`/styles.css?revision=${revision}`)}
           rel="stylesheet"

@@ -96,6 +96,21 @@
   animation: esv-hero-cta-in var(--motion-reveal) var(--ease-out) 150ms both;
 }
 
+/* Arriving via a cross-document view transition: the VT cross-fade is the only
+ * motion. Suppress the CSS entrance so the hero does not animate twice. */
+html.esv-vt-nav .esv-hero-picture img,
+html.esv-vt-nav .esv-hero-line,
+html.esv-vt-nav .esv-hero-cta {
+  animation: none;
+}
+
+html.esv-vt-nav .esv-hero-line,
+html.esv-vt-nav .esv-hero-cta {
+  opacity: 1;
+  clip-path: none;
+  transform: none;
+}
+
 @keyframes esv-hero-settle {
   from { transform: scale(1.025); }
   to { transform: scale(1); }

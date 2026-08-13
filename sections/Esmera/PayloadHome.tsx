@@ -23,6 +23,18 @@ function homeCanonical(frontendURL?: string | null): string {
   }
 }
 
+function absoluteAsset(
+  path: string,
+  frontendURL?: string | null,
+): string | undefined {
+  if (!frontendURL) return undefined;
+  try {
+    return new URL(path, frontendURL).toString();
+  } catch {
+    return undefined;
+  }
+}
+
 export default function PayloadHome({ data }: { data: Data }) {
   const settings = data.siteSettings;
   const home = data.home;
@@ -34,13 +46,42 @@ export default function PayloadHome({ data }: { data: Data }) {
     categories: data.categories,
   });
 
+  const homeURL = homeCanonical(settings?.frontendURL);
+  const siteName = settings?.siteName?.trim() || "ESMÉRA";
+
+  // 4.2 — a representative og:image. The CMS social image wins; when it is
+  // unset, fall back to the current hero image instead of shipping no image.
+  const heroImage = resolved.hero?.slides?.[0]?.desktopImage;
+  const seoWithSocial = seo.image || !heroImage
+    ? seo
+    : { ...seo, image: heroImage };
+
+  // 4.3 — minimal Organization + WebSite structured data for the home.
+  const logo = absoluteAsset("/android-chrome-512x512.png", settings?.frontendURL);
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: siteName,
+      url: homeURL,
+      ...(logo ? { logo } : {}),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: siteName,
+      url: homeURL,
+    },
+  ];
+
   return (
     <StorefrontLayout
       navigation={data.navigation}
       settings={settings}
       categories={data.categories}
-      seo={seo}
-      canonical={homeCanonical(settings?.frontendURL)}
+      seo={seoWithSocial}
+      canonical={homeURL}
+      jsonLd={jsonLd}
       headerVariant={resolved.hero ? "transparent" : "solid"}
     >
       {resolved.hero && <Hero {...resolved.hero} />}

@@ -197,6 +197,12 @@ export default function EsmeraHeader({
     let frame = 0;
     const update = () => {
       frame = 0;
+      // While the page is scroll-locked (product modal / search / cart overlay)
+      // the body is `position: fixed` and window.scrollY is pinned to 0. Ignore
+      // those synthetic scroll events so the header keeps its pre-lock
+      // solid/transparent state and does not flash transparent when the lock is
+      // released on close.
+      if (document.body.style.position === "fixed") return;
       setIsScrolled((previous) => {
         const y = globalThis.scrollY || 0;
         return previous ? y > 8 : y > 24;

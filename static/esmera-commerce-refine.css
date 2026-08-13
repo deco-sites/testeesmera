@@ -11,9 +11,12 @@
 html {
   min-height: 100%;
   scroll-padding-top: calc(var(--header-h) + 12px);
-  scrollbar-gutter: stable;
   overscroll-behavior-y: none;
 }
+
+/* Scrollbar gutter is reserved from tablet up only — see esmera-master.css. On
+ * mobile the product modal is a full-screen takeover that must span the full
+ * viewport width, so no gutter is reserved there. */
 
 body {
   min-height: 100dvh;

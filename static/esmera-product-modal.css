@@ -11,6 +11,38 @@ body.esv-product-modal-open {
   overscroll-behavior: none;
 }
 
+/* Desktop: the product modal is a centered dialog over a scrim. Keep the fixed
+ * header visible and solid *above* the scrim (instead of letting it vanish
+ * behind it), and center the dialog in the space below the header so the two
+ * never overlap. The dialog owns interaction while it is open, so the header
+ * becomes passive chrome. On mobile the modal is a full-screen takeover, so this
+ * behaviour intentionally does not apply there. */
+@media (min-width: 1024px) {
+  html.esv-product-modal-active .esv-header.esv-header {
+    z-index: 420;
+    pointer-events: none;
+  }
+
+  /* Force the solid chrome so the header stays legible above the scrim
+   * regardless of the scroll position the modal was opened from. */
+  html.esv-product-modal-active .esv-header.esv-header[data-header-variant] {
+    border-color: var(--line);
+    color: var(--ink);
+  }
+
+  html.esv-product-modal-active .esv-header.esv-header[data-header-variant]::before {
+    height: 100%;
+    background: rgba(243, 240, 232, .96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    opacity: 1;
+  }
+
+  html.esv-product-modal-active .esv-product-modal-backdrop {
+    padding-top: calc(var(--header-h) + clamp(18px, 2.4vw, 38px));
+  }
+}
+
 /* Product cards open the same modal from media, title or CTA. */
 .esv-product-media-wrap {
   position: relative;

@@ -30,7 +30,7 @@ export interface HomeBaseline {
   footer: FooterProps;
 }
 
-const defaultWhatsAppNumber = "557481400140";
+const defaultWhatsAppNumber = "5574981400140";
 const defaultEmail = "Esmera.decor@hotmail.com";
 const defaultWhatsAppHref = `https://wa.me/${defaultWhatsAppNumber}?text=${
   encodeURIComponent("Olá, gostaria de falar com a Esméra.")

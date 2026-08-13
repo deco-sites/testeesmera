@@ -16,20 +16,27 @@ jobs:
         with:
           deno-version: v2.x
       - name: Make containment explicit
+        shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path('static/esmera-product-modal.css')
           s=p.read_text()
-          old='''  max-width: 100%;\n  max-height: 100%;\n  object-position: center;\n}'''
-          new='''  max-width: 100%;\n  max-height: 100%;\n  object-fit: contain;\n  object-position: center;\n}'''
-          if old not in s:
-            raise SystemExit('modal image block not found')
-          p.write_text(s.replace(old,new,1))
+          marker='.esv-product-modal-image img {'
+          start=s.index(marker)
+          end=s.index('\n}', start)
+          block=s[start:end]
+          if 'object-fit: contain;' not in block:
+            block=block.replace('  object-position: center;', '  object-fit: contain;\n  object-position: center;')
+          s=s[:start]+block+s[end:]
+          p.write_text(s)
           PY
           deno fmt static/esmera-product-modal.css
-          deno task check
-          deno task test
+          grep -A10 -F '.esv-product-modal-image img {' static/esmera-product-modal.css | grep -F 'object-fit: contain;'
+      - name: Check
+        run: deno task check
+      - name: Test
+        run: deno task test
       - name: Commit fix
         run: |
           git config user.name 'github-actions[bot]'

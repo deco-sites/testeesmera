@@ -8,7 +8,7 @@ export default defineApp(async (_req, ctx) => {
   // Static CSS can outlive a branch deploy in Deco's CDN when the release
   // revision remains stable. Bump this token whenever the storefront chrome
   // changes so preview environments cannot mix new JSX with stale styles.
-  const storefrontStyleRevision = "2026-08-13-modal-header-fix-v28";
+  const storefrontStyleRevision = "2026-08-13-buybox-cta-v29";
   // Home-only cache bust. Keeps the independently certified product-media
   // contract stable while invalidating homepage motion/interaction CSS.
   const homeStyleRevision = "2026-08-13-home-corrections-v22";

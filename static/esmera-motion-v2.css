@@ -72,34 +72,33 @@
   transform: translate3d(0, 0, 0) scale(1);
 }
 
-/* Hero entrance only — no scroll-linked parallax.
- * Gated behind .esv-motion-ready (same contract as .esv-reveal) so the
- * entrance runs exactly once, after the motion JS is ready. Without the
- * gate these fired at first paint and any post-paint layout change (late
- * CSS, injected styles) restarted them. Before motion-ready the hero is
- * simply visible in its resting state. */
+/* Hero entrance — first-paint contract.
+ * These rules are intentionally NOT gated behind a post-paint class. The
+ * hero starts in its hidden state at first paint (render-blocking CSS) and
+ * animates to visible exactly once. Gating behind .esv-motion-ready (added
+ * by the JS island after first paint) painted the hero visible first, then
+ * hid and re-animated it — a visible -> hidden -> visible flash. The htmx
+ * late-CSS that used to restart this entrance was removed (site.json
+ * global), so the ungated CSS animation now settles cleanly on its own.
+ * Cross-document view-transition arrivals are handled by .esv-vt-nav below. */
 .esv-hero-statement {
   overflow: hidden;
 }
 
-/* Structural: keep block layout regardless of motion state. */
-.esv-hero-line {
-  display: block;
-}
-
-.esv-motion-ready .esv-hero-picture img {
+.esv-hero-picture img {
   transform-origin: center center;
   animation: esv-hero-settle 1000ms var(--ease-out) both;
 }
 
-.esv-motion-ready .esv-hero-line {
+.esv-hero-line {
+  display: block;
   opacity: 0;
   clip-path: inset(0 0 100% 0);
   transform: translate3d(0, 18px, 0);
   animation: esv-hero-line-in var(--motion-editorial) var(--ease-out) both;
 }
 
-.esv-motion-ready .esv-hero-cta {
+.esv-hero-cta {
   opacity: 0;
   transform: translate3d(0, 10px, 0);
   animation: esv-hero-cta-in var(--motion-reveal) var(--ease-out) 150ms both;
@@ -251,8 +250,8 @@ html.esv-vt-nav .esv-hero-cta {
     animation: none !important;
   }
 
-  .esv-motion-ready .esv-hero-line,
-  .esv-motion-ready .esv-hero-cta,
+  .esv-hero-line,
+  .esv-hero-cta,
   .esv-motion-ready .esv-reveal,
   .esv-motion-ready .esv-reveal-media {
     opacity: 1;

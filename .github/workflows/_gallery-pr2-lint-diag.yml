@@ -1,0 +1,31 @@
+name: Gallery PR2 lint diagnostic
+
+on:
+  push:
+    branches:
+      - agent/gallery-pr2-media-contract
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - shell: bash
+        run: |
+          set +e
+          deno lint 2>&1 | tee lint.log
+          echo "${PIPESTATUS[0]}" > lint-exit.txt
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gallery-pr2-lint
+          path: |
+            lint.log
+            lint-exit.txt

@@ -15,15 +15,11 @@
   --ease-inout: cubic-bezier(.65, 0, .35, 1);
 }
 
-@view-transition {
-  navigation: auto;
-}
-
-::view-transition-old(esmera-object-image),
-::view-transition-new(esmera-object-image) {
-  animation-duration: var(--motion-medium);
-  animation-timing-function: var(--ease-out);
-}
+/* Cross-document view transitions are intentionally NOT enabled here.
+ * `@view-transition { navigation: auto }` layered a full-page cross-fade on
+ * same-origin navigations on top of the section reveals, and the named
+ * `esmera-object-image` morph it accompanied was never wired to any element.
+ * Native document flow with per-section reveals is the only entrance motion. */
 
 /* Reveal contract */
 .esv-motion-ready .esv-reveal {
@@ -72,68 +68,18 @@
   transform: translate3d(0, 0, 0) scale(1);
 }
 
-/* Hero entrance — first-paint contract.
- * These rules are intentionally NOT gated behind a post-paint class. The
- * hero starts in its hidden state at first paint (render-blocking CSS) and
- * animates to visible exactly once. Gating behind .esv-motion-ready (added
- * by the JS island after first paint) painted the hero visible first, then
- * hid and re-animated it — a visible -> hidden -> visible flash. The htmx
- * late-CSS that used to restart this entrance was removed (site.json
- * global), so the ungated CSS animation now settles cleanly on its own.
- * Cross-document view-transition arrivals are handled by .esv-vt-nav below. */
+/* Hero — no entrance animation, by design.
+ * The hero renders in its final, resting state at first paint. It is the LCP
+ * surface and sits above the fold on every load, so any entrance motion (even
+ * a single, correct hidden -> visible fade) reads as the very flash this
+ * motion system exists to avoid. It simply appears; the reveals below the fold
+ * carry the entrance choreography. */
 .esv-hero-statement {
   overflow: hidden;
 }
 
-.esv-hero-picture img {
-  transform-origin: center center;
-  animation: esv-hero-settle 1000ms var(--ease-out) both;
-}
-
 .esv-hero-line {
   display: block;
-  opacity: 0;
-  clip-path: inset(0 0 100% 0);
-  transform: translate3d(0, 18px, 0);
-  animation: esv-hero-line-in var(--motion-editorial) var(--ease-out) both;
-}
-
-.esv-hero-cta {
-  opacity: 0;
-  transform: translate3d(0, 10px, 0);
-  animation: esv-hero-cta-in var(--motion-reveal) var(--ease-out) 150ms both;
-}
-
-/* Arriving via a cross-document view transition: the VT cross-fade is the only
- * motion. Suppress the CSS entrance so the hero does not animate twice. */
-html.esv-vt-nav .esv-hero-picture img,
-html.esv-vt-nav .esv-hero-line,
-html.esv-vt-nav .esv-hero-cta {
-  animation: none;
-}
-
-html.esv-vt-nav .esv-hero-line,
-html.esv-vt-nav .esv-hero-cta {
-  opacity: 1;
-  clip-path: none;
-  transform: none;
-}
-
-@keyframes esv-hero-settle {
-  from { transform: scale(1.025); }
-  to { transform: scale(1); }
-}
-
-@keyframes esv-hero-line-in {
-  to {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes esv-hero-cta-in {
-  to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
 /* Selection */
@@ -241,17 +187,12 @@ html.esv-vt-nav .esv-hero-cta {
   .esv-enquiry-link sup,
   .esv-search-results,
   .esv-enquiry-list > div,
-  .esv-hero-picture img,
-  .esv-hero-line,
-  .esv-hero-cta,
   .esv-motion-ready .esv-reveal,
   .esv-motion-ready .esv-reveal-media {
     transition: none !important;
     animation: none !important;
   }
 
-  .esv-hero-line,
-  .esv-hero-cta,
   .esv-motion-ready .esv-reveal,
   .esv-motion-ready .esv-reveal-media {
     opacity: 1;

@@ -1301,18 +1301,9 @@ img {
 /* Motion                                                                     */
 /* -------------------------------------------------------------------------- */
 
-.esv-motion-ready .esv-reveal {
-  opacity: 0;
-  transform: translate3d(0, 12px, 0);
-  transition:
-    opacity 560ms var(--ease-esmera) var(--esv-reveal-delay, 0ms),
-    transform 560ms var(--ease-esmera) var(--esv-reveal-delay, 0ms);
-}
-
-.esv-motion-ready .esv-reveal.is-visible {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-}
+/* .esv-reveal contract lives in esmera-motion-v2.css (loaded after this
+ * file); the duplicate definition that used to sit here was overridden by
+ * it and has been removed to keep a single source. */
 
 .esv-hero-cta svg,
 .esv-text-link svg,

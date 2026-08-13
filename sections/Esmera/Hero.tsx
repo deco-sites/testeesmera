@@ -40,10 +40,10 @@ function Slide(
         desktopSrc={slide.desktopImage}
         mobileSrc={slide.mobileImage}
         alt={slide.alt}
-        desktopWidth={1920}
+        desktopWidth={1800}
         desktopHeight={1200}
         mobileWidth={900}
-        mobileHeight={1200}
+        mobileHeight={1125}
         loading={priority ? "eager" : "lazy"}
         decoding="async"
         preload={priority}

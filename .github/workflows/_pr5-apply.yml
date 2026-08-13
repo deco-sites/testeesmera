@@ -20,7 +20,23 @@ jobs:
       - name: Format changed files
         run: deno fmt islands/ProductModal.tsx static/esmera-product-modal.css routes/_app.tsx tests/product/product_modal_contract_test.ts tests/product/product_modal_cache_contract_test.ts scripts/ci/product-modal-media-fidelity.mjs
       - name: Check
-        run: deno task check
+        id: check
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          deno task check > pr5-check.txt 2>&1
+          status=$?
+          cat pr5-check.txt
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pr5-check-diagnostics
+          path: pr5-check.txt
+      - name: Stop on check failure
+        if: steps.check.outputs.exit_code != '0'
+        run: exit 1
       - name: Test
         run: deno task test
       - name: Commit verified PR5 changes

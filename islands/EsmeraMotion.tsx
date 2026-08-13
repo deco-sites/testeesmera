@@ -121,8 +121,25 @@ export default function EsmeraMotion() {
       root.classList.add("esv-motion-ready")
     );
 
+    // Safety net: the synchronous check above reveals what is on screen at
+    // effect time, but late layout shifts (images/fonts settling) can move a
+    // reveal into the viewport before the observer confirms it, leaving it
+    // blank. After 300ms, force-reveal any still-hidden element now in view.
+    const revealFallback = setTimeout(() => {
+      const vh = globalThis.innerHeight || 800;
+      elements.forEach((element) => {
+        if (element.classList.contains("is-visible")) return;
+        const rect = element.getBoundingClientRect();
+        if (rect.top < vh && rect.bottom > 0) {
+          element.classList.add("is-visible");
+          observer.unobserve(element);
+        }
+      });
+    }, 300);
+
     return () => {
       cancelAnimationFrame(frame);
+      clearTimeout(revealFallback);
       observer.disconnect();
       root.classList.remove("esv-motion-ready");
       elements.forEach((element) => {

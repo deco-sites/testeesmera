@@ -6,4 +6,10 @@ export default defineConfig({
   plugins: plugins({
     manifest,
   }),
+  // Storefront default document language. Fresh emits <html lang="en">
+  // unless the render context language is overridden here.
+  render: (ctx, render) => {
+    ctx.lang = "pt-BR";
+    render();
+  },
 });

@@ -3,10 +3,8 @@
  * on the two light storefront surfaces. Loaded last on purpose.
  */
 
-:root {
-  --muted: #62645F;
-  --muted-strong: #565954;
-}
+/* Color tokens (--muted, --muted-strong) consolidated into esmera-master.css.
+ * Their AA-compliant values now live at the single source of truth. */
 
 .esv-collection-v2-search input::placeholder {
   color: var(--muted);

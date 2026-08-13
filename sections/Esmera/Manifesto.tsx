@@ -55,8 +55,8 @@ export default function Manifesto(
               alt={source.mainImageAlt ?? ""}
               loading="lazy"
               decoding="async"
-              width={1200}
-              height={1500}
+              width={900}
+              height={1125}
             />
           </figure>
           {source.secondaryImage && (

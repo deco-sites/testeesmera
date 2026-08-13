@@ -279,7 +279,7 @@ export function toManifesto(home: PayloadHome, baseURL = getPayloadBaseURL()) {
   const main = resolveImageField(
     home.manifestoPrimaryImage,
     baseURL,
-    "wide",
+    "card",
   );
   const secondary = resolveImageField(
     home.manifestoSecondaryImage,

@@ -4,7 +4,6 @@ import { getAvailabilityMeta } from "../components/esmera/availability.ts";
 import {
   buildGalleryPlates,
   type GalleryPlate,
-  mediaAspectRatio,
   orderGalleryMedia,
 } from "../lib/esmera/gallery.ts";
 import { buildInstallmentFromPriceCents } from "../lib/esmera/productCard.ts";
@@ -167,30 +166,9 @@ function modalImageSrcSet(image: ProductModalImage): string | undefined {
   return candidates.length > 1 ? candidates.join(", ") : undefined;
 }
 
-// PR 3 keeps the previous frame geometry until PR 4 moves the stage ratio to CSS.
-function legacyGalleryFrameRatio(
-  plates: readonly GalleryPlate[],
-  images: readonly ProductModalImage[],
-  view: "desktop" | "compact",
-): number {
-  const minimum = view === "desktop" ? 4 / 5 : 3 / 4;
-  const ratios = plates.map((plate) => {
-    const mediaRatios = plate.indices.map((index) =>
-      mediaAspectRatio(images[index]) ?? 4 / 5
-    );
-    if (plate.columns === 2 || plate.mount === "mounted") {
-      return 2 * Math.min(...mediaRatios);
-    }
-    return mediaRatios[0] ?? 4 / 5;
-  });
-  const raw = ratios.length > 0 ? Math.min(...ratios) : 4 / 5;
-  return Math.min(16 / 9, Math.max(minimum, raw));
-}
-
 interface GalleryFrameProps {
   view: "desktop" | "compact";
   plates: GalleryPlate[];
-  frameRatio: number;
   activeIndex: number;
   images: ProductModalImage[];
   galleryRef: { current: HTMLDivElement | null };
@@ -201,7 +179,6 @@ interface GalleryFrameProps {
 function GalleryFrame({
   view,
   plates,
-  frameRatio,
   activeIndex,
   images,
   galleryRef,
@@ -218,18 +195,19 @@ function GalleryFrame({
   };
 
   return (
-    <div
-      class={`esv-product-modal-gallery-frame is-${view}`}
-      style={`--esv-modal-gallery-ratio:${frameRatio}`}
-    >
+    <div class={`esv-product-modal-gallery-frame is-${view}`}>
       <div ref={galleryRef} class="esv-product-modal-gallery">
         {plates.map((plate, plateIndex) => {
           const pairPresentation = plate.columns === 2 ||
             plate.mount === "mounted";
           return (
             <div
-              class={`esv-product-modal-slide is-${
-                pairPresentation ? "pair" : "single"
+              class={`esv-product-modal-slide ${
+                plate.mount === "mounted"
+                  ? "is-mounted"
+                  : plate.columns === 2
+                  ? "is-pair"
+                  : "is-single"
               }${plateIndex === activeIndex ? " is-active" : ""}`}
               data-gallery-index={plateIndex}
               key={`${plate.mount}-${plate.indices.join("-")}`}
@@ -263,9 +241,6 @@ function GalleryFrame({
                   </button>
                 );
               })}
-              {plate.mount === "mounted" && (
-                <div class="esv-product-modal-empty-cell" aria-hidden="true" />
-              )}
             </div>
           );
         })}
@@ -342,14 +317,6 @@ export default function ProductModal() {
   const compactPlates = useMemo(
     () => buildGalleryPlates(images, "compact"),
     [images],
-  );
-  const desktopFrameRatio = useMemo(
-    () => legacyGalleryFrameRatio(desktopPlates, images, "desktop"),
-    [desktopPlates, images],
-  );
-  const compactFrameRatio = useMemo(
-    () => legacyGalleryFrameRatio(compactPlates, images, "compact"),
-    [compactPlates, images],
   );
   const facts = useMemo(
     () => product ? getProductFacts(product) : [],
@@ -700,7 +667,6 @@ export default function ProductModal() {
           <GalleryFrame
             view="desktop"
             plates={desktopPlates}
-            frameRatio={desktopFrameRatio}
             activeIndex={activeDesktopIndex}
             images={images}
             galleryRef={desktopGalleryRef}
@@ -710,7 +676,6 @@ export default function ProductModal() {
           <GalleryFrame
             view="compact"
             plates={compactPlates}
-            frameRatio={compactFrameRatio}
             activeIndex={activeCompactIndex}
             images={images}
             galleryRef={compactGalleryRef}

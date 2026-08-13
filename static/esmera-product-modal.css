@@ -204,6 +204,7 @@ body.esv-product-modal-open {
 
 .esv-product-modal-image {
   appearance: none;
+  box-sizing: border-box;
   position: relative;
   display: grid;
   place-items: center;

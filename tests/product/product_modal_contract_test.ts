@@ -16,7 +16,7 @@ function product(overrides: Partial<EsmeraObject> = {}): EsmeraObject {
     availability: "available",
     material: "Esmeralda e pedra",
     gallery: [{
-      url: "https://origin.example.com/object-cover.jpg",
+      url: "https://cdn.example.com/object-cover.jpg",
       alt: "Objeto I",
       key: "cover",
       role: "cover",
@@ -45,7 +45,7 @@ Deno.test("two available photos produce a split-capable gallery without duplicat
     detailImage: detail,
     gallery: [
       {
-        url: "https://origin.example.com/object-cover.jpg",
+        url: "https://cdn.example.com/object-cover.jpg",
         alt: "Objeto I",
         key: "cover",
         role: "cover",
@@ -72,10 +72,16 @@ Deno.test("three available photos are all preserved in editorial order", () => {
     detailImage: detail,
     gallery: [
       {
-        url: "https://origin.example.com/object-cover.jpg",
+        url: "https://cdn.example.com/object-cover.jpg",
         alt: "Objeto I",
         key: "cover",
         role: "cover",
+      },
+      {
+        url: detail,
+        alt: "Detalhe do Objeto I",
+        key: "detail",
+        role: "detail",
       },
       {
         url: context,
@@ -98,10 +104,16 @@ Deno.test("five unique valid photos remain available to modal and viewer", () =>
     detailImage: "https://cdn.example.com/object-detail.jpg",
     gallery: [
       {
-        url: "https://origin.example.com/object-cover.jpg",
+        url: "https://cdn.example.com/object-cover.jpg",
         alt: "Objeto I",
         key: "cover",
         role: "cover",
+      },
+      {
+        url: "https://cdn.example.com/object-detail.jpg",
+        alt: "Detalhe principal",
+        key: "detail-1",
+        role: "detail",
       },
       {
         url: "https://cdn.example.com/object-detail-2.jpg",
@@ -218,12 +230,12 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(modal, 'class="esv-product-modal-buybox"');
   assertStringIncludes(modal, 'class="esv-product-modal-installment"');
   assertStringIncludes(modal, "buildInstallmentFromPriceCents");
-  assertStringIncludes(modal, "buildGallerySlides");
-  assertStringIncludes(modal, "calculateGalleryFrameRatio");
+  assertStringIncludes(modal, "buildGalleryPlates");
+  assertStringIncludes(modal, "orderGalleryMedia");
   assertStringIncludes(modal, 'view="desktop"');
   assertStringIncludes(modal, 'view="compact"');
   assertStringIncludes(modal, "esv-product-modal-empty-cell");
-  assertStringIncludes(modal, "slide.indices.map");
+  assertStringIncludes(modal, "plate.indices.map");
   assertStringIncludes(modal, "ProductMediaViewer");
   assertFalse(modal.includes(".slice(0, 2)"));
   assertStringIncludes(viewer, 'event.key === "ArrowLeft"');

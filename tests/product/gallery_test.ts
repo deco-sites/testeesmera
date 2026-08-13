@@ -28,61 +28,79 @@ Deno.test("gallery keeps stable editorial role order", () => {
 });
 
 Deno.test("one landscape becomes one full editorial plate", () => {
-  assertEquals(buildGalleryPlates([{ width: 1500, height: 1000 }], "editorial"), [
-    { indices: [0], columns: 1, mount: "full" },
-  ]);
+  assertEquals(
+    buildGalleryPlates([{ width: 1500, height: 1000 }], "editorial"),
+    [
+      { indices: [0], columns: 1, mount: "full" },
+    ],
+  );
 });
 
 Deno.test("two portraits become one two-column diptych", () => {
-  assertEquals(buildGalleryPlates([
-    { width: 900, height: 1200 },
-    { width: 900, height: 1200 },
-  ], "editorial"), [
-    { indices: [0, 1], columns: 2, mount: "full" },
-  ]);
+  assertEquals(
+    buildGalleryPlates([
+      { width: 900, height: 1200 },
+      { width: 900, height: 1200 },
+    ], "editorial"),
+    [
+      { indices: [0, 1], columns: 2, mount: "full" },
+    ],
+  );
 });
 
 Deno.test("three portraits leave the last one centered as mounted", () => {
-  assertEquals(buildGalleryPlates([
-    { width: 900, height: 1200 },
-    { width: 900, height: 1200 },
-    { width: 900, height: 1200 },
-  ], "editorial"), [
-    { indices: [0, 1], columns: 2, mount: "full" },
-    { indices: [2], columns: 1, mount: "mounted" },
-  ]);
+  assertEquals(
+    buildGalleryPlates([
+      { width: 900, height: 1200 },
+      { width: 900, height: 1200 },
+      { width: 900, height: 1200 },
+    ], "editorial"),
+    [
+      { indices: [0, 1], columns: 2, mount: "full" },
+      { indices: [2], columns: 1, mount: "mounted" },
+    ],
+  );
 });
 
 Deno.test("four portraits become two diptychs", () => {
   const portrait = { width: 900, height: 1200 };
-  assertEquals(buildGalleryPlates(
-    [portrait, portrait, portrait, portrait],
-    "editorial",
-  ), [
-    { indices: [0, 1], columns: 2, mount: "full" },
-    { indices: [2, 3], columns: 2, mount: "full" },
-  ]);
+  assertEquals(
+    buildGalleryPlates(
+      [portrait, portrait, portrait, portrait],
+      "editorial",
+    ),
+    [
+      { indices: [0, 1], columns: 2, mount: "full" },
+      { indices: [2, 3], columns: 2, mount: "full" },
+    ],
+  );
 });
 
 Deno.test("portrait landscape portrait become three editorial plates", () => {
-  assertEquals(buildGalleryPlates([
-    { width: 900, height: 1200 },
-    { width: 1500, height: 1000 },
-    { width: 900, height: 1200 },
-  ], "editorial"), [
-    { indices: [0], columns: 1, mount: "mounted" },
-    { indices: [1], columns: 1, mount: "full" },
-    { indices: [2], columns: 1, mount: "mounted" },
-  ]);
+  assertEquals(
+    buildGalleryPlates([
+      { width: 900, height: 1200 },
+      { width: 1500, height: 1000 },
+      { width: 900, height: 1200 },
+    ], "editorial"),
+    [
+      { indices: [0], columns: 1, mount: "mounted" },
+      { indices: [1], columns: 1, mount: "full" },
+      { indices: [2], columns: 1, mount: "mounted" },
+    ],
+  );
 });
 
 Deno.test("two square images form a diptych", () => {
-  assertEquals(buildGalleryPlates([
-    { width: 1000, height: 1000 },
-    { width: 1000, height: 1000 },
-  ], "editorial"), [
-    { indices: [0, 1], columns: 2, mount: "full" },
-  ]);
+  assertEquals(
+    buildGalleryPlates([
+      { width: 1000, height: 1000 },
+      { width: 1000, height: 1000 },
+    ], "editorial"),
+    [
+      { indices: [0, 1], columns: 2, mount: "full" },
+    ],
+  );
 });
 
 Deno.test("missing dimensions stay full and use the canonical 3/2 fallback", () => {
@@ -94,15 +112,18 @@ Deno.test("missing dimensions stay full and use the canonical 3/2 fallback", () 
 });
 
 Deno.test("compact format always creates one image per plate", () => {
-  assertEquals(buildGalleryPlates([
-    { width: 900, height: 1200 },
-    { width: 900, height: 1200 },
-    { width: 1500, height: 1000 },
-  ], "compact"), [
-    { indices: [0], columns: 1, mount: "full" },
-    { indices: [1], columns: 1, mount: "full" },
-    { indices: [2], columns: 1, mount: "full" },
-  ]);
+  assertEquals(
+    buildGalleryPlates([
+      { width: 900, height: 1200 },
+      { width: 900, height: 1200 },
+      { width: 1500, height: 1000 },
+    ], "compact"),
+    [
+      { indices: [0], columns: 1, mount: "full" },
+      { indices: [1], columns: 1, mount: "full" },
+      { indices: [2], columns: 1, mount: "full" },
+    ],
+  );
 });
 
 Deno.test("mediaIndexForKeys returns -1 without a matching media key", () => {

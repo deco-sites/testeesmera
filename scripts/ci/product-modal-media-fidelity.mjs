@@ -220,7 +220,7 @@ try {
   const cssHref = await desktop.locator(
     'link[href*="esmera-product-modal.css"]',
   ).getAttribute("href");
-  if (!cssHref?.includes("2026-08-12-gallery-behavior-v24")) {
+  if (!cssHref?.includes("2026-08-12-gallery-hardening-v25")) {
     fail("Media fidelity stylesheet revision is stale", { cssHref });
   }
 

@@ -272,6 +272,18 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(css, "opacity 240ms cubic-bezier(.4, 0, .2, 1)");
   assertStringIncludes(css, "@media (prefers-reduced-motion: reduce)");
   assertFalse(css.includes("!important"));
+  assertFalse(css.includes("object-fit: cover"));
+  assertFalse(css.includes("is-two-stage"));
+  assertFalse(css.includes("is-double"));
+  assertFalse(css.includes("is-multiple"));
+  assertFalse(css.includes("esv-product-modal-empty-cell"));
+  assertStringIncludes(
+    css,
+    "grid-template-columns: repeat(2, minmax(0, 1fr));",
+  );
+  assertFalse(modal.includes("gallerySize"));
+  assertFalse(modal.includes("galleryFrameRef"));
+  assertFalse(modal.includes("ResizeObserver"));
   assertStringIncludes(modal, 'type ModalPhase = "unmounted" | "opening"');
   assertStringIncludes(modal, 'updatePhase("closing")');
   assertStringIncludes(modal, "onTransitionEnd");

@@ -51,10 +51,18 @@
 
 html {
   background: var(--bg);
-  /* Reserve the vertical scrollbar gutter permanently so locking scroll for the
-   * product modal / header overlays cannot shift the page and fixed header
-   * sideways when the scrollbar is removed. */
-  scrollbar-gutter: stable;
+}
+
+/* Reserve the vertical scrollbar gutter from tablet up so locking scroll for the
+ * product modal / header overlays cannot shift the page and fixed header
+ * sideways when the classic scrollbar is removed. Below 768px the product modal
+ * is a full-screen takeover that must span the full viewport width, and mobile
+ * uses overlay scrollbars (nothing to shift), so the gutter is intentionally not
+ * reserved there. */
+@media (min-width: 768px) {
+  html {
+    scrollbar-gutter: stable;
+  }
 }
 
 body {

@@ -186,7 +186,7 @@ async function validateMobile(browser) {
       element,
     ) => ({
       width: element.getBoundingClientRect().width,
-      viewport: window.innerWidth,
+      viewport: globalThis.innerWidth,
     }));
     if (Math.abs(size.width - size.viewport) > 2) {
       throw new Error(

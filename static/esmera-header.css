@@ -221,8 +221,7 @@ html:root {
   z-index: auto;
   min-width: 0;
   order: 2;
-  margin-right: var(--esv-header-group-gap);
-  margin-left: auto;
+  margin: 0 auto;
   color: inherit;
   height: 100%;
 }
@@ -230,7 +229,8 @@ html:root {
 .esv-header .esv-nav-v2-desktop {
   display: flex;
   align-items: center;
-  gap: clamp(10px, 1vw, 14px);
+  justify-content: center;
+  gap: clamp(18px, 1.8vw, 30px);
   width: auto;
   max-width: 100%;
   height: var(--header-h);
@@ -248,10 +248,10 @@ html:root {
   align-items: center;
   min-height: 44px;
   color: inherit;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 400;
   line-height: 1;
-  letter-spacing: .09em;
+  letter-spacing: .08em;
   text-decoration: none;
   text-transform: uppercase;
   white-space: nowrap;
@@ -682,8 +682,8 @@ html:root {
 /* -------------------------------------------------------------------------- */
 
 @media (max-width: 1180px) {
-  .esv-header .esv-nav-v2-desktop { gap: 13px; }
-  .esv-header .esv-nav-v2-root-link { font-size: 9px; letter-spacing: .075em; }
+  .esv-header .esv-nav-v2-desktop { gap: clamp(14px, 1.4vw, 20px); }
+  .esv-header .esv-nav-v2-root-link { font-size: 11px; letter-spacing: .07em; }
   .esv-mega-v2 .esv-mega-v2-inner {
     grid-template-columns: 190px minmax(0, 1fr) 220px;
     gap: 30px;

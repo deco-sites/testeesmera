@@ -84,12 +84,12 @@
 @media (hover: hover) and (pointer: fine) {
   .esv-product-card:hover .esv-product-image-primary,
   .esv-product-card:hover .esv-product-image-static,
-  .esv-product-card:focus-within .esv-product-image-static {
+  .esv-product-card:has(:focus-visible) .esv-product-image-static {
     transform: scale(1.025);
   }
 
   .esv-product-card.has-detail:hover .esv-product-image-detail,
-  .esv-product-card.has-detail:focus-within .esv-product-image-detail {
+  .esv-product-card.has-detail:has(:focus-visible) .esv-product-image-detail {
     opacity: 1;
     transform: scale(1.025);
   }
@@ -159,7 +159,7 @@
 }
 
 .esv-product-card:hover .esv-card-wishlist,
-.esv-product-card:focus-within .esv-card-wishlist {
+.esv-product-card:has(:focus-visible) .esv-card-wishlist {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0);
@@ -199,12 +199,12 @@
 
 @media (hover: hover) and (pointer: fine) {
   .esv-product-card:hover,
-  .esv-product-card:focus-within {
+  .esv-product-card:has(:focus-visible) {
     transform: translateY(-2px);
   }
 
   .esv-product-card:hover .esv-product-media-wrap,
-  .esv-product-card:focus-within .esv-product-media-wrap {
+  .esv-product-card:has(:focus-visible) .esv-product-media-wrap {
     box-shadow: 0 14px 30px rgba(36, 35, 31, 0.1);
   }
 }
@@ -376,7 +376,7 @@
   }
 
   .esv-product-card:hover .esv-card-action-slot,
-  .esv-product-card:focus-within .esv-card-action-slot {
+  .esv-product-card:has(:focus-visible) .esv-card-action-slot {
     opacity: 1;
     pointer-events: auto;
     transform: translateY(0);

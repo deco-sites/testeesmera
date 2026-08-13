@@ -30,7 +30,9 @@ export interface HomeBaseline {
   footer: FooterProps;
 }
 
-const defaultWhatsAppHref = `https://wa.me/?text=${
+const defaultWhatsAppNumber = "557481400140";
+const defaultEmail = "Esmera.decor@hotmail.com";
+const defaultWhatsAppHref = `https://wa.me/${defaultWhatsAppNumber}?text=${
   encodeURIComponent("Olá, gostaria de falar com a Esméra.")
 }`;
 
@@ -167,14 +169,13 @@ export const defaultHome: HomeBaseline = {
     text:
       "Converse com a Esméra para uma seleção orientada, disponibilidade, encomendas ou apresentação privada de peças.",
     ctaLabel: "Iniciar uma consulta",
-    ctaHref:
-      "mailto:contact@esmera.com?subject=Consulta%20privada%20%E2%80%94%20Esm%C3%A9ra",
+    ctaHref: `mailto:${defaultEmail}?subject=Consulta%20privada%20%E2%80%94%20Esm%C3%A9ra`,
   },
   footer: {
     siteName: "ESMÉRA",
     statement: "Natureza. Matéria. Permanência.",
-    contactLabel: "contact@esmera.com",
-    contactHref: "mailto:contact@esmera.com",
+    contactLabel: defaultEmail,
+    contactHref: `mailto:${defaultEmail}`,
     privacyLabel: "Privacidade",
     privacyHref: "#contact",
     termsLabel: "Termos",

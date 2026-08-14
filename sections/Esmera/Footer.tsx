@@ -44,9 +44,6 @@ const FALLBACK_COLLECTIONS: NavigationLink[] = [
   { label: "Esculturas", href: "/colecao/esculturas", external: false },
 ];
 
-const FOOTER_ART =
-  "https://decoims.com/testeesmera/1108e64c-bca6-4592-83de-77f5963deafd/ec1bcbc8-0fbb-4d57-a822-a2282100dd71.png";
-
 function normalizedLabel(value: string): string {
   return value.trim().toLocaleLowerCase("pt-BR");
 }
@@ -85,7 +82,6 @@ export default function Footer(
   const year = new Date().getFullYear();
   const collections = resolveCollectionLinks(props.collectionLinks ?? []);
   const contactHref = source.contactHref || "#contact";
-  const newsletterAction = contactHref;
   const instagramHref = props.instagramHref || "";
   const siteName = source.siteName || "ESMÉRA";
 
@@ -98,34 +94,7 @@ export default function Footer(
 
   return (
     <footer id="footer" class="esv-footer esv-footer-premium">
-      <section
-        class="esv-footer-newsletter"
-        aria-labelledby="esv-footer-newsletter-title"
-      >
-        <div class="esv-footer-newsletter-shell">
-          <p class="esv-footer-newsletter-eyebrow">Acompanhe a Esméra</p>
-          <div class="esv-footer-newsletter-copy">
-            <h2 id="esv-footer-newsletter-title">
-              Novos lançamentos, matérias e peças especiais.
-            </h2>
-            <p>
-              Assine nossa newsletter e receba curadorias exclusivas em primeira mão.
-            </p>
-          </div>
-        </div>
-        <figure class="esv-footer-newsletter-art" aria-hidden="true">
-          <img
-            src={FOOTER_ART}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            width="760"
-            height="760"
-          />
-        </figure>
-      </section>
-
-      <div class="esv-footer-body">
+      <div class="esv-footer-shell">
         <div class="esv-footer-grid">
           <section class="esv-footer-brand" aria-label={`Sobre ${siteName}`}>
             <a
@@ -148,9 +117,8 @@ export default function Footer(
               Objetos, matérias e composições para interiores com presença.
             </p>
             <p class="esv-footer-description">
-              Curadoria autoral de peças e materiais naturais que valorizam a arquitetura
-              e revelam a essência dos espaços. Atendimento próximo, soluções sob medida
-              e atenção a cada detalhe.
+              Curadoria autoral de peças e materiais naturais, com atendimento próximo
+              e soluções sob medida.
             </p>
             <span class="esv-footer-curation-badge">Curadoria autoral</span>
           </section>
@@ -193,16 +161,18 @@ export default function Footer(
             class="esv-footer-column esv-footer-relationship"
             aria-labelledby="esv-footer-relationship"
           >
-            <h2 id="esv-footer-relationship" class="esv-footer-heading">
-              Relacionamento
+            <p class="esv-footer-newsletter-eyebrow">Acompanhe a Esméra</p>
+            <h2 id="esv-footer-relationship" class="esv-footer-newsletter-title">
+              Novos lançamentos, matérias e peças especiais.
             </h2>
+            <p class="esv-footer-newsletter-copy">
+              Receba curadorias e novidades em primeira mão.
+            </p>
 
-            <form
-              class="esv-footer-form"
-              action={newsletterAction}
-              method="get"
-            >
-              <label for="esv-footer-email">Assine nossa newsletter</label>
+            <form class="esv-footer-form" action={contactHref} method="get">
+              <label class="esv-sr-only" for="esv-footer-email">
+                Seu melhor e-mail
+              </label>
               <div class="esv-footer-form-row">
                 <input
                   id="esv-footer-email"
@@ -224,7 +194,7 @@ export default function Footer(
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Icon id="WhatsApp" size={21} aria-hidden="true" />
+                  <Icon id="WhatsApp" size={20} aria-hidden="true" />
                   <span>{source.whatsappLabel || "WhatsApp"}</span>
                   <span class="esv-footer-social-arrow" aria-hidden="true">→</span>
                 </a>
@@ -236,7 +206,7 @@ export default function Footer(
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Icon id="Instagram" size={21} aria-hidden="true" />
+                  <Icon id="Instagram" size={20} aria-hidden="true" />
                   <span>Instagram</span>
                   <span class="esv-footer-social-arrow" aria-hidden="true">→</span>
                 </a>
@@ -244,11 +214,9 @@ export default function Footer(
             </div>
           </section>
         </div>
-      </div>
 
-      <div class="esv-footer-bottom-bar">
-        <div class="esv-footer-bottom-inner">
-          <span>© {year} {siteName}</span>
+        <div class="esv-footer-bottom-bar">
+          <span class="esv-footer-copyright">© {year} {siteName}</span>
 
           <nav class="esv-footer-legal" aria-label="Informações legais">
             {source.privacyHref && (
@@ -262,7 +230,7 @@ export default function Footer(
           <div class="esv-footer-bottom-socials">
             {instagramHref && (
               <a href={instagramHref} target="_blank" rel="noopener noreferrer">
-                <Icon id="Instagram" size={20} aria-hidden="true" />
+                <Icon id="Instagram" size={18} aria-hidden="true" />
                 <span>Instagram</span>
               </a>
             )}
@@ -272,7 +240,7 @@ export default function Footer(
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Icon id="WhatsApp" size={20} aria-hidden="true" />
+                <Icon id="WhatsApp" size={18} aria-hidden="true" />
                 <span>WhatsApp</span>
               </a>
             )}

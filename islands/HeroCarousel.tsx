@@ -55,7 +55,10 @@ function SlidePicture(
   },
 ) {
   return (
-    <picture class={`esv-hero-picture esv-hero-carousel-media ${className}`}>
+    <picture
+      class={`esv-hero-picture esv-hero-carousel-media ${className}`}
+      onTransitionEnd={onTransitionEnd}
+    >
       {slide.mobileImage && (
         <source media="(max-width: 767px)" srcset={slide.mobileImage} />
       )}
@@ -65,7 +68,6 @@ function SlidePicture(
         alt={slide.alt}
         loading={priority === "high" ? "eager" : "lazy"}
         decoding="async"
-        onTransitionEnd={onTransitionEnd}
       />
     </picture>
   );
@@ -212,7 +214,8 @@ export default function HeroCarousel(
             if (
               phase === "transitioning" &&
               event.propertyName === "opacity" &&
-              incoming !== null
+              incoming !== null &&
+              event.currentTarget === event.target
             ) {
               finishTransition(incoming);
             }

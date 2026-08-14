@@ -57,10 +57,14 @@ export interface NavigationNode {
   children: NavigationNode[];
 }
 
-type PayloadCategoryV2 = PayloadCategory & {
-  menuLabel?: string | null;
+type PayloadCategoryMenuGroup = {
   showInMenu?: boolean | null;
-  menuVisibility?: NavigationVisibility | null;
+  label?: string | null;
+  visibility?: "all" | "desktop" | "mobile" | null;
+};
+
+type PayloadCategoryV2 = PayloadCategory & {
+  menu?: PayloadCategoryMenuGroup | null;
   nodeType?: NavigationNodeType | null;
   externalURL?: string | null;
   externalUrl?: string | null;
@@ -135,16 +139,19 @@ export function toStorefrontCategory(
   }
   const destination = categoryHref(category);
   const image = resolvePayloadMedia(category.image, baseURL, "card");
+  const menu = category.menu ?? undefined;
   return {
     id: String(category.id),
     title: category.title,
-    label: category.menuLabel?.trim() || category.title,
+    label: menu?.label?.trim() || category.title,
     slug: category.slug,
     description: category.description?.trim() ?? "",
     order: category.order ?? 100,
     parentId: relationId(category.parent),
-    showInMenu: category.showInMenu !== false,
-    menuVisibility: category.menuVisibility ?? "both",
+    showInMenu: menu?.showInMenu === true,
+    menuVisibility: menu?.visibility === "desktop" || menu?.visibility === "mobile"
+      ? menu.visibility
+      : "both",
     nodeType: category.nodeType ?? "collection",
     href: destination.href,
     external: destination.external,

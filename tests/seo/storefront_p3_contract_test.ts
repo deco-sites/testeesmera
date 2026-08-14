@@ -54,8 +54,9 @@ Deno.test("P3 Home always publishes a canonical fallback", async () => {
   assertStringIncludes(home, 'if (!frontendURL) return "/";');
   assertStringIncludes(
     home,
-    "canonical={homeCanonical(settings?.frontendURL)}",
+    "const homeURL = homeCanonical(settings?.frontendURL);",
   );
+  assertStringIncludes(home, "canonical={homeURL}");
   assertStringIncludes(
     seo,
     '{resolvedCanonical && <link rel="canonical" href={resolvedCanonical} />}',

@@ -5,13 +5,10 @@ import { Context } from "@deco/deco";
 
 export default defineApp(async (_req, ctx) => {
   const revision = await Context.active().release?.revision();
-  // Static CSS can outlive a branch deploy in Deco's CDN when the release
-  // revision remains stable. Bump this token whenever the storefront chrome
-  // changes so preview environments cannot mix new JSX with stale styles.
+  // Preserve the stable storefront token for unchanged CSS contracts and bump
+  // only the home/motion layer shipped by this PR.
   const storefrontStyleRevision = "2026-08-14-about-page-v33";
-  // Home-only cache bust. Keeps the independently certified product-media
-  // contract stable while invalidating homepage motion/interaction CSS.
-  const homeStyleRevision = "2026-08-13-home-corrections-v22";
+  const homeStyleRevision = "2026-08-14-motion-system-v34";
   return (
     <>
       <Theme colorScheme="any" />
@@ -37,10 +34,6 @@ export default defineApp(async (_req, ctx) => {
           href={asset(`/esmera-master.css?v=${storefrontStyleRevision}`)}
         />
         <link rel="stylesheet" href={asset("/esmera-finish.css")} />
-        <link
-          rel="stylesheet"
-          href={asset(`/esmera-motion-v2.css?v=${homeStyleRevision}`)}
-        />
         <link rel="stylesheet" href={asset("/esmera-commerce-refine.css")} />
         <link
           rel="stylesheet"
@@ -75,6 +68,10 @@ export default defineApp(async (_req, ctx) => {
           href={asset(
             `/esmera-product-card.css?v=${storefrontStyleRevision}`,
           )}
+        />
+        <link
+          rel="stylesheet"
+          href={asset(`/esmera-motion-v2.css?v=${homeStyleRevision}`)}
         />
         <link
           rel="stylesheet"

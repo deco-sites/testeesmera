@@ -1,45 +1,84 @@
-/* ESMÉRA — Motion system v2
- * Motion is intentionally non-structural: reveal, hero entrance and UI feedback.
- * Scroll-driven section transforms were removed to preserve native document flow.
+/* ESMÉRA — canonical motion system
+ * Motion is deliberately non-structural: opacity/transform first, selective
+ * editorial clipping only where the markup explicitly opts into media-reveal.
  */
 
 :root {
   --motion-instant: 120ms;
   --motion-fast: 180ms;
+  --motion-exit: 200ms;
   --motion-ui: 260ms;
   --motion-medium: 420ms;
-  --motion-reveal: 620ms;
-  --motion-editorial: 820ms;
+  --motion-reveal: 560ms;
+  --motion-editorial: 760ms;
+  --motion-hero: 800ms;
   --ease-out: cubic-bezier(.16, 1, .3, 1);
   --ease-standard: cubic-bezier(.22, .61, .36, 1);
   --ease-inout: cubic-bezier(.65, 0, .35, 1);
 }
 
-/* Cross-document view transitions are intentionally NOT enabled here.
- * `@view-transition { navigation: auto }` layered a full-page cross-fade on
- * same-origin navigations on top of the section reveals, and the named
- * `esmera-object-image` morph it accompanied was never wired to any element.
- * Native document flow with per-section reveals is the only entrance motion. */
+/* -------------------------------------------------------------------------- */
+/* Cross-document navigation: animate only main, never the full page shell.   */
+/* -------------------------------------------------------------------------- */
 
-/* Reveal contract */
+@view-transition {
+  navigation: auto;
+}
+
+#main-content {
+  view-transition-name: esmera-main;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-old(esmera-main) {
+  animation: esv-page-out 140ms var(--ease-standard) both;
+}
+
+::view-transition-new(esmera-main) {
+  animation: esv-page-in 250ms var(--ease-out) both;
+}
+
+@keyframes esv-page-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to { opacity: .35; transform: translate3d(0, -3px, 0); }
+}
+
+@keyframes esv-page-in {
+  from { opacity: .35; transform: translate3d(0, 4px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Explicit reveal contract                                                   */
+/* -------------------------------------------------------------------------- */
+
 .esv-motion-ready .esv-reveal {
   opacity: 0;
-  transform: translate3d(0, 12px, 0);
+  transform: translate3d(0, 8px, 0);
   transition:
     opacity var(--motion-reveal) var(--ease-out) var(--esv-reveal-delay, 0ms),
-    transform var(--motion-reveal) var(--ease-out) var(--esv-reveal-delay, 0ms),
-    clip-path var(--motion-editorial) var(--ease-out) var(--esv-reveal-delay, 0ms);
+    transform var(--motion-reveal) var(--ease-out) var(--esv-reveal-delay, 0ms);
+  will-change: opacity, transform;
 }
 
 .esv-motion-ready .esv-reveal.is-visible {
   opacity: 1;
   transform: translate3d(0, 0, 0);
+  will-change: auto;
 }
 
 .esv-motion-ready .esv-reveal-media {
   opacity: .01;
-  clip-path: inset(0 0 12% 0);
-  transform: translate3d(0, 12px, 0) scale(1.008);
+  clip-path: inset(0 0 10% 0);
+  transform: translate3d(0, 10px, 0) scale(1.006);
+  transition:
+    opacity var(--motion-reveal) var(--ease-out) var(--esv-reveal-delay, 0ms),
+    transform var(--motion-editorial) var(--ease-out) var(--esv-reveal-delay, 0ms),
+    clip-path var(--motion-editorial) var(--ease-out) var(--esv-reveal-delay, 0ms);
 }
 
 .esv-motion-ready .esv-reveal-media.is-visible {
@@ -68,12 +107,7 @@
   transform: translate3d(0, 0, 0) scale(1);
 }
 
-/* Hero — no entrance animation, by design.
- * The hero renders in its final, resting state at first paint. It is the LCP
- * surface and sits above the fold on every load, so any entrance motion (even
- * a single, correct hidden -> visible fade) reads as the very flash this
- * motion system exists to avoid. It simply appears; the reveals below the fold
- * carry the entrance choreography. */
+/* The hero never has a first-paint entrance animation. */
 .esv-hero-statement {
   overflow: hidden;
 }
@@ -82,16 +116,132 @@
   display: block;
 }
 
-/* Selection */
+/* -------------------------------------------------------------------------- */
+/* Hero carousel: decoded two-layer cross dissolve                            */
+/* -------------------------------------------------------------------------- */
+
+.esv-hero-carousel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.esv-hero-carousel .esv-hero-carousel-media {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-hero) var(--ease-inout);
+}
+
+.esv-hero-carousel .esv-hero-carousel-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.esv-hero-carousel .esv-hero-carousel-media.is-current {
+  opacity: 1;
+}
+
+.esv-hero-carousel.is-transitioning .esv-hero-carousel-media.is-current {
+  opacity: 0;
+}
+
+.esv-hero-carousel.is-transitioning .esv-hero-carousel-media.is-incoming {
+  opacity: 1;
+}
+
+.esv-hero-carousel .esv-hero-overlay {
+  z-index: 1;
+}
+
+.esv-hero-carousel .esv-hero-carousel-content {
+  position: relative;
+  z-index: 2;
+  grid-area: 1 / 1;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.esv-hero-carousel .esv-hero-carousel-content.is-current {
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity 180ms var(--ease-standard);
+}
+
+.esv-hero-carousel .esv-hero-carousel-content.is-incoming {
+  transition: opacity 260ms var(--ease-out) 120ms;
+}
+
+.esv-hero-carousel.is-transitioning .esv-hero-carousel-content.is-current {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.esv-hero-carousel.is-transitioning .esv-hero-carousel-content.is-incoming {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.esv-hero-carousel .esv-hero-carousel-controls {
+  z-index: 3;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Product cards: reveal as one object, hover without moving the card shell.  */
+/* -------------------------------------------------------------------------- */
+
 .esv-product-card .esv-product-media {
-  transition: clip-path var(--motion-editorial) var(--ease-out);
+  clip-path: none;
+  transition: none;
+}
+
+.esv-product-card,
+.esv-product-card:hover,
+.esv-product-card:has(:focus-visible) {
+  transform: none !important;
+  box-shadow: none;
+}
+
+.esv-product-card:hover .esv-product-media-wrap,
+.esv-product-card:has(:focus-visible) .esv-product-media-wrap {
+  box-shadow: none !important;
+}
+
+.esv-product-card .esv-product-media img {
+  transition:
+    transform 650ms var(--ease-standard),
+    opacity 400ms var(--ease-standard);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .esv-product-card:hover .esv-product-image-primary,
+  .esv-product-card:hover .esv-product-image-static,
+  .esv-product-card:has(:focus-visible) .esv-product-image-static,
+  .esv-product-card.has-detail:hover .esv-product-image-detail,
+  .esv-product-card.has-detail:has(:focus-visible) .esv-product-image-detail {
+    transform: scale(1.015);
+  }
+
+  .esv-card-wishlist,
+  .esv-card-action-slot {
+    transition:
+      opacity var(--motion-fast) var(--ease-standard),
+      transform var(--motion-fast) var(--ease-out),
+      background-color var(--motion-fast) var(--ease-standard),
+      color var(--motion-fast) var(--ease-standard);
+  }
 }
 
 .esv-selected-collection-link {
   margin-top: var(--space-8);
 }
 
-/* Territory copy normalization retained for the current static three-column section. */
 .esv-territory-copy > .esv-kicker {
   display: block;
   min-height: 0;
@@ -100,36 +250,67 @@
   font-size: 11px;
 }
 
-/* Signature hover */
-@media (hover: hover) and (pointer: fine) {
-  .esv-signature-media:not(.has-detail):hover .esv-signature-image-primary {
-    opacity: 1;
-    transform: none;
-  }
+/* -------------------------------------------------------------------------- */
+/* Persistent menu / drawer lifecycle                                         */
+/* -------------------------------------------------------------------------- */
 
-  .esv-signature-media.has-detail:hover .esv-signature-image-primary {
-    opacity: 0;
-  }
-
-  .esv-signature-media.has-detail:hover .esv-signature-image-detail {
-    opacity: 1;
-    transform: scale(1.015);
-  }
+.esv-mega-backdrop.is-closing {
+  animation: esv-backdrop-out var(--motion-exit) var(--ease-standard) both !important;
 }
 
-/* UI state motion */
+.esv-mega-v2.is-closing {
+  animation: esv-mega-out var(--motion-exit) var(--ease-standard) both !important;
+  pointer-events: none;
+}
+
+.esv-mega-v2-content {
+  animation: esv-mega-content-in var(--motion-fast) var(--ease-out) both;
+}
+
+.esv-nav-v2-backdrop.is-closing {
+  animation: esv-backdrop-out var(--motion-exit) var(--ease-standard) both !important;
+  pointer-events: none;
+}
+
+.esv-nav-v2-backdrop.is-closing .esv-nav-v2-drawer {
+  animation: esv-drawer-out var(--motion-exit) var(--ease-standard) both !important;
+}
+
+@keyframes esv-mega-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to { opacity: 0; transform: translate3d(0, -4px, 0); }
+}
+
+@keyframes esv-mega-content-in {
+  from { opacity: .3; transform: translate3d(0, 4px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes esv-drawer-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0); }
+  to { opacity: .98; transform: translate3d(-10px, 0, 0); }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Header/search/cart + product modal exit lifecycle                          */
+/* -------------------------------------------------------------------------- */
+
 .esv-header-overlay,
-.esv-object-modal-backdrop {
+.esv-object-modal-backdrop,
+.esv-product-modal-backdrop {
   animation: esv-backdrop-in var(--motion-fast) var(--ease-standard) both;
 }
 
 .esv-header-overlay.is-closing,
-.esv-object-modal-backdrop.is-closing {
+.esv-object-modal-backdrop.is-closing,
+.esv-product-modal-backdrop[data-phase="closing"] {
   animation: esv-backdrop-out var(--motion-ui) var(--ease-standard) both;
+  pointer-events: none;
 }
 
 .esv-header-overlay.is-closing .esv-header-panel,
-.esv-object-modal-backdrop.is-closing .esv-object-modal {
+.esv-object-modal-backdrop.is-closing .esv-object-modal,
+.esv-product-modal-backdrop[data-phase="closing"] .esv-product-modal {
   animation: esv-panel-out var(--motion-ui) var(--ease-standard) both;
 }
 
@@ -157,7 +338,7 @@
 
 @keyframes esv-panel-out {
   from { opacity: 1; transform: translate3d(0, 0, 0); }
-  to { opacity: 0; transform: translate3d(12px, 0, 0); }
+  to { opacity: 0; transform: translate3d(10px, 0, 0); }
 }
 
 @keyframes esv-search-in {
@@ -175,18 +356,51 @@
   to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
+/* Signature hover remains a deliberately editorial exception. */
+@media (hover: hover) and (pointer: fine) {
+  .esv-signature-media:not(.has-detail):hover .esv-signature-image-primary {
+    opacity: 1;
+    transform: none;
+  }
+
+  .esv-signature-media.has-detail:hover .esv-signature-image-primary {
+    opacity: 0;
+  }
+
+  .esv-signature-media.has-detail:hover .esv-signature-image-detail {
+    opacity: 1;
+    transform: scale(1.015);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  #main-content {
+    view-transition-name: none;
+  }
+
   .esv-header,
   .esv-header-panel,
   .esv-header-overlay,
   .esv-object-modal,
   .esv-object-modal-backdrop,
+  .esv-product-modal,
+  .esv-product-modal-backdrop,
+  .esv-mega-v2,
+  .esv-mega-v2-content,
+  .esv-mega-backdrop,
+  .esv-nav-v2-backdrop,
+  .esv-nav-v2-drawer,
+  .esv-hero-carousel-media,
+  .esv-hero-carousel-content,
   .esv-skip,
   .esv-header-nav button::after,
   .esv-enquiry-link::after,
   .esv-enquiry-link sup,
   .esv-search-results,
   .esv-enquiry-list > div,
+  .esv-product-card .esv-product-media img,
+  .esv-card-wishlist,
+  .esv-card-action-slot,
   .esv-motion-ready .esv-reveal,
   .esv-motion-ready .esv-reveal-media {
     transition: none !important;
@@ -198,5 +412,10 @@
     opacity: 1;
     clip-path: none;
     transform: none;
+  }
+
+  .esv-hero-carousel .esv-hero-carousel-media.is-current,
+  .esv-hero-carousel .esv-hero-carousel-content.is-current {
+    opacity: 1;
   }
 }

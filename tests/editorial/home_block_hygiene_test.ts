@@ -70,7 +70,11 @@ Deno.test("Home has no legacy scroll-scene coordinator or scene hooks", async ()
 
   assertStringIncludes(
     app,
-    'const homeStyleRevision = "2026-08-13-home-corrections-v22";',
+    'const storefrontStyleRevision = "2026-08-14-about-page-v33";',
+  );
+  assertStringIncludes(
+    app,
+    'const homeStyleRevision = "2026-08-14-motion-system-v34";',
   );
   assertStringIncludes(
     app,

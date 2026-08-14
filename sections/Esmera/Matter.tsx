@@ -60,14 +60,19 @@ export const loader = async (props: Props) => ({
 });
 
 function PanelContent(
-  { panel, destination }: {
+  { panel, destination, motionOrder }: {
     panel: TerritoryPanel;
     destination?: NavigationLink | null;
+    motionOrder: number;
   },
 ) {
   return (
     <>
-      <figure class="esv-territory-media">
+      <figure
+        class="esv-territory-media"
+        data-motion="media-reveal"
+        data-motion-order={String(motionOrder)}
+      >
         <EsmeraImage
           src={panel.image}
           alt={panel.alt}
@@ -79,7 +84,11 @@ function PanelContent(
         />
       </figure>
       <div class="esv-territory-shade" aria-hidden="true" />
-      <div class="esv-territory-copy">
+      <div
+        class="esv-territory-copy"
+        data-motion="reveal"
+        data-motion-order={String(motionOrder + 1)}
+      >
         <span class="esv-kicker esv-kicker-light">{panel.eyebrow}</span>
         <h2>{panel.title}</h2>
         {panel.text && <p>{panel.text}</p>}
@@ -111,6 +120,7 @@ export default function Matter(
         {panels.slice(0, 3).map((panel, index) => {
           const destination = getPanelDestination(panel);
           const key = `${panel.title}-${index}`;
+          const motionOrder = index * 2;
 
           return destination
             ? (
@@ -122,12 +132,16 @@ export default function Matter(
                 rel={destination.external ? "noopener noreferrer" : undefined}
                 aria-label={`${destination.label}: ${panel.title}`}
               >
-                <PanelContent panel={panel} destination={destination} />
+                <PanelContent
+                  panel={panel}
+                  destination={destination}
+                  motionOrder={motionOrder}
+                />
               </a>
             )
             : (
               <article key={key} class="esv-territory-panel">
-                <PanelContent panel={panel} />
+                <PanelContent panel={panel} motionOrder={motionOrder} />
               </article>
             );
         })}

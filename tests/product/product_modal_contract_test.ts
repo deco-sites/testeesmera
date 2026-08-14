@@ -282,13 +282,7 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(css, "opacity 240ms cubic-bezier(.4, 0, .2, 1)");
   assertStringIncludes(css, "@media (prefers-reduced-motion: reduce)");
   assertFalse(css.includes("!important"));
-  const mainImageRuleStart = css.indexOf(".esv-product-modal-image img {");
-  const mainImageRule = css.slice(
-    mainImageRuleStart,
-    css.indexOf("}", mainImageRuleStart),
-  );
-  assertStringIncludes(mainImageRule, "object-fit: contain");
-  assertFalse(mainImageRule.includes("object-fit: cover"));
+  assertFalse(css.includes("object-fit: cover"));
   assertFalse(css.includes("is-two-stage"));
   assertFalse(css.includes("is-double"));
   assertFalse(css.includes("is-multiple"));
@@ -311,56 +305,6 @@ Deno.test("cards and Conhecer a peça share the adaptive modal and never navigat
   assertStringIncludes(recommendationsRoute, "new Set([productId])");
   assertStringIncludes(recommendationsRoute, 'sort: "newest"');
   assertStringIncludes(css, ".esv-product-viewer-stage");
-});
-
-Deno.test("gallery pane adds thumbnails, unique note and trust bar without touching the plate structure", async () => {
-  const modal = await Deno.readTextFile("islands/ProductModal.tsx");
-  const css = await Deno.readTextFile("static/esmera-product-modal.css");
-
-  assertStringIncludes(modal, "esv-product-modal-gallery-pane");
-  assertStringIncludes(modal, "function GalleryThumbnails");
-  assertStringIncludes(modal, "images.length < 2) return null");
-  assertStringIncludes(modal, "plateIndexOfMedia(plates, imageIndex)");
-  assertStringIncludes(
-    modal,
-    'product.availability === "unique" && <UniqueNote',
-  );
-  assertStringIncludes(modal, "function TrustBar");
-  assertStringIncludes(css, ".esv-product-modal-gallery-pane {");
-  assertStringIncludes(css, ".esv-product-modal-gallery-pane.is-compact {");
-  assertStringIncludes(css, ".esv-product-modal-thumbs {");
-  assertStringIncludes(css, ".esv-product-modal-trust {");
-  assertFalse(css.includes("!important"));
-});
-
-Deno.test("footer keeps the primary CTA outside the accordion/secondary-action additions", async () => {
-  const modal = await Deno.readTextFile("islands/ProductModal.tsx");
-  const css = await Deno.readTextFile("static/esmera-product-modal.css");
-
-  assertStringIncludes(
-    modal,
-    'import WishlistButton from "./WishlistButton.tsx";',
-  );
-  assertStringIncludes(
-    modal,
-    "function buildWhatsAppHref(product: EsmeraObject)",
-  );
-  assertStringIncludes(modal, "esv-whatsapp-sticky");
-  assertStringIncludes(modal, "esv-product-modal-secondary-actions");
-  assertStringIncludes(modal, 'normalizeFactLabel(fact.label) === "dimensoes"');
-  assertStringIncludes(modal, "esv-product-modal-facts-toggle");
-  assertStringIncludes(css, ".esv-product-modal-secondary-actions {");
-  assertStringIncludes(css, ".esv-product-modal-save .esv-card-wishlist {");
-  assertStringIncludes(css, ".esv-product-modal-facts-toggle {");
-  const mobileBlockStart = css.indexOf("@media (max-width: 767px)");
-  const secondaryHideStart = css.indexOf(
-    ".esv-product-modal-secondary-actions {",
-    mobileBlockStart,
-  );
-  assertStringIncludes(
-    css.slice(secondaryHideStart, secondaryHideStart + 60),
-    "display: none;",
-  );
 });
 
 Deno.test("Matter is a whole-panel category link with stable overlay CSS", async () => {

@@ -329,151 +329,6 @@ body.esv-product-modal-open {
   }
 }
 
-/* Gallery pane: wraps the fixed-ratio stage (.esv-product-modal-gallery-frame)
- * together with the thumbnails/trust content below it, so that content isn't
- * clipped by the stage's own aspect-ratio + overflow:hidden. Mirrors the
- * frame's own is-desktop/is-compact breakpoint toggle one level up. */
-.esv-product-modal-gallery-pane {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-  gap: clamp(16px, 1.6vw, 24px);
-}
-
-.esv-product-modal-gallery-pane.is-compact {
-  display: none;
-}
-
-.esv-product-modal-thumbs {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-}
-
-.esv-product-modal-thumbs::-webkit-scrollbar {
-  display: none;
-}
-
-.esv-product-modal-thumb {
-  appearance: none;
-  flex: 0 0 auto;
-  box-sizing: border-box;
-  width: 76px;
-  height: 76px;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid transparent;
-  background: var(--bg-alt);
-  cursor: pointer;
-  opacity: .68;
-  transition: opacity 180ms ease, border-color 180ms ease;
-}
-
-.esv-product-modal-thumb:hover {
-  opacity: 1;
-}
-
-.esv-product-modal-thumb.is-active {
-  border-color: var(--ink);
-  opacity: 1;
-}
-
-.esv-product-modal-thumb:focus-visible {
-  outline: 1px solid var(--ink);
-  outline-offset: 2px;
-}
-
-.esv-product-modal-thumb img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.esv-product-modal-unique {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding-top: clamp(16px, 1.6vw, 24px);
-  border-top: 1px solid var(--line);
-}
-
-.esv-product-modal-unique-icon {
-  display: grid;
-  flex: 0 0 40px;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--line);
-  font-size: 15px;
-}
-
-.esv-product-modal-unique strong {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.esv-product-modal-unique p {
-  max-width: 42ch;
-  margin: 0;
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.5;
-}
-
-.esv-product-modal-trust {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-top: 1px solid var(--line);
-}
-
-.esv-product-modal-trust-item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 18px 14px 18px 0;
-}
-
-.esv-product-modal-trust-item + .esv-product-modal-trust-item {
-  padding-left: 14px;
-}
-
-.esv-product-modal-trust-item + .esv-product-modal-trust-item::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 26%;
-  width: 1px;
-  height: 48%;
-  background: var(--line);
-}
-
-.esv-product-modal-trust-item > span {
-  flex: 0 0 auto;
-  font-size: 19px;
-  line-height: 1;
-}
-
-.esv-product-modal-trust-item strong {
-  display: block;
-  margin-bottom: 3px;
-  font-size: 10px;
-  font-weight: 500;
-}
-
-.esv-product-modal-trust-item small {
-  display: block;
-  color: var(--muted);
-  font-size: 9px;
-  line-height: 1.35;
-}
-
 /* Buybox */
 .esv-product-modal-buybox {
   display: flex;
@@ -580,40 +435,6 @@ body.esv-product-modal-open {
   text-align: right;
 }
 
-.esv-product-modal-facts-toggle {
-  appearance: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-size: 11px;
-  cursor: pointer;
-}
-
-.esv-product-modal-facts-toggle[aria-expanded="true"] span {
-  transform: rotate(180deg);
-}
-
-.esv-product-modal-facts-toggle span {
-  display: inline-block;
-  transition: transform 180ms ease;
-}
-
-.esv-product-modal-facts-details {
-  padding: 12px 0 0;
-}
-
-.esv-product-modal-facts-details p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.5;
-}
-
 .esv-product-modal-variant {
   display: block;
   margin-top: 30px;
@@ -679,56 +500,6 @@ body.esv-product-modal-open {
 
 .esv-product-modal-add:hover span:last-child {
   transform: translate3d(2px, -2px, 0);
-}
-
-.esv-product-modal-secondary-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.esv-product-modal-save,
-.esv-product-modal-contact {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 44px;
-  border: 1px solid var(--line);
-  color: var(--ink);
-  text-decoration: none;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: .09em;
-  text-transform: uppercase;
-  transition: background-color 160ms ease;
-}
-
-.esv-product-modal-contact:hover {
-  background: rgba(38, 39, 36, .04);
-}
-
-/* Reskin the card-context wishlist toggle (absolute, hover-revealed) for the
- * always-visible modal footer, without touching its own styling contract. */
-.esv-product-modal-save {
-  position: relative;
-}
-
-.esv-product-modal-save .esv-card-wishlist {
-  position: static;
-  width: 18px;
-  height: 18px;
-  opacity: 1;
-  pointer-events: auto;
-  transform: none;
-  background: transparent;
-  backdrop-filter: none;
-}
-
-.esv-product-modal-save .esv-card-wishlist svg {
-  width: 16px;
-  height: 16px;
 }
 
 .esv-product-modal-recommendations {
@@ -1035,14 +806,6 @@ body.esv-product-modal-open {
     display: block;
   }
 
-  .esv-product-modal-gallery-pane.is-desktop {
-    display: none;
-  }
-
-  .esv-product-modal-gallery-pane.is-compact {
-    display: flex;
-  }
-
   .esv-product-modal {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto;
@@ -1173,10 +936,6 @@ body.esv-product-modal-open {
 
   .esv-product-modal-buybox-footer {
     padding: 10px var(--page-x) max(24px, env(safe-area-inset-bottom));
-  }
-
-  .esv-product-modal-secondary-actions {
-    display: none;
   }
 
   .esv-product-modal-related-grid {

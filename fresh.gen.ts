@@ -28,6 +28,7 @@ import * as $DynamicMenu from "./islands/DynamicMenu.tsx";
 import * as $EsmeraHeader from "./islands/EsmeraHeader.tsx";
 import * as $EsmeraMotion from "./islands/EsmeraMotion.tsx";
 import * as $HeroCarousel from "./islands/HeroCarousel.tsx";
+import * as $MenuNavigationCoordinator from "./islands/MenuNavigationCoordinator.tsx";
 import * as $ProductActions from "./islands/ProductActions.tsx";
 import * as $ProductModal from "./islands/ProductModal.tsx";
 import * as $WishlistButton from "./islands/WishlistButton.tsx";
@@ -63,6 +64,7 @@ const manifest = {
     "./islands/EsmeraHeader.tsx": $EsmeraHeader,
     "./islands/EsmeraMotion.tsx": $EsmeraMotion,
     "./islands/HeroCarousel.tsx": $HeroCarousel,
+    "./islands/MenuNavigationCoordinator.tsx": $MenuNavigationCoordinator,
     "./islands/ProductActions.tsx": $ProductActions,
     "./islands/ProductModal.tsx": $ProductModal,
     "./islands/WishlistButton.tsx": $WishlistButton,

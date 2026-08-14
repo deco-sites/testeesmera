@@ -65,8 +65,14 @@ function contrast(foreground: string, background: string): number {
 }
 
 Deno.test("P1 secondary text token meets WCAG AA on Esmera light surfaces", async () => {
-  const css = await Deno.readTextFile("static/esmera-accessibility-p1-v1.css");
-  const muted = css.match(/--muted:\s*(#[0-9A-Fa-f]{6})/)?.[1];
+  // --muted lives in esmera-master.css (single source of truth for the
+  // token); esmera-accessibility-p1-v1.css keeps the placeholder override
+  // that consumes it but no longer redefines the color itself.
+  const [masterCss, p1Css] = await Promise.all([
+    Deno.readTextFile("static/esmera-master.css"),
+    Deno.readTextFile("static/esmera-accessibility-p1-v1.css"),
+  ]);
+  const muted = masterCss.match(/--muted:\s*(#[0-9A-Fa-f]{6})/)?.[1];
   if (!muted) throw new Error("P1 muted token is missing");
 
   for (const background of ["#F3F0E8", "#E9E5DC"]) {
@@ -76,7 +82,7 @@ Deno.test("P1 secondary text token meets WCAG AA on Esmera light surfaces", asyn
     }
   }
 
-  if (!/input::placeholder[\s\S]*opacity:\s*1/.test(css)) {
+  if (!/input::placeholder[\s\S]*opacity:\s*1/.test(p1Css)) {
     throw new Error("collection placeholder must not dilute the AA token");
   }
 });

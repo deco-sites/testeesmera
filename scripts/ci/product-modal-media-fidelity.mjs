@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { chromium } from "playwright";
 
 const BASE_URL = process.env.BASE_URL || "http://127.0.0.1:8000/";
@@ -217,11 +217,25 @@ try {
   const desktop = await desktopContext.newPage();
   await desktop.goto(BASE_URL, { waitUntil: "networkidle", timeout: 120000 });
 
+  // Read the current cache-bust token from source instead of pinning a
+  // historical literal here — a hardcoded value drifts every time
+  // storefrontStyleRevision is bumped and silently stops guarding anything.
+  const appSource = await readFile("routes/_app.tsx", "utf8");
+  const expectedRevision = appSource.match(
+    /storefrontStyleRevision\s*=\s*"([^"]+)"/,
+  )?.[1];
+  if (!expectedRevision) {
+    fail("Could not read storefrontStyleRevision from routes/_app.tsx");
+  }
+
   const cssHref = await desktop.locator(
     'link[href*="esmera-product-modal.css"]',
   ).getAttribute("href");
-  if (!cssHref?.includes("2026-08-12-gallery-viewport-v26")) {
-    fail("Media fidelity stylesheet revision is stale", { cssHref });
+  if (!cssHref?.includes(expectedRevision)) {
+    fail("Media fidelity stylesheet revision is stale", {
+      cssHref,
+      expectedRevision,
+    });
   }
 
   const desktopFrame = desktop.locator(

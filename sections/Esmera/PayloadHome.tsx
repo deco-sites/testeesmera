@@ -57,7 +57,10 @@ export default function PayloadHome({ data }: { data: Data }) {
     : { ...seo, image: heroImage };
 
   // 4.3 — minimal Organization + WebSite structured data for the home.
-  const logo = absoluteAsset("/android-chrome-512x512.png", settings?.frontendURL);
+  const logo = absoluteAsset(
+    "/android-chrome-512x512.png",
+    settings?.frontendURL,
+  );
   const jsonLd = [
     {
       "@context": "https://schema.org",

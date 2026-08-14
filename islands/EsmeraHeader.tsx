@@ -5,6 +5,8 @@ import type { NavigationNode } from "../lib/payload/navigation.ts";
 import type { EsmeraObject, EsmeraVariant } from "../lib/payload/types.ts";
 
 type Overlay = "search" | "enquiry" | null;
+type OverlayPhase = "closed" | "opening" | "open" | "closing";
+type HeaderSurface = "hero" | "solid" | "mega" | "overlay";
 type CartItem = {
   product: EsmeraObject;
   quantity: number;
@@ -40,6 +42,7 @@ export interface Props {
 }
 
 const CART_STORAGE_KEY = "esmera-cart-v2";
+const OVERLAY_EXIT_MS = 280;
 const FOCUSABLE_SELECTOR = [
   "a[href]",
   "button:not([disabled])",
@@ -158,6 +161,7 @@ export default function EsmeraHeader({
   variant = "solid",
 }: Props) {
   const [overlay, setOverlay] = useState<Overlay>(null);
+  const [overlayPhase, setOverlayPhase] = useState<OverlayPhase>("closed");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartReady, setCartReady] = useState(false);
   const [query, setQuery] = useState("");
@@ -172,12 +176,42 @@ export default function EsmeraHeader({
   const requestRef = useRef<AbortController | null>(null);
   const panelRef = useRef<HTMLElement>(null);
   const lastTriggerRef = useRef<HTMLElement | null>(null);
+  const overlayExitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const overlayAfterClose = useRef<(() => void) | null>(null);
 
-  const closeAll = () => setOverlay(null);
+  const clearOverlayExit = () => {
+    if (overlayExitTimer.current !== null) {
+      globalThis.clearTimeout(overlayExitTimer.current);
+      overlayExitTimer.current = null;
+    }
+  };
+
+  const finalizeOverlayClose = () => {
+    clearOverlayExit();
+    setOverlayPhase("closed");
+    setOverlay(null);
+    const afterClose = overlayAfterClose.current;
+    overlayAfterClose.current = null;
+    if (afterClose) globalThis.setTimeout(afterClose, 0);
+  };
+
+  const closeAll = (afterClose?: () => void) => {
+    if (!overlay || overlayPhase === "closing") return;
+    overlayAfterClose.current = afterClose ?? null;
+    setOverlayPhase("closing");
+    overlayExitTimer.current = globalThis.setTimeout(
+      finalizeOverlayClose,
+      OVERLAY_EXIT_MS,
+    );
+  };
 
   const openOverlay = (next: Exclude<Overlay, null>, trigger?: HTMLElement) => {
+    clearOverlayExit();
+    overlayAfterClose.current = null;
     if (trigger) lastTriggerRef.current = trigger;
     setOverlay(next);
+    setOverlayPhase("opening");
+    requestAnimationFrame(() => setOverlayPhase("open"));
   };
 
   const addToCart = (product: EsmeraObject, variant?: EsmeraVariant) => {
@@ -193,15 +227,12 @@ export default function EsmeraHeader({
     });
   };
 
+  useEffect(() => () => clearOverlayExit(), []);
+
   useEffect(() => {
     let frame = 0;
     const update = () => {
       frame = 0;
-      // While the page is scroll-locked (product modal / search / cart overlay)
-      // the body is `position: fixed` and window.scrollY is pinned to 0. Ignore
-      // those synthetic scroll events so the header keeps its pre-lock
-      // solid/transparent state and does not flash transparent when the lock is
-      // released on close.
       if (document.body.style.position === "fixed") return;
       setIsScrolled((previous) => {
         const y = globalThis.scrollY || 0;
@@ -248,10 +279,9 @@ export default function EsmeraHeader({
     const focusables = () =>
       Array.from(
         dialog?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR) ?? [],
-      )
-        .filter((element) =>
-          !element.hasAttribute("disabled") && element.offsetParent !== null
-        );
+      ).filter((element) =>
+        !element.hasAttribute("disabled") && element.offsetParent !== null
+      );
     const frame = requestAnimationFrame(() => {
       const preferred = dialog?.querySelector<HTMLElement>("[data-autofocus]");
       (preferred ?? focusables()[0])?.focus();
@@ -297,10 +327,10 @@ export default function EsmeraHeader({
   }, [overlay]);
 
   useEffect(() => {
-    if (overlay !== "search") return;
+    if (overlay !== "search" || overlayPhase === "closing") return;
     const frame = requestAnimationFrame(() => searchInput.current?.focus());
     return () => cancelAnimationFrame(frame);
-  }, [overlay]);
+  }, [overlay, overlayPhase]);
 
   useEffect(() => {
     try {
@@ -366,7 +396,7 @@ export default function EsmeraHeader({
 
   useEffect(() => {
     requestRef.current?.abort();
-    if (overlay !== "search") return;
+    if (overlay !== "search" || overlayPhase === "closing") return;
     const normalized = query.trim();
     if (normalized.length < 2) {
       setResults([]);
@@ -397,7 +427,7 @@ export default function EsmeraHeader({
       globalThis.clearTimeout(timer);
       controller.abort();
     };
-  }, [query, overlay]);
+  }, [query, overlay, overlayPhase]);
 
   useEffect(() => {
     const add = (event: Event) => {
@@ -405,7 +435,7 @@ export default function EsmeraHeader({
         ?.product;
       if (!product) return;
       addToCart(product, product.variants.find((variant) => !variant.disabled));
-      setOverlay("enquiry");
+      openOverlay("enquiry");
     };
     globalThis.addEventListener("esmera:add-to-enquiry", add);
     return () => globalThis.removeEventListener("esmera:add-to-enquiry", add);
@@ -433,13 +463,18 @@ export default function EsmeraHeader({
     hasInquiry ? "Itens sob consulta serão confirmados pela curadoria." : "",
   ].filter(Boolean).join("\n");
   const sendHref = checkoutHref(whatsappHref, message);
-  const isSolid = variant === "solid" || isScrolled || overlay !== null ||
-    megaOpen || desktopMenuHovered;
+  const headerSurface: HeaderSurface = overlay
+    ? "overlay"
+    : megaOpen || desktopMenuHovered
+    ? "mega"
+    : variant === "solid" || isScrolled
+    ? "solid"
+    : "hero";
+  const isSolid = headerSurface !== "hero";
   const overlayTitle = overlay === "search" ? "Busca" : "Carrinho";
 
   const openSearchProduct = (product: EsmeraObject) => {
-    setOverlay(null);
-    globalThis.setTimeout(() => {
+    closeAll(() => {
       const trigger = document.querySelector<HTMLElement>(
         ".esv-search-trigger",
       );
@@ -448,7 +483,7 @@ export default function EsmeraHeader({
           detail: { product, trigger: trigger ?? undefined },
         }),
       );
-    }, 0);
+    });
   };
 
   return (
@@ -459,6 +494,7 @@ export default function EsmeraHeader({
         }`}
         data-header-variant={variant}
         data-header-state={isSolid ? "solid" : "transparent"}
+        data-header-surface={headerSurface}
       >
         <DynamicMenu
           items={menu}
@@ -484,7 +520,7 @@ export default function EsmeraHeader({
             class="esv-header-icon esv-search-trigger"
             type="button"
             aria-label="Buscar objetos"
-            aria-expanded={overlay === "search"}
+            aria-expanded={overlay === "search" && overlayPhase !== "closing"}
             onClick={(event) => openOverlay("search", event.currentTarget)}
           >
             <SearchIcon />
@@ -493,7 +529,7 @@ export default function EsmeraHeader({
             class="esv-enquiry-link esv-cart-link"
             type="button"
             aria-label={`${enquiryLabel}, ${cartCount} itens`}
-            aria-expanded={overlay === "enquiry"}
+            aria-expanded={overlay === "enquiry" && overlayPhase !== "closing"}
             onClick={(event) => openOverlay("enquiry", event.currentTarget)}
           >
             <span class="esv-cart-label">{enquiryLabel}</span>
@@ -507,9 +543,12 @@ export default function EsmeraHeader({
 
       {overlay && (
         <div
-          class={`esv-header-overlay esv-header-overlay-${overlay}`}
+          class={`esv-header-overlay esv-header-overlay-${overlay}${
+            overlayPhase === "closing" ? " is-closing" : ""
+          }`}
           role="presentation"
-          onClick={closeAll}
+          data-phase={overlayPhase}
+          onClick={() => closeAll()}
         >
           <aside
             ref={panelRef}
@@ -518,13 +557,20 @@ export default function EsmeraHeader({
             aria-modal="true"
             aria-labelledby="esv-overlay-title"
             onClick={(event) => event.stopPropagation()}
+            onAnimationEnd={(event) => {
+              if (
+                overlayPhase === "closing" &&
+                event.currentTarget === event.target
+              ) {
+                finalizeOverlayClose();
+              }
+            }}
           >
             <div class="esv-panel-header">
               <a
                 class="esv-panel-wordmark"
                 href="/"
                 aria-label={`${logo} — início`}
-                onClick={closeAll}
               >
                 <img
                   class="esv-brand-image esv-panel-logo-image"
@@ -542,7 +588,7 @@ export default function EsmeraHeader({
                 class="esv-panel-close"
                 type="button"
                 aria-label={`Fechar ${overlayTitle.toLowerCase()}`}
-                onClick={closeAll}
+                onClick={() => closeAll()}
               >
                 <CloseIcon />
               </button>
@@ -621,7 +667,7 @@ export default function EsmeraHeader({
                   ? (
                     <div class="esv-cart-empty">
                       <p>Seu carrinho está vazio.</p>
-                      <a href="/colecao" onClick={closeAll}>Explorar objetos</a>
+                      <a href="/colecao">Explorar objetos</a>
                     </div>
                   )
                   : (
@@ -634,7 +680,6 @@ export default function EsmeraHeader({
                               <a
                                 class="esv-cart-item-media"
                                 href={`/produto/${item.product.slug}`}
-                                onClick={closeAll}
                               >
                                 <img
                                   src={item.product.image}

@@ -1,27 +1,6 @@
 import { useEffect } from "preact/hooks";
 
-const fallbackRevealSelectors = [
-  ".esv-maison-copy",
-  ".esv-maison-main",
-  ".esv-maison-secondary",
-  ".esv-selected-head > .esv-kicker",
-  ".esv-selected-head > h2",
-  ".esv-selected-head > p:last-child",
-  ".esv-product-card",
-  ".esv-territory-copy",
-  ".esv-signature-media",
-  ".esv-signature-copy",
-  ".esv-matter-interlude-meta",
-  ".esv-matter-interlude-title",
-  ".esv-provenance-intro-grid > .esv-kicker",
-  ".esv-provenance-intro-copy",
-  ".esv-provenance-stage-media",
-  ".esv-provenance-stage-copy",
-  ".esv-private-grid > .esv-kicker",
-  ".esv-private-copy",
-];
-
-const legacyStaggerSelectors = [".esv-product-card"];
+const REVEAL_SELECTOR = '[data-motion="reveal"], [data-motion="media-reveal"]';
 
 export default function EsmeraMotion() {
   useEffect(() => {
@@ -32,22 +11,12 @@ export default function EsmeraMotion() {
 
     if (reduceMotion || !("IntersectionObserver" in globalThis)) return;
 
-    const declared = Array.from(
-      document.querySelectorAll<HTMLElement>(
-        '[data-motion="reveal"], [data-motion="media-reveal"]',
-      ),
+    const elements = Array.from(
+      document.querySelectorAll<HTMLElement>(REVEAL_SELECTOR),
     );
-
-    const fallback = fallbackRevealSelectors.flatMap((selector) =>
-      Array.from(document.querySelectorAll<HTMLElement>(selector)).filter(
-        (element) =>
-          !element.matches("[data-motion]") &&
-          !element.querySelector("[data-motion]"),
-      )
-    );
-
-    const elements = Array.from(new Set([...declared, ...fallback]));
     if (elements.length === 0) return;
+
+    const viewportHeight = globalThis.innerHeight || 800;
 
     elements.forEach((element) => {
       element.classList.add("esv-reveal");
@@ -59,41 +28,15 @@ export default function EsmeraMotion() {
       if (Number.isFinite(order)) {
         element.style.setProperty(
           "--esv-reveal-delay",
-          `${Math.min(Math.max(order, 0) * 55, 275)}ms`,
+          `${Math.min(Math.max(order, 0) * 45, 180)}ms`,
         );
       }
-    });
 
-    legacyStaggerSelectors.forEach((selector) => {
-      const groups = new Map<Element, HTMLElement[]>();
-      document.querySelectorAll<HTMLElement>(selector).forEach((element) => {
-        if (
-          element.matches("[data-motion]") ||
-          element.querySelector("[data-motion]")
-        ) {
-          return;
-        }
-        const parent = element.parentElement;
-        if (!parent) return;
-        const current = groups.get(parent) ?? [];
-        current.push(element);
-        groups.set(parent, current);
-      });
-
-      groups.forEach((group) => {
-        group.forEach((element, index) => {
-          element.style.setProperty(
-            "--esv-reveal-delay",
-            `${Math.min(index * 70, 210)}ms`,
-          );
-        });
-      });
-    });
-
-    const viewportHeight = globalThis.innerHeight || 800;
-    elements.forEach((element) => {
+      // Anything already visible at hydration stays visible. The motion-ready
+      // class is only enabled after this pass, so hydration never hides content
+      // that the server has already painted above the fold.
       const rect = element.getBoundingClientRect();
-      if (rect.top < viewportHeight * .94 && rect.bottom > 0) {
+      if (rect.top < viewportHeight * .96 && rect.bottom > 0) {
         element.classList.add("is-visible");
       }
     });
@@ -109,7 +52,7 @@ export default function EsmeraMotion() {
       },
       {
         threshold: .08,
-        rootMargin: "0px 0px -5% 0px",
+        rootMargin: "0px 0px -4% 0px",
       },
     );
 
@@ -117,29 +60,12 @@ export default function EsmeraMotion() {
       if (!element.classList.contains("is-visible")) observer.observe(element);
     });
 
-    const frame = requestAnimationFrame(() =>
-      root.classList.add("esv-motion-ready")
-    );
-
-    // Safety net: the synchronous check above reveals what is on screen at
-    // effect time, but late layout shifts (images/fonts settling) can move a
-    // reveal into the viewport before the observer confirms it, leaving it
-    // blank. After 300ms, force-reveal any still-hidden element now in view.
-    const revealFallback = setTimeout(() => {
-      const vh = globalThis.innerHeight || 800;
-      elements.forEach((element) => {
-        if (element.classList.contains("is-visible")) return;
-        const rect = element.getBoundingClientRect();
-        if (rect.top < vh && rect.bottom > 0) {
-          element.classList.add("is-visible");
-          observer.unobserve(element);
-        }
-      });
-    }, 300);
+    const frame = requestAnimationFrame(() => {
+      root.classList.add("esv-motion-ready");
+    });
 
     return () => {
       cancelAnimationFrame(frame);
-      clearTimeout(revealFallback);
       observer.disconnect();
       root.classList.remove("esv-motion-ready");
       elements.forEach((element) => {

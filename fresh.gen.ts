@@ -14,6 +14,7 @@ import * as $colecao_slug_ from "./routes/colecao/[slug].tsx";
 import * as $colecao_index from "./routes/colecao/index.tsx";
 import * as $contato from "./routes/contato.tsx";
 import * as $pagina_slug_ from "./routes/pagina/[slug].tsx";
+import * as $pagina_a_esmera from "./routes/pagina/a-esmera.tsx";
 import * as $politica_de_privacidade from "./routes/politica-de-privacidade.tsx";
 import * as $produto_slug_ from "./routes/produto/[slug].tsx";
 import * as $robots_txt from "./routes/robots.txt.ts";
@@ -46,6 +47,7 @@ const manifest = {
     "./routes/colecao/index.tsx": $colecao_index,
     "./routes/contato.tsx": $contato,
     "./routes/pagina/[slug].tsx": $pagina_slug_,
+    "./routes/pagina/a-esmera.tsx": $pagina_a_esmera,
     "./routes/politica-de-privacidade.tsx": $politica_de_privacidade,
     "./routes/produto/[slug].tsx": $produto_slug_,
     "./routes/robots.txt.ts": $robots_txt,

@@ -1,0 +1,411 @@
+/* ESMÉRA — Página institucional "A Esméra" (/pagina/a-esmera)
+ * Reutiliza os tokens e utilitários de esmera-master.css (--bg, --ink,
+ * --black, --muted, --accent, --space-*, --page-x, --section-y,
+ * --content-max, --line, --ease-esmera, .esv-shell, .esv-kicker,
+ * .esv-text-link). Nenhum token novo é introduzido aqui.
+ */
+
+/* Breadcrumb ------------------------------------------------------------ */
+
+.esv-about-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-8);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.esv-about-breadcrumb a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.esv-about-breadcrumb a:hover {
+  color: var(--ink);
+}
+
+.esv-about-breadcrumb span[aria-current] {
+  color: var(--ink);
+}
+
+/* Hero -------------------------------------------------------------------- */
+
+.esv-about-hero {
+  background: var(--bg);
+  padding-block: var(--space-24) var(--space-24);
+}
+
+.esv-about-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--grid-gap);
+}
+
+.esv-about-hero-copy {
+  max-width: 46ch;
+}
+
+.esv-about-hero-copy h1 {
+  margin: var(--space-3) 0 0;
+  font-size: clamp(48px, 6vw, 88px);
+  font-weight: 300;
+  line-height: .96;
+  letter-spacing: -.03em;
+}
+
+.esv-about-hero-text {
+  max-width: 42ch;
+  margin: var(--space-6) 0 0;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.esv-about-hero-copy > .esv-text-link {
+  margin-top: var(--space-8);
+}
+
+.esv-about-hero-media {
+  margin: 0;
+  aspect-ratio: 6 / 7;
+  overflow: hidden;
+  background: var(--bg-alt);
+}
+
+.esv-about-hero-media picture,
+.esv-about-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Processo ----------------------------------------------------------------- */
+
+.esv-about-process {
+  padding-block: var(--space-24);
+}
+
+.esv-about-process-head {
+  max-width: 640px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.esv-about-process-head h2 {
+  margin: var(--space-3) 0 0;
+  font-size: clamp(30px, 2.8vw, 44px);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -.03em;
+}
+
+.esv-about-process-head p {
+  max-width: 52ch;
+  margin: var(--space-4) auto 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.esv-about-process-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: var(--space-24);
+}
+
+.esv-about-process-step {
+  padding-inline: var(--space-8);
+}
+
+.esv-about-process-step + .esv-about-process-step {
+  border-left: 1px solid var(--line);
+}
+
+.esv-about-process-step:first-child {
+  padding-left: 0;
+}
+
+.esv-about-process-step:last-child {
+  padding-right: 0;
+}
+
+.esv-about-process-step-number {
+  display: block;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .06em;
+}
+
+.esv-about-process-step h3 {
+  margin: var(--space-3) 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.esv-about-process-step p {
+  max-width: 34ch;
+  margin: var(--space-3) 0 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.esv-about-process-step-media {
+  margin: var(--space-6) 0 0;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--bg-alt);
+}
+
+.esv-about-process-step-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Manifesto ----------------------------------------------------------------- */
+
+.esv-about-manifesto {
+  overflow: hidden;
+  background: var(--black);
+  color: var(--ink-inverse);
+}
+
+.esv-about-manifesto-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: center;
+  gap: var(--grid-gap);
+  padding-block: var(--space-24);
+}
+
+.esv-about-manifesto-copy {
+  max-width: 22ch;
+}
+
+.esv-about-manifesto-copy h2 {
+  margin: var(--space-3) 0 0;
+  font-size: clamp(32px, 3.4vw, 52px);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+}
+
+.esv-about-manifesto-media {
+  margin: calc(var(--space-24) * -1) calc(var(--page-x) * -1) calc(var(--space-24) * -1) 0;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+}
+
+.esv-about-manifesto-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Materiais e cuidados -------------------------------------------------- */
+
+.esv-about-materials {
+  padding-block: var(--space-24);
+}
+
+.esv-about-materials-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  align-items: center;
+  gap: var(--space-16);
+}
+
+.esv-about-materials-media {
+  margin: 0;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--bg-alt);
+}
+
+.esv-about-materials-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.esv-about-materials-copy h2 {
+  margin: var(--space-3) 0 0;
+  font-size: clamp(30px, 2.8vw, 44px);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -.03em;
+}
+
+.esv-about-materials-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: var(--space-16) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.esv-about-materials-list li {
+  padding-inline: var(--space-4);
+}
+
+.esv-about-materials-list li + li {
+  border-left: 1px solid var(--line);
+}
+
+.esv-about-materials-list li:first-child {
+  padding-left: 0;
+}
+
+.esv-about-materials-list svg {
+  color: var(--accent);
+}
+
+.esv-about-materials-list strong {
+  display: block;
+  margin-top: var(--space-3);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.esv-about-materials-list p {
+  max-width: 22ch;
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+/* Tablet ------------------------------------------------------------------ */
+
+@media (max-width: 1023px) {
+  .esv-about-hero-copy h1 {
+    font-size: clamp(40px, 7vw, 64px);
+  }
+
+  .esv-about-process-steps {
+    gap: var(--space-8);
+  }
+
+  .esv-about-materials-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6) 0;
+  }
+
+  .esv-about-materials-list li:nth-child(2n) {
+    border-left: 1px solid var(--line);
+  }
+
+  .esv-about-materials-list li:nth-child(2n+1) {
+    border-left: none;
+  }
+}
+
+/* Mobile -------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  .esv-about-hero {
+    padding-block: var(--space-16);
+  }
+
+  .esv-about-hero-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  .esv-about-hero-copy {
+    max-width: none;
+  }
+
+  .esv-about-hero-copy h1 {
+    font-size: clamp(36px, 12vw, 52px);
+  }
+
+  .esv-about-hero-media {
+    aspect-ratio: 4 / 5;
+  }
+
+  .esv-about-process {
+    padding-block: var(--space-16);
+  }
+
+  .esv-about-process-head {
+    text-align: left;
+  }
+
+  .esv-about-process-head p {
+    margin-inline: 0;
+  }
+
+  .esv-about-process-steps {
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+    margin-top: var(--space-12);
+  }
+
+  .esv-about-process-step {
+    padding-inline: 0;
+  }
+
+  .esv-about-process-step + .esv-about-process-step {
+    border-left: none;
+    padding-top: var(--space-12);
+    border-top: 1px solid var(--line);
+  }
+
+  .esv-about-manifesto-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+    padding-block: var(--space-16);
+  }
+
+  .esv-about-manifesto-copy {
+    max-width: none;
+  }
+
+  .esv-about-manifesto-media {
+    margin: 0 calc(var(--page-x) * -1) calc(var(--space-16) * -1);
+    aspect-ratio: 16 / 11;
+  }
+
+  .esv-about-materials {
+    padding-block: var(--space-16);
+  }
+
+  .esv-about-materials-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  .esv-about-materials-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6) 0;
+  }
+
+  .esv-about-materials-list li:nth-child(2n) {
+    border-left: 1px solid var(--line);
+  }
+
+  .esv-about-materials-list li:nth-child(2n+1) {
+    border-left: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .esv-about-hero *,
+  .esv-about-process *,
+  .esv-about-manifesto *,
+  .esv-about-materials * {
+    transition: none !important;
+  }
+}

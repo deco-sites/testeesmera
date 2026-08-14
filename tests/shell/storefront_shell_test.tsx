@@ -158,10 +158,13 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   );
   assertStringIncludes(menuIsland, 'pointerType !== "mouse"');
   assertStringIncludes(menuIsland, "}, 120);");
+  assertStringIncludes(menuIsland, 'type MenuPhase = "closed" | "opening" | "open" | "closing";');
   assertStringIncludes(menuIsland, "key={activeDesktop.id}");
-  assertStringIncludes(menuIsland, 'class="esv-mega-backdrop"');
+  assertStringIncludes(menuIsland, 'class={`esv-mega-backdrop${');
+  assertStringIncludes(menuIsland, 'megaPhase === "closing" ? " is-closing" : ""');
+  assertStringIncludes(menuIsland, 'drawerPhase === "closing" ? " is-closing" : ""');
+  assertFalse(menuIsland.includes("animationDelay"));
   assertStringIncludes(menuIsland, "aria-current");
-  assertStringIncludes(menuIsland, "animationDelay");
   assertStringIncludes(menuIsland, 'const MEGA_ID = "esv-mega-panel"');
   assertStringIncludes(menuIsland, "aria-controls");
   assertStringIncludes(menuIsland, 'event.key !== "ArrowDown"');
@@ -184,6 +187,8 @@ Deno.test("unified header stylesheet owns shell layers without trapping fixed me
   );
   assertStringIncludes(headerIsland, "megaOpen || desktopMenuHovered");
   assertStringIncludes(headerIsland, 'megaOpen ? " is-mega-open" : ""');
+  assertStringIncludes(headerIsland, "data-header-surface={headerSurface}");
+  assertStringIncludes(headerIsland, 'overlayPhase === "closing"');
   assertStringIncludes(headerIsland, "return previous ? y > 8 : y > 24;");
   assertStringIncludes(headerIsland, "key={cartCount}");
   assertStringIncludes(headerIsland, 'class="esv-cart-quantity"');

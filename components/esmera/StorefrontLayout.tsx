@@ -59,7 +59,11 @@ export default function StorefrontLayout(
         variant={headerVariant}
       />
       <main id="main-content">{children}</main>
-      <Footer {...shell.footer} />
+      <Footer
+        {...shell.footer}
+        collectionLinks={shell.categories}
+        instagramHref={shell.instagramHref}
+      />
     </>
   );
 }

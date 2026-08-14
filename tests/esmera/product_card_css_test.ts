@@ -58,7 +58,7 @@ Deno.test("product card stylesheet is the only owner of card presentation", asyn
   assertFalse(component.includes('class="esv-card-footer"'));
 
   assertStringIncludes(buyButton, 'new CustomEvent("esmera:add-to-enquiry"');
-  assertStringIncludes(header, 'setOverlay("enquiry")');
+  assertStringIncludes(header, 'openOverlay("enquiry")');
 
   const cardIndex = app.indexOf(
     "/esmera-product-card.css?v=${storefrontStyleRevision}",

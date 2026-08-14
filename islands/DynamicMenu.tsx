@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { NavigationNode } from "../lib/payload/navigation.ts";
 
 type CreatePortal = typeof import("preact/compat").createPortal;
+type MenuPhase = "closed" | "opening" | "open" | "closing";
 
 export interface Props {
   items: NavigationNode[];
@@ -17,6 +18,9 @@ const FOCUSABLE = [
   "input:not([disabled])",
   '[tabindex]:not([tabindex="-1"])',
 ].join(",");
+
+const MEGA_EXIT_MS = 220;
+const DRAWER_EXIT_MS = 220;
 
 function Chevron({ direction = "right" }: { direction?: "left" | "right" }) {
   return (
@@ -114,13 +118,16 @@ export default function DynamicMenu(
 ) {
   const MEGA_ID = "esv-mega-panel";
   const [desktopOpen, setDesktopOpen] = useState<string | null>(null);
+  const [megaPhase, setMegaPhase] = useState<MenuPhase>("closed");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [drawerPhase, setDrawerPhase] = useState<MenuPhase>("closed");
   const [path, setPath] = useState<string[]>([]);
   const [pathname, setPathname] = useState("");
   const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null);
   const [createPortalFn, setCreatePortalFn] = useState<CreatePortal | null>(
     null,
   );
+
   const drawerRef = useRef<HTMLElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const activeTriggerRef = useRef<HTMLElement | null>(null);
@@ -130,6 +137,13 @@ export default function DynamicMenu(
   const openTimer = useRef<ReturnType<typeof globalThis.setTimeout> | null>(
     null,
   );
+  const megaExitTimer = useRef<ReturnType<typeof globalThis.setTimeout> | null>(
+    null,
+  );
+  const drawerExitTimer = useRef<ReturnType<typeof globalThis.setTimeout> | null>(
+    null,
+  );
+  const drawerAfterClose = useRef<(() => void) | null>(null);
 
   const desktopItems = useMemo(
     () => filterByVisibility(items, "desktop"),
@@ -143,8 +157,10 @@ export default function DynamicMenu(
     () => desktopItems.find((item) => item.id === desktopOpen) ?? null,
     [desktopItems, desktopOpen],
   );
-  const megaVisible = Boolean(
-    activeDesktop && activeDesktop.children.length > 0,
+  const megaMounted = Boolean(
+    activeDesktop &&
+      activeDesktop.children.length > 0 &&
+      megaPhase !== "closed",
   );
   const activeMobile = path.length > 0
     ? findNode(mobileRootItems, path[path.length - 1])
@@ -155,26 +171,103 @@ export default function DynamicMenu(
     if (openTimer.current) globalThis.clearTimeout(openTimer.current);
     openTimer.current = null;
   };
-  const scheduleDesktopOpen = (id: string, pointerType: string) => {
-    if (pointerType !== "mouse") return;
-    cancelDesktopOpen();
-    openTimer.current = globalThis.setTimeout(() => {
-      setDesktopOpen(id);
-      openTimer.current = null;
-    }, 120);
-  };
-  const scheduleDesktopClose = () => {
-    if (closeTimer.current) globalThis.clearTimeout(closeTimer.current);
-    closeTimer.current = globalThis.setTimeout(() => setDesktopOpen(null), 140);
-  };
+
   const cancelDesktopClose = () => {
     if (closeTimer.current) globalThis.clearTimeout(closeTimer.current);
     closeTimer.current = null;
   };
 
+  const cancelMegaExit = () => {
+    if (megaExitTimer.current) globalThis.clearTimeout(megaExitTimer.current);
+    megaExitTimer.current = null;
+  };
+
+  const finalizeDesktopClose = () => {
+    cancelMegaExit();
+    setMegaPhase("closed");
+    setDesktopOpen(null);
+  };
+
+  const requestDesktopClose = () => {
+    cancelDesktopOpen();
+    cancelDesktopClose();
+    if (!desktopOpen || megaPhase === "closing" || megaPhase === "closed") {
+      return;
+    }
+    setMegaPhase("closing");
+    megaExitTimer.current = globalThis.setTimeout(
+      finalizeDesktopClose,
+      MEGA_EXIT_MS,
+    );
+  };
+
+  const openDesktop = (id: string) => {
+    cancelDesktopClose();
+    cancelMegaExit();
+    const wasMounted = megaPhase !== "closed" && desktopOpen !== null;
+    setDesktopOpen(id);
+    if (wasMounted) {
+      setMegaPhase("open");
+      return;
+    }
+    setMegaPhase("opening");
+    requestAnimationFrame(() => setMegaPhase("open"));
+  };
+
+  const scheduleDesktopOpen = (id: string, pointerType: string) => {
+    if (pointerType !== "mouse") return;
+    cancelDesktopOpen();
+    openTimer.current = globalThis.setTimeout(() => {
+      openDesktop(id);
+      openTimer.current = null;
+    }, 120);
+  };
+
+  const scheduleDesktopClose = () => {
+    cancelDesktopClose();
+    closeTimer.current = globalThis.setTimeout(() => {
+      closeTimer.current = null;
+      requestDesktopClose();
+    }, 140);
+  };
+
+  const finalizeMobileClose = () => {
+    if (drawerExitTimer.current) {
+      globalThis.clearTimeout(drawerExitTimer.current);
+      drawerExitTimer.current = null;
+    }
+    setDrawerPhase("closed");
+    setMobileOpen(false);
+    const afterClose = drawerAfterClose.current;
+    drawerAfterClose.current = null;
+    if (afterClose) globalThis.setTimeout(afterClose, 0);
+  };
+
+  const requestMobileClose = (afterClose?: () => void) => {
+    if (!mobileOpen || drawerPhase === "closing") return;
+    drawerAfterClose.current = afterClose ?? null;
+    setDrawerPhase("closing");
+    drawerExitTimer.current = globalThis.setTimeout(
+      finalizeMobileClose,
+      DRAWER_EXIT_MS,
+    );
+  };
+
+  const openMobile = () => {
+    if (drawerExitTimer.current) {
+      globalThis.clearTimeout(drawerExitTimer.current);
+      drawerExitTimer.current = null;
+    }
+    drawerAfterClose.current = null;
+    setPath([]);
+    setMobileOpen(true);
+    setDrawerPhase("opening");
+    requestAnimationFrame(() => setDrawerPhase("open"));
+  };
+
   useEffect(() => {
-    onMegaChange?.(megaVisible);
-  }, [megaVisible, onMegaChange]);
+    onMegaChange?.(megaMounted);
+  }, [megaMounted, onMegaChange]);
 
   useEffect(() => () => onMegaChange?.(false), [onMegaChange]);
 
@@ -202,6 +295,10 @@ export default function DynamicMenu(
   useEffect(() => () => {
     cancelDesktopOpen();
     cancelDesktopClose();
+    cancelMegaExit();
+    if (drawerExitTimer.current) {
+      globalThis.clearTimeout(drawerExitTimer.current);
+    }
   }, []);
 
   useEffect(() => {
@@ -229,7 +326,7 @@ export default function DynamicMenu(
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        setMobileOpen(false);
+        requestMobileClose();
         return;
       }
       if (event.key !== "Tab") return;
@@ -263,20 +360,15 @@ export default function DynamicMenu(
   }, [mobileOpen]);
 
   useEffect(() => {
-    if (mobileOpen) setPath([]);
-  }, [mobileOpen]);
-
-  useEffect(() => {
     const closeDesktop = (event: KeyboardEvent) => {
       if (!desktopOpen || event.key !== "Escape") return;
-      cancelDesktopOpen();
-      cancelDesktopClose();
-      setDesktopOpen(null);
-      activeTriggerRef.current?.focus();
+      event.preventDefault();
+      requestDesktopClose();
+      globalThis.setTimeout(() => activeTriggerRef.current?.focus(), MEGA_EXIT_MS);
     };
     globalThis.addEventListener("keydown", closeDesktop);
     return () => globalThis.removeEventListener("keydown", closeDesktop);
-  }, [desktopOpen]);
+  }, [desktopOpen, megaPhase]);
 
   useEffect(() => {
     if (!desktopOpen) return;
@@ -288,25 +380,41 @@ export default function DynamicMenu(
         cancelDesktopClose();
         return;
       }
-      setDesktopOpen(null);
+      requestDesktopClose();
     };
     document.addEventListener("focusin", onFocusIn);
     return () => document.removeEventListener("focusin", onFocusIn);
-  }, [desktopOpen]);
+  }, [desktopOpen, megaPhase]);
 
-  const mega = portalRoot && createPortalFn && activeDesktop &&
-      activeDesktop.children.length > 0
+  const mega = portalRoot && createPortalFn && megaMounted && activeDesktop
     ? createPortalFn(
       <>
-        <div class="esv-mega-backdrop" aria-hidden="true" />
+        <div
+          class={`esv-mega-backdrop${
+            megaPhase === "closing" ? " is-closing" : ""
+          }`}
+          aria-hidden="true"
+        />
         <div
           id={MEGA_ID}
-          key={activeDesktop.id}
-          class="esv-mega-v2"
+          class={`esv-mega-v2${
+            megaPhase === "closing" ? " is-closing" : ""
+          }`}
           onPointerEnter={cancelDesktopClose}
           onPointerLeave={scheduleDesktopClose}
+          onAnimationEnd={(event) => {
+            if (
+              megaPhase === "closing" &&
+              event.currentTarget === event.target
+            ) {
+              finalizeDesktopClose();
+            }
+          }}
         >
-          <div class="esv-mega-v2-inner">
+          <div
+            key={activeDesktop.id}
+            class="esv-mega-v2-inner esv-mega-v2-content"
+          >
             <div class="esv-mega-v2-heading">
               <p class="esv-kicker">{activeDesktop.label}</p>
               {activeDesktop.description && <p>{activeDesktop.description}</p>}
@@ -317,12 +425,8 @@ export default function DynamicMenu(
               )}
             </div>
             <div class="esv-mega-v2-columns">
-              {activeDesktop.children.map((group, index) => (
-                <div
-                  class="esv-mega-v2-column"
-                  key={group.id}
-                  style={{ animationDelay: `${index * 35}ms` }}
-                >
+              {activeDesktop.children.map((group) => (
+                <div class="esv-mega-v2-column" key={group.id}>
                   <a
                     class="esv-mega-v2-column-title"
                     href={group.href || undefined}
@@ -360,16 +464,15 @@ export default function DynamicMenu(
                     {highlight.copy && <span>{highlight.copy}</span>}
                   </a>
                 ))}
-                {activeDesktop.highlights.length === 0 && activeDesktop.image &&
-                  (
-                    <a href={activeDesktop.href || undefined}>
-                      <img
-                        src={activeDesktop.image.url}
-                        alt={activeDesktop.image.alt}
-                      />
-                      <strong>{activeDesktop.label}</strong>
-                    </a>
-                  )}
+                {activeDesktop.highlights.length === 0 && activeDesktop.image && (
+                  <a href={activeDesktop.href || undefined}>
+                    <img
+                      src={activeDesktop.image.url}
+                      alt={activeDesktop.image.alt}
+                    />
+                    <strong>{activeDesktop.label}</strong>
+                  </a>
+                )}
               </div>
             )}
           </div>
@@ -381,7 +484,12 @@ export default function DynamicMenu(
 
   const drawer = portalRoot && createPortalFn && mobileOpen
     ? createPortalFn(
-      <div class="esv-nav-v2-backdrop" onClick={() => setMobileOpen(false)}>
+      <div
+        class={`esv-nav-v2-backdrop${
+          drawerPhase === "closing" ? " is-closing" : ""
+        }`}
+        onClick={() => requestMobileClose()}
+      >
         <aside
           ref={drawerRef}
           class="esv-nav-v2-drawer"
@@ -390,6 +498,14 @@ export default function DynamicMenu(
           aria-label="Menu principal"
           tabIndex={-1}
           onClick={(event) => event.stopPropagation()}
+          onAnimationEnd={(event) => {
+            if (
+              drawerPhase === "closing" &&
+              event.currentTarget === event.target
+            ) {
+              finalizeMobileClose();
+            }
+          }}
         >
           <header class="esv-nav-v2-drawer-header">
             {activeMobile
@@ -406,7 +522,7 @@ export default function DynamicMenu(
             <button
               type="button"
               aria-label="Fechar menu"
-              onClick={() => setMobileOpen(false)}
+              onClick={() => requestMobileClose()}
             >
               <CloseGlyph />
             </button>
@@ -431,8 +547,9 @@ export default function DynamicMenu(
                         isCurrentPath(item.href, pathname)
                       ? "page"
                       : undefined}
-                    onClick={() =>
-                      item.children.length === 0 && setMobileOpen(false)}
+                    onClick={() => {
+                      if (item.children.length === 0) requestMobileClose();
+                    }}
                   >
                     {item.label}
                   </a>
@@ -454,25 +571,17 @@ export default function DynamicMenu(
           <footer class="esv-nav-v2-drawer-footer">
             <button
               type="button"
-              onClick={() => {
-                setMobileOpen(false);
-                globalThis.setTimeout(
-                  () => openHeaderControl(".esv-search-trigger"),
-                  0,
-                );
-              }}
+              onClick={() =>
+                requestMobileClose(() =>
+                  openHeaderControl(".esv-search-trigger")
+                )}
             >
               Buscar
             </button>
             <button
               type="button"
-              onClick={() => {
-                setMobileOpen(false);
-                globalThis.setTimeout(
-                  () => openHeaderControl(".esv-cart-link"),
-                  0,
-                );
-              }}
+              onClick={() =>
+                requestMobileClose(() => openHeaderControl(".esv-cart-link"))}
             >
               Carrinho
             </button>
@@ -518,7 +627,7 @@ export default function DynamicMenu(
               aria-haspopup={item.children.length > 0 ? "true" : undefined}
               aria-controls={item.children.length > 0 ? MEGA_ID : undefined}
               aria-expanded={item.children.length > 0
-                ? desktopOpen === item.id
+                ? desktopOpen === item.id && megaPhase !== "closing"
                 : undefined}
               aria-current={!item.external && isCurrentPath(item.href, pathname)
                 ? "page"
@@ -535,9 +644,9 @@ export default function DynamicMenu(
               onPointerLeave={cancelDesktopOpen}
               onFocus={(event) => {
                 cancelDesktopOpen();
-                cancelDesktopClose();
                 activeTriggerRef.current = event.currentTarget;
-                setDesktopOpen(item.children.length > 0 ? item.id : null);
+                if (item.children.length > 0) openDesktop(item.id);
+                else requestDesktopClose();
               }}
               onKeyDown={(event) => {
                 if (
@@ -545,10 +654,8 @@ export default function DynamicMenu(
                   (event.key !== "ArrowDown" && event.key !== "Enter")
                 ) return;
                 event.preventDefault();
-                cancelDesktopOpen();
-                cancelDesktopClose();
                 activeTriggerRef.current = event.currentTarget;
-                setDesktopOpen(item.id);
+                openDesktop(item.id);
                 requestAnimationFrame(() =>
                   document
                     .querySelector<HTMLElement>(`#${MEGA_ID} a[href]`)
@@ -566,8 +673,8 @@ export default function DynamicMenu(
           class="esv-nav-v2-mobile-trigger"
           type="button"
           aria-label="Abrir menu"
-          aria-expanded={mobileOpen}
-          onClick={() => setMobileOpen(true)}
+          aria-expanded={mobileOpen && drawerPhase !== "closing"}
+          onClick={openMobile}
         >
           <MenuGlyph />
         </button>

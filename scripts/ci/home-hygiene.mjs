@@ -110,17 +110,27 @@ try {
     [".esv-maison-main", ".esv-maison-secondary"].every((selector) => {
       const element = document.querySelector(selector);
       if (!element) return true;
+
+      const animations = element.getAnimations();
+      if (
+        animations.some((animation) =>
+          animation.playState === "running" || animation.playState === "pending"
+        )
+      ) {
+        return false;
+      }
+
       const style = getComputedStyle(element);
-      if (Number(style.opacity) < .9999) return false;
+      if (Number(style.opacity) < .999999) return false;
       if (style.transform === "none") return true;
 
       const matrix = new DOMMatrixReadOnly(style.transform);
-      return Math.abs(matrix.a - 1) < 0.000001 &&
-        Math.abs(matrix.b) < 0.000001 &&
-        Math.abs(matrix.c) < 0.000001 &&
-        Math.abs(matrix.d - 1) < 0.000001 &&
-        Math.abs(matrix.e) < 0.0001 &&
-        Math.abs(matrix.f) < 0.0001;
+      return Math.abs(matrix.a - 1) < 0.0000001 &&
+        Math.abs(matrix.b) < 0.0000001 &&
+        Math.abs(matrix.c) < 0.0000001 &&
+        Math.abs(matrix.d - 1) < 0.0000001 &&
+        Math.abs(matrix.e) < 0.0000001 &&
+        Math.abs(matrix.f) < 0.0000001;
     })
   );
 

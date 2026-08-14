@@ -61,6 +61,8 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
       class={`esv-product-card${vm.hoverImage ? " has-detail" : ""}`}
       role="listitem"
       data-product-id={vm.id}
+      data-motion="reveal"
+      data-motion-order={String(motionOrder)}
     >
       <ProductActions
         productId={vm.id}
@@ -70,11 +72,7 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
       />
 
       <div class="esv-product-media-wrap">
-        <figure
-          class="esv-product-media"
-          data-motion="media-reveal"
-          data-motion-order={String(motionOrder)}
-        >
+        <figure class="esv-product-media">
           <EsmeraImage
             class={vm.hoverImage
               ? "esv-product-image-primary"
@@ -108,11 +106,7 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
         <WishlistButton productId={vm.id} productTitle={vm.title} />
       </div>
 
-      <div
-        class="esv-product-card-copy"
-        data-motion="reveal"
-        data-motion-order={String(motionOrder + 2)}
-      >
+      <div class="esv-product-card-copy">
         <span
           class="esv-card-eyebrow block mb-1.5 truncate text-[10px] font-light uppercase tracking-[0.15em] text-neutral-400"
           title={vm.eyebrow || undefined}

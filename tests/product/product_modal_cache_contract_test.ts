@@ -6,7 +6,7 @@ Deno.test("product modal has one revisioned stylesheet with no override layers",
 
   assertStringIncludes(
     app,
-    'const storefrontStyleRevision = "2026-08-14-about-page-v33";',
+    'const storefrontStyleRevision = "2026-08-14-product-modal-refit-v35";',
   );
   assertStringIncludes(
     app,

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import Icon from "../components/ui/Icon.tsx";
 import ProductMediaViewer from "../components/esmera/ProductMediaViewer.tsx";
 import { getAvailabilityMeta } from "../components/esmera/availability.ts";
 import {
@@ -12,6 +13,7 @@ import {
 } from "../lib/esmera/gallery.ts";
 import { buildInstallmentFromPriceCents } from "../lib/esmera/productCard.ts";
 import type { EsmeraObject, EsmeraVariant } from "../lib/payload/types.ts";
+import WishlistButton from "./WishlistButton.tsx";
 
 interface ProductModalImage {
   src: string;
@@ -166,6 +168,35 @@ function modalImageSrcSet(image: ProductModalImage): string | undefined {
   return candidates.length > 1 ? candidates.join(", ") : undefined;
 }
 
+const DIACRITICS_PATTERN = new RegExp("[\\u0300-\\u036f]", "g");
+
+function normalizeFactLabel(label: string): string {
+  return label
+    .normalize("NFD")
+    .replace(DIACRITICS_PATTERN, "")
+    .toLocaleLowerCase("pt-BR")
+    .trim();
+}
+
+/**
+ * Builds a product-specific WhatsApp deep link from the number already
+ * rendered in the footer's sticky CTA, instead of duplicating that number
+ * here. Returns null when the footer hasn't mounted its WhatsApp link (no
+ * channel configured in the CMS), which hides the modal's "Fale conosco".
+ */
+function buildWhatsAppHref(product: EsmeraObject): string | null {
+  if (typeof document === "undefined") return null;
+  const sticky = document.querySelector<HTMLAnchorElement>(
+    ".esv-whatsapp-sticky",
+  );
+  const base = sticky?.getAttribute("href")?.split("?")[0];
+  if (!base) return null;
+  const message = `Olá! Gostaria de saber mais sobre a peça "${product.title}"${
+    product.code ? ` — código ${product.code}` : ""
+  }.`;
+  return `${base}?text=${encodeURIComponent(message)}`;
+}
+
 interface GalleryFrameProps {
   view: "desktop" | "compact";
   plates: GalleryPlate[];
@@ -310,6 +341,109 @@ function GalleryFrame({
   );
 }
 
+interface GalleryThumbnailsProps {
+  images: ProductModalImage[];
+  plates: GalleryPlate[];
+  activeIndex: number;
+  onSelect: (index: number) => void;
+}
+
+function GalleryThumbnails(
+  { images, plates, activeIndex, onSelect }: GalleryThumbnailsProps,
+) {
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const active = trackRef.current?.querySelector<HTMLElement>(
+      '[aria-selected="true"]',
+    );
+    active?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest",
+    });
+  }, [activeIndex]);
+
+  if (images.length < 2) return null;
+
+  return (
+    <div
+      ref={trackRef}
+      class="esv-product-modal-thumbs"
+      role="listbox"
+      aria-label="Miniaturas da galeria"
+    >
+      {images.map((image, imageIndex) => {
+        const plateIndex = plateIndexOfMedia(plates, imageIndex);
+        const isActive = plateIndex === activeIndex;
+        return (
+          <button
+            key={image.src}
+            type="button"
+            class={`esv-product-modal-thumb${isActive ? " is-active" : ""}`}
+            role="option"
+            aria-selected={isActive}
+            aria-label={`Ver imagem ${imageIndex + 1} de ${images.length}`}
+            onClick={() => plateIndex >= 0 && onSelect(plateIndex)}
+          >
+            <img
+              src={image.src}
+              alt=""
+              width={image.width}
+              height={image.height}
+              loading="lazy"
+              decoding="async"
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function UniqueNote() {
+  return (
+    <div class="esv-product-modal-unique">
+      <span class="esv-product-modal-unique-icon" aria-hidden="true">✧</span>
+      <div>
+        <strong>Peça única</strong>
+        <p>
+          Cada peça possui veios e tonalidades próprias — não há duas exatamente
+          iguais.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function TrustBar() {
+  return (
+    <div class="esv-product-modal-trust">
+      <div class="esv-product-modal-trust-item">
+        <span aria-hidden="true">◇</span>
+        <div>
+          <strong>Compra segura</strong>
+          <small>Ambiente 100% protegido</small>
+        </div>
+      </div>
+      <div class="esv-product-modal-trust-item">
+        <span aria-hidden="true">▢</span>
+        <div>
+          <strong>Embalagem premium</strong>
+          <small>Proteção total da peça</small>
+        </div>
+      </div>
+      <div class="esv-product-modal-trust-item">
+        <span aria-hidden="true">↺</span>
+        <div>
+          <strong>Troca facilitada</strong>
+          <small>Até 7 dias após o recebimento</small>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProductModal() {
   const [product, setProduct] = useState<EsmeraObject | null>(null);
   const [phase, setPhase] = useState<ModalPhase>("unmounted");
@@ -322,6 +456,7 @@ export default function ProductModal() {
   >();
   const [activeDesktopIndex, setActiveDesktopIndex] = useState(0);
   const [activeCompactIndex, setActiveCompactIndex] = useState(0);
+  const [dimensionsOpen, setDimensionsOpen] = useState(false);
   const [zoomIndex, setZoomIndex] = useState<number | null>(null);
   const zoomIndexRef = useRef<number | null>(null);
   const modalRef = useRef<HTMLElement>(null);
@@ -356,6 +491,10 @@ export default function ProductModal() {
   );
   const availableVariants = useMemo(
     () => product?.variants.filter((variant) => !variant.disabled) ?? [],
+    [product],
+  );
+  const whatsappHref = useMemo(
+    () => product ? buildWhatsAppHref(product) : null,
     [product],
   );
 
@@ -435,6 +574,7 @@ export default function ProductModal() {
   const selectProduct = (next: EsmeraObject) => {
     setActiveDesktopIndex(0);
     setActiveCompactIndex(0);
+    setDimensionsOpen(false);
     setProduct(next);
     setSelectedVariant(
       next.variants.find((variant) => !variant.disabled),
@@ -662,6 +802,12 @@ export default function ProductModal() {
   const installment = activeIsInquiry
     ? null
     : buildInstallmentFromPriceCents(activePriceCents);
+  const dimensionsFact = facts.find((fact) =>
+    normalizeFactLabel(fact.label) === "dimensoes"
+  );
+  const otherFacts = dimensionsFact
+    ? facts.filter((fact) => fact !== dimensionsFact)
+    : facts;
   const addToCart = () => {
     const cartProduct = selectedVariant
       ? {
@@ -714,24 +860,42 @@ export default function ProductModal() {
             <CloseIcon />
           </button>
 
-          <GalleryFrame
-            view="desktop"
-            plates={desktopPlates}
-            activeIndex={activeDesktopIndex}
-            images={images}
-            galleryRef={desktopGalleryRef}
-            onActiveIndexChange={setActiveDesktopIndex}
-            onOpenViewer={openViewer}
-          />
-          <GalleryFrame
-            view="compact"
-            plates={compactPlates}
-            activeIndex={activeCompactIndex}
-            images={images}
-            galleryRef={compactGalleryRef}
-            onActiveIndexChange={setActiveCompactIndex}
-            onOpenViewer={openViewer}
-          />
+          <div class="esv-product-modal-gallery-pane is-desktop">
+            <GalleryFrame
+              view="desktop"
+              plates={desktopPlates}
+              activeIndex={activeDesktopIndex}
+              images={images}
+              galleryRef={desktopGalleryRef}
+              onActiveIndexChange={setActiveDesktopIndex}
+              onOpenViewer={openViewer}
+            />
+            <GalleryThumbnails
+              images={images}
+              plates={desktopPlates}
+              activeIndex={activeDesktopIndex}
+              onSelect={setActiveDesktopIndex}
+            />
+            {product.availability === "unique" && <UniqueNote />}
+            <TrustBar />
+          </div>
+          <div class="esv-product-modal-gallery-pane is-compact">
+            <GalleryFrame
+              view="compact"
+              plates={compactPlates}
+              activeIndex={activeCompactIndex}
+              images={images}
+              galleryRef={compactGalleryRef}
+              onActiveIndexChange={setActiveCompactIndex}
+              onOpenViewer={openViewer}
+            />
+            <GalleryThumbnails
+              images={images}
+              plates={compactPlates}
+              activeIndex={activeCompactIndex}
+              onSelect={setActiveCompactIndex}
+            />
+          </div>
 
           <div class="esv-product-modal-buybox">
             <div class="esv-product-modal-buybox-scroll">
@@ -761,13 +925,35 @@ export default function ProductModal() {
 
               {facts.length > 0 && (
                 <dl class="esv-product-modal-facts">
-                  {facts.map((fact) => (
+                  {otherFacts.map((fact) => (
                     <div key={fact.label}>
                       <dt>{fact.label}</dt>
                       <dd>{fact.value}</dd>
                     </div>
                   ))}
+                  {dimensionsFact && (
+                    <div class="esv-product-modal-facts-row">
+                      <dt>{dimensionsFact.label}</dt>
+                      <dd>
+                        <button
+                          type="button"
+                          class="esv-product-modal-facts-toggle"
+                          aria-expanded={dimensionsOpen}
+                          onClick={() => setDimensionsOpen((open) => !open)}
+                        >
+                          Ver detalhes
+                          <span aria-hidden="true">⌄</span>
+                        </button>
+                      </dd>
+                    </div>
+                  )}
                 </dl>
+              )}
+
+              {dimensionsFact && dimensionsOpen && (
+                <div class="esv-product-modal-facts-details">
+                  <p>{dimensionsFact.value}</p>
+                </div>
               )}
 
               {availableVariants.length > 0 && (
@@ -846,6 +1032,27 @@ export default function ProductModal() {
                 <span>Adicionar ao carrinho</span>
                 <span aria-hidden="true">↗</span>
               </button>
+
+              <div class="esv-product-modal-secondary-actions">
+                <div class="esv-product-modal-save">
+                  <WishlistButton
+                    productId={product.id}
+                    productTitle={product.title}
+                  />
+                  <span aria-hidden="true">Salvar</span>
+                </div>
+                {whatsappHref && (
+                  <a
+                    class="esv-product-modal-contact"
+                    href={whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Icon id="WhatsApp" size={16} aria-hidden="true" />
+                    <span>Fale conosco</span>
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </article>

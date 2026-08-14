@@ -49,7 +49,6 @@ async function readScrollState() {
 try {
   await page.goto(`${BASE_URL}/`, { waitUntil: "domcontentloaded" });
   await page.waitForSelector(".esv-hero");
-  // Let the intentional one-shot hero entrance finish before measuring scroll.
   await page.waitForTimeout(1200);
 
   const top = await page.evaluate(() => {
@@ -96,15 +95,34 @@ try {
     });
   }, top.heroHeight);
 
-  // Maison uses an intentional one-shot reveal. Wait for it to become visible and
-  // settle before testing whether additional scroll causes any transform drift.
+  // Wait for Maison to become visible and for its explicit reveal transform to
+  // reach the identity matrix. This follows the animation itself instead of a
+  // fixed timeout, so changing editorial duration/stagger cannot make the gate
+  // sample a few milliseconds before the transition actually finishes.
   await page.waitForFunction(() =>
     [".esv-maison-main", ".esv-maison-secondary"].every((selector) => {
       const element = document.querySelector(selector);
-      return !element || element.classList.contains("is-visible");
+      if (!element) return true;
+      return element.classList.contains("is-visible");
     })
   );
-  await page.waitForTimeout(700);
+  await page.waitForFunction(() =>
+    [".esv-maison-main", ".esv-maison-secondary"].every((selector) => {
+      const element = document.querySelector(selector);
+      if (!element) return true;
+      const style = getComputedStyle(element);
+      if (Number(style.opacity) < .9999) return false;
+      if (style.transform === "none") return true;
+
+      const matrix = new DOMMatrixReadOnly(style.transform);
+      return Math.abs(matrix.a - 1) < 0.000001 &&
+        Math.abs(matrix.b) < 0.000001 &&
+        Math.abs(matrix.c) < 0.000001 &&
+        Math.abs(matrix.d - 1) < 0.000001 &&
+        Math.abs(matrix.e) < 0.0001 &&
+        Math.abs(matrix.f) < 0.0001;
+    })
+  );
 
   const transition = await readScrollState();
   metrics.transition = transition;

@@ -49,7 +49,11 @@ export default function Manifesto(
           )}
         </div>
         <div class="esv-maison-media">
-          <figure class="esv-maison-main">
+          <figure
+            class="esv-maison-main"
+            data-motion="media-reveal"
+            data-motion-order="1"
+          >
             <EsmeraImage
               src={source.mainImage}
               alt={source.mainImageAlt ?? ""}
@@ -60,7 +64,11 @@ export default function Manifesto(
             />
           </figure>
           {source.secondaryImage && (
-            <figure class="esv-maison-secondary">
+            <figure
+              class="esv-maison-secondary"
+              data-motion="media-reveal"
+              data-motion-order="2"
+            >
               <EsmeraImage
                 src={source.secondaryImage}
                 alt={source.secondaryImageAlt ?? ""}

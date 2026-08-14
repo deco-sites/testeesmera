@@ -9,6 +9,7 @@ import type {
   PayloadSiteSettings,
   SEOModel,
 } from "../../lib/payload/types.ts";
+import MenuNavigationCoordinator from "../../islands/MenuNavigationCoordinator.tsx";
 import Footer from "../../sections/Esmera/Footer.tsx";
 import Header from "../../sections/Esmera/Header.tsx";
 import StorefrontSEO from "./StorefrontSEO.tsx";
@@ -49,6 +50,7 @@ export default function StorefrontLayout(
         ogType={ogType}
         jsonLd={jsonLd}
       />
+      <MenuNavigationCoordinator />
       <Header
         logo={shell.siteName}
         menu={shell.menu}

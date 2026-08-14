@@ -5,11 +5,10 @@ import { Context } from "@deco/deco";
 
 export default defineApp(async (_req, ctx) => {
   const revision = await Context.active().release?.revision();
-  // Static CSS can outlive a branch deploy in Deco's CDN when the release
-  // revision remains stable. Keep one storefront token so JSX/CSS that ship
-  // together can never be mixed with a stale interaction layer.
-  const storefrontStyleRevision = "2026-08-14-motion-system-v34";
-  const homeStyleRevision = storefrontStyleRevision;
+  // Preserve the stable storefront token for unchanged CSS contracts and bump
+  // only the home/motion layer shipped by this PR.
+  const storefrontStyleRevision = "2026-08-14-about-page-v33";
+  const homeStyleRevision = "2026-08-14-motion-system-v34";
   return (
     <>
       <Theme colorScheme="any" />

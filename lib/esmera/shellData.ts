@@ -50,6 +50,8 @@ const FALLBACK_NAVIGATION: NavigationLink[] = [
   { label: "CONTATO", href: "/contato", external: false },
 ];
 
+const OFFICIAL_INSTAGRAM_HREF = "https://instagram.com/esmera.decor";
+
 function present(value: string | null | undefined, fallback: string): string {
   const normalized = value?.trim() ?? "";
   return normalized || fallback;
@@ -133,7 +135,7 @@ export function resolveShell(
     channel.active !== false && channel.kind === "instagram"
   );
   const instagramHref = sanitizePublicHref(instagram?.url) ||
-    sanitizePublicHref(instagram?.value);
+    sanitizePublicHref(instagram?.value) || OFFICIAL_INSTAGRAM_HREF;
 
   return {
     siteName,

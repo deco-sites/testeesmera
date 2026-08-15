@@ -258,24 +258,8 @@ export default function Footer(
             )}
           </nav>
 
-          <div class="esv-footer-bottom-socials">
-            {instagramHref && (
-              <a href={instagramHref} target="_blank" rel="noopener noreferrer">
-                <InstagramGlyph size={18} />
-                <span>Instagram</span>
-              </a>
-            )}
-            {source.whatsappHref && (
-              <a
-                href={source.whatsappHref}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Icon id="WhatsApp" size={18} aria-hidden="true" />
-                <span>WhatsApp</span>
-              </a>
-            )}
-            <span class="esv-footer-mark" aria-hidden="true">
+          <div class="esv-footer-bottom-socials" aria-hidden="true">
+            <span class="esv-footer-mark">
               <svg viewBox="0 0 32 42" role="presentation">
                 <path d="M16 1 29 21 16 41 3 21 16 1Z" />
                 <path d="M16 8 24 21 16 34 8 21 16 8Z" />

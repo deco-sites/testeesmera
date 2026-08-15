@@ -223,6 +223,7 @@ export default function Footer(
                   href={source.whatsappHref}
                   target="_blank"
                   rel="noopener noreferrer"
+                  style="padding-right:16px"
                 >
                   <Icon id="WhatsApp" size={20} aria-hidden="true" />
                   <span>{source.whatsappLabel || "WhatsApp"}</span>

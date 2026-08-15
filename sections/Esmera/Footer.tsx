@@ -73,6 +73,36 @@ function ExternalAttrs({ external }: { external: boolean }) {
   return <span class="esv-sr-only">Abre em uma nova janela</span>;
 }
 
+function InstagramGlyph({ size = 20 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <rect
+        x="3.25"
+        y="3.25"
+        width="17.5"
+        height="17.5"
+        rx="4.75"
+        stroke="currentColor"
+        stroke-width="1.5"
+      />
+      <circle
+        cx="12"
+        cy="12"
+        r="4"
+        stroke="currentColor"
+        stroke-width="1.5"
+      />
+      <circle cx="17.35" cy="6.75" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
 export default function Footer(
   props: Props & { resolvedHome?: ResolvedHome },
 ) {
@@ -206,7 +236,7 @@ export default function Footer(
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Icon id="Instagram" size={20} aria-hidden="true" />
+                  <InstagramGlyph size={20} />
                   <span>Instagram</span>
                   <span class="esv-footer-social-arrow" aria-hidden="true">→</span>
                 </a>
@@ -230,7 +260,7 @@ export default function Footer(
           <div class="esv-footer-bottom-socials">
             {instagramHref && (
               <a href={instagramHref} target="_blank" rel="noopener noreferrer">
-                <Icon id="Instagram" size={18} aria-hidden="true" />
+                <InstagramGlyph size={18} />
                 <span>Instagram</span>
               </a>
             )}

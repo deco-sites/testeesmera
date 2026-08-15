@@ -6,7 +6,7 @@ import type { EsmeraObject, EsmeraVariant } from "../lib/payload/types.ts";
 
 type Overlay = "search" | "enquiry" | null;
 type OverlayPhase = "closed" | "opening" | "open" | "closing";
-type HeaderSurface = "hero" | "solid" | "mega" | "overlay";
+type HeaderSurface = "hero" | "solid" | "mega";
 type CartItem = {
   product: EsmeraObject;
   quantity: number;
@@ -463,9 +463,7 @@ export default function EsmeraHeader({
     hasInquiry ? "Itens sob consulta serão confirmados pela curadoria." : "",
   ].filter(Boolean).join("\n");
   const sendHref = checkoutHref(whatsappHref, message);
-  const headerSurface: HeaderSurface = overlay
-    ? "overlay"
-    : megaOpen || desktopMenuHovered
+  const headerSurface: HeaderSurface = megaOpen || desktopMenuHovered
     ? "mega"
     : variant === "solid" || isScrolled
     ? "solid"

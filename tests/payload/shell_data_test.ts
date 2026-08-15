@@ -28,5 +28,6 @@ Deno.test("shell keeps brand, footer and SEO usable when CMS globals are empty",
   assertEquals(shell.footer.siteName, "ESMÉRA");
   assertEquals(shell.footer.privacyHref, "/politica-de-privacidade");
   assertEquals(shell.footer.termsHref, "/termos");
+  assertEquals(shell.instagramHref, "https://instagram.com/esmera.decor");
   assertEquals(shell.defaultSEO.title, "ESMÉRA");
 });

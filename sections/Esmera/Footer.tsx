@@ -1,4 +1,5 @@
 import Icon from "../../components/ui/Icon.tsx";
+import FooterLeadForm from "../../islands/FooterLeadForm.tsx";
 import {
   loadResolvedHome,
   type ResolvedHome,
@@ -147,13 +148,16 @@ export default function Footer(
               Objetos, matérias e composições para interiores com presença.
             </p>
             <p class="esv-footer-description">
-              Curadoria autoral de peças e materiais naturais, com atendimento próximo
-              e soluções sob medida.
+              Curadoria autoral de peças e materiais naturais, com atendimento
+              próximo e soluções sob medida.
             </p>
             <span class="esv-footer-curation-badge">Curadoria autoral</span>
           </section>
 
-          <nav class="esv-footer-column" aria-labelledby="esv-footer-collections">
+          <nav
+            class="esv-footer-column"
+            aria-labelledby="esv-footer-collections"
+          >
             <h2 id="esv-footer-collections" class="esv-footer-heading">
               Coleções
             </h2>
@@ -173,7 +177,10 @@ export default function Footer(
             </ul>
           </nav>
 
-          <nav class="esv-footer-column" aria-labelledby="esv-footer-institutional">
+          <nav
+            class="esv-footer-column"
+            aria-labelledby="esv-footer-institutional"
+          >
             <h2 id="esv-footer-institutional" class="esv-footer-heading">
               Institucional
             </h2>
@@ -192,29 +199,17 @@ export default function Footer(
             aria-labelledby="esv-footer-relationship"
           >
             <p class="esv-footer-newsletter-eyebrow">Acompanhe a Esméra</p>
-            <h2 id="esv-footer-relationship" class="esv-footer-newsletter-title">
+            <h2
+              id="esv-footer-relationship"
+              class="esv-footer-newsletter-title"
+            >
               Novos lançamentos, matérias e peças especiais.
             </h2>
             <p class="esv-footer-newsletter-copy">
               Receba curadorias e novidades em primeira mão.
             </p>
 
-            <form class="esv-footer-form" action={contactHref} method="get">
-              <label class="esv-sr-only" for="esv-footer-email">
-                Seu melhor e-mail
-              </label>
-              <div class="esv-footer-form-row">
-                <input
-                  id="esv-footer-email"
-                  type="email"
-                  name="email"
-                  placeholder="Seu melhor e-mail"
-                  autocomplete="email"
-                  required
-                />
-                <button type="submit">Receber novidades</button>
-              </div>
-            </form>
+            <FooterLeadForm />
 
             <div class="esv-footer-socials">
               {source.whatsappHref && (
@@ -227,7 +222,9 @@ export default function Footer(
                 >
                   <Icon id="WhatsApp" size={20} aria-hidden="true" />
                   <span>{source.whatsappLabel || "WhatsApp"}</span>
-                  <span class="esv-footer-social-arrow" aria-hidden="true">→</span>
+                  <span class="esv-footer-social-arrow" aria-hidden="true">
+                    →
+                  </span>
                 </a>
               )}
               {instagramHref && (
@@ -239,7 +236,9 @@ export default function Footer(
                 >
                   <InstagramGlyph size={20} />
                   <span>Instagram</span>
-                  <span class="esv-footer-social-arrow" aria-hidden="true">→</span>
+                  <span class="esv-footer-social-arrow" aria-hidden="true">
+                    →
+                  </span>
                 </a>
               )}
             </div>

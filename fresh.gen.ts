@@ -6,6 +6,7 @@ import * as $_404 from "./routes/_404.tsx";
 import * as $_500 from "./routes/_500.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $api_esmera_collection from "./routes/api/esmera-collection.ts";
+import * as $api_esmera_lead from "./routes/api/esmera-lead.ts";
 import * as $api_esmera_recommendations from "./routes/api/esmera-recommendations.ts";
 import * as $api_esmera_renderability from "./routes/api/esmera-renderability.ts";
 import * as $api_esmera_reserve from "./routes/api/esmera-reserve.ts";
@@ -27,6 +28,7 @@ import * as $CollectionExplorer from "./islands/CollectionExplorer.tsx";
 import * as $DynamicMenu from "./islands/DynamicMenu.tsx";
 import * as $EsmeraHeader from "./islands/EsmeraHeader.tsx";
 import * as $EsmeraMotion from "./islands/EsmeraMotion.tsx";
+import * as $FooterLeadForm from "./islands/FooterLeadForm.tsx";
 import * as $HeroCarousel from "./islands/HeroCarousel.tsx";
 import * as $MenuNavigationCoordinator from "./islands/MenuNavigationCoordinator.tsx";
 import * as $ProductActions from "./islands/ProductActions.tsx";
@@ -40,6 +42,7 @@ const manifest = {
     "./routes/_500.tsx": $_500,
     "./routes/_app.tsx": $_app,
     "./routes/api/esmera-collection.ts": $api_esmera_collection,
+    "./routes/api/esmera-lead.ts": $api_esmera_lead,
     "./routes/api/esmera-recommendations.ts": $api_esmera_recommendations,
     "./routes/api/esmera-renderability.ts": $api_esmera_renderability,
     "./routes/api/esmera-reserve.ts": $api_esmera_reserve,
@@ -63,6 +66,7 @@ const manifest = {
     "./islands/DynamicMenu.tsx": $DynamicMenu,
     "./islands/EsmeraHeader.tsx": $EsmeraHeader,
     "./islands/EsmeraMotion.tsx": $EsmeraMotion,
+    "./islands/FooterLeadForm.tsx": $FooterLeadForm,
     "./islands/HeroCarousel.tsx": $HeroCarousel,
     "./islands/MenuNavigationCoordinator.tsx": $MenuNavigationCoordinator,
     "./islands/ProductActions.tsx": $ProductActions,

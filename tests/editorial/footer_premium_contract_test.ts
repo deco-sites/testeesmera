@@ -2,7 +2,9 @@ import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 
 Deno.test("premium footer is one compact surface and receives shell channels", async () => {
   const footer = await Deno.readTextFile("sections/Esmera/Footer.tsx");
-  const layout = await Deno.readTextFile("components/esmera/StorefrontLayout.tsx");
+  const layout = await Deno.readTextFile(
+    "components/esmera/StorefrontLayout.tsx",
+  );
   const app = await Deno.readTextFile("routes/_app.tsx");
   const css = await Deno.readTextFile("static/esmera-footer.css");
 
@@ -22,7 +24,10 @@ Deno.test("premium footer is one compact surface and receives shell channels", a
   const aboutCss = app.indexOf("/esmera-about-page.css");
   const footerCss = app.indexOf("/esmera-footer.css");
   assert(aboutCss >= 0 && footerCss > aboutCss);
-  assertStringIncludes(app, 'footerStyleRevision = "2026-08-14-footer-v2"');
+  assertStringIncludes(
+    app,
+    'footerStyleRevision = "2026-08-15-footer-whatsapp-form-v3"',
+  );
 
   assertStringIncludes(css, ".esv-footer.esv-footer-premium");
   assertStringIncludes(css, ".esv-footer-shell");

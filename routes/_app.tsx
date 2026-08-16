@@ -9,7 +9,7 @@ export default defineApp(async (_req, ctx) => {
   // only the layers that own new visual behavior.
   const storefrontStyleRevision = "2026-08-14-about-page-v33";
   const homeStyleRevision = "2026-08-14-motion-system-v34";
-  const footerStyleRevision = "2026-08-14-footer-v2";
+  const footerStyleRevision = "2026-08-15-footer-whatsapp-form-v3";
   return (
     <>
       <Theme colorScheme="any" />

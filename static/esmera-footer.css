@@ -243,6 +243,25 @@
   }
 }
 
+.esv-footer-form-row button:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.esv-footer-form-feedback {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.esv-footer-form-feedback-success {
+  color: var(--footer-accent);
+}
+
+.esv-footer-form-feedback-error {
+  color: #b3261e;
+}
+
 .esv-footer-socials {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -147,14 +147,19 @@ export function buildInstallment(
 
 export function buildInstallmentFromPriceCents(
   priceCents: number | null | undefined,
+  installmentCount = 5,
 ): ProductCardInstallment | null {
   if (
     typeof priceCents !== "number" || !Number.isFinite(priceCents) ||
-    priceCents <= 0
+    priceCents <= 0 || !Number.isInteger(installmentCount) || installmentCount < 2
   ) return null;
-  const amount = formatPriceCents(Math.floor(priceCents / 12));
+  const amount = formatPriceCents(Math.floor(priceCents / installmentCount));
   return amount
-    ? { prefix: "ou ", emphasis: `12x de ${amount}`, suffix: " sem juros" }
+    ? {
+      prefix: "ou ",
+      emphasis: `${installmentCount}x de ${amount}`,
+      suffix: " sem juros",
+    }
     : null;
 }
 
@@ -216,7 +221,7 @@ export function esmeraObjectToCardViewModel(
     price,
     installment: item.isInquiry
       ? null
-      : buildInstallmentFromPriceCents(item.priceCents),
+      : buildInstallmentFromPriceCents(item.priceCents, 12),
     image: item.image || null,
     imageAlt: item.alt || item.title,
     hoverImage: item.detailImage || null,

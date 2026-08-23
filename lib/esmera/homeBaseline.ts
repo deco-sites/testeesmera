@@ -127,8 +127,8 @@ export const defaultHome: HomeBaseline = {
     title: "Formada lentamente.\nTransformada uma vez.",
     material: "esmeralda",
     image:
-      "https://decoims.com/testeesmera/1108e64c-bca6-4592-83de-77f5963deafd/ec1bcbc8-0fbb-4d57-a822-a2282100dd71.png",
-    imageAlt: "Macro de esmeralda bruta em composição escura",
+      "https://decoims.com/testeesmera/0eb6ebf2-58bd-44d6-a226-fcc452bcd9fc/IMG_3638.jpg",
+    imageAlt: "Composição mineral com pedra azul, vaso claro e pequeno pássaro dourado",
     focalPoint: "center",
   },
   provenance: {

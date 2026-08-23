@@ -88,7 +88,12 @@ export default defineApp(async (_req, ctx) => {
         />
 
         <link rel="manifest" href={asset("/site.webmanifest")} />
-        <link rel="icon" href={asset("/favicon.ico")} />
+        <link
+          rel="icon"
+          type="image/svg+xml"
+          sizes="any"
+          href={asset("/favicon-esmera.svg?v=20260822")}
+        />
         <link rel="apple-touch-icon" href={asset("/apple-touch-icon.png")} />
         <meta name="theme-color" content="#111210" />
       </Head>

@@ -145,11 +145,12 @@ export default function Footer(
             </a>
             <span class="esv-footer-accent-line" aria-hidden="true" />
             <p class="esv-footer-tagline">
-              Objetos, matérias e composições para interiores com presença.
+              Joias para o lar.
             </p>
             <p class="esv-footer-description">
-              Curadoria autoral de peças e materiais naturais, com atendimento
-              próximo e soluções sob medida.
+              Peças autorais em pedras naturais, criadas a partir da matéria, do
+              design e do fazer manual. Da pedra à forma, cada criação carrega sua
+              própria história.
             </p>
             <span class="esv-footer-curation-badge">Curadoria autoral</span>
           </section>

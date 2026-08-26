@@ -2596,6 +2596,9 @@ input.tab:checked + .tab-content,
 .tab-border {
   --tab-border: 1px;
 }
+.artboard.\!phone {
+  width: 320px !important;
+}
 .artboard.phone {
   width: 320px;
 }
@@ -2840,9 +2843,6 @@ input.tab:checked + .tab-content,
 }
 .relative {
   position: relative;
-}
-.sticky {
-  position: sticky;
 }
 .bottom-0 {
   bottom: 0px;

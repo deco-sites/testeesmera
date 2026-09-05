@@ -7,6 +7,7 @@ import * as $_500 from "./routes/_500.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $api_esmera_collection from "./routes/api/esmera-collection.ts";
 import * as $api_esmera_lead from "./routes/api/esmera-lead.ts";
+import * as $api_esmera_product_detail from "./routes/api/esmera-product-detail.ts";
 import * as $api_esmera_recommendations from "./routes/api/esmera-recommendations.ts";
 import * as $api_esmera_renderability from "./routes/api/esmera-renderability.ts";
 import * as $api_esmera_reserve from "./routes/api/esmera-reserve.ts";
@@ -43,6 +44,7 @@ const manifest = {
     "./routes/_app.tsx": $_app,
     "./routes/api/esmera-collection.ts": $api_esmera_collection,
     "./routes/api/esmera-lead.ts": $api_esmera_lead,
+    "./routes/api/esmera-product-detail.ts": $api_esmera_product_detail,
     "./routes/api/esmera-recommendations.ts": $api_esmera_recommendations,
     "./routes/api/esmera-renderability.ts": $api_esmera_renderability,
     "./routes/api/esmera-reserve.ts": $api_esmera_reserve,

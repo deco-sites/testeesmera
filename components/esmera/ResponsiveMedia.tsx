@@ -3,6 +3,8 @@ import Image from "apps/website/components/Image.tsx";
 import { Picture, Source } from "apps/website/components/Picture.tsx";
 
 const PAYLOAD_MEDIA_PATH_PREFIX = "/api/media/file/";
+const GOOGLE_DRIVE_THUMBNAIL_HOST = "drive.google.com";
+const GOOGLE_DRIVE_THUMBNAIL_PATH = "/thumbnail";
 
 /**
  * Payload serves uploads through /api/media/file/*, including custom domains.
@@ -17,6 +19,26 @@ export function isPayloadMediaURL(src: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * As imagens institucionais da página A Esméra usam o endpoint público de
+ * thumbnail do Google Drive já dimensionado. Mantê-las diretas evita que o
+ * otimizador gere um segundo proxy sobre a URL do Drive.
+ */
+function isGoogleDriveThumbnailURL(src: string): boolean {
+  try {
+    const url = new URL(src);
+    return url.protocol === "https:" &&
+      url.hostname === GOOGLE_DRIVE_THUMBNAIL_HOST &&
+      url.pathname === GOOGLE_DRIVE_THUMBNAIL_PATH;
+  } catch {
+    return false;
+  }
+}
+
+function isDirectMediaURL(src: string): boolean {
+  return isPayloadMediaURL(src) || isGoogleDriveThumbnailURL(src);
 }
 
 export interface EsmeraImageProps {
@@ -42,7 +64,7 @@ export function EsmeraImage(
     decoding = "async",
   }: EsmeraImageProps,
 ) {
-  if (isPayloadMediaURL(src)) {
+  if (isDirectMediaURL(src)) {
     return (
       <img
         class={className}
@@ -101,10 +123,10 @@ export function EsmeraPicture({
   fetchPriority = "auto",
 }: EsmeraPictureProps) {
   const mobileAsset = mobileSrc ?? desktopSrc;
-  const usesPayloadMedia = isPayloadMediaURL(desktopSrc) ||
-    isPayloadMediaURL(mobileAsset);
+  const usesDirectMedia = isDirectMediaURL(desktopSrc) ||
+    isDirectMediaURL(mobileAsset);
 
-  if (usesPayloadMedia) {
+  if (usesDirectMedia) {
     return (
       <>
         {preload && (

@@ -16,7 +16,13 @@ import AboutMaterials from "../../sections/Esmera/About/AboutMaterials.tsx";
  * Todo o conteúdo é local ao frontend — nada aqui lê ou grava no Payload.
  */
 
-const MEDIA_BASE = "https://esmeracms-green.vercel.app/api/media/file";
+/**
+ * Imagens institucionais selecionadas da pasta oficial da Esméra no Drive.
+ * O endpoint de thumbnail mantém uma URL pública de imagem e evita trazer os
+ * arquivos originais de 5–8 MB para a página.
+ */
+const driveImage = (fileId: string, width = 1600) =>
+  `https://drive.google.com/thumbnail?id=${fileId}&sz=w${width}`;
 
 const hero = {
   eyebrow: "A ESMÉRA",
@@ -25,9 +31,9 @@ const hero = {
     "A Esméra nasce do encontro entre a natureza e o olhar humano. Transformamos pedras naturais e minerais em peças únicas que carregam história, presença e propósito.",
   ctaLabel: "NOSSA ESSÊNCIA",
   ctaHref: "#nossa-essencia",
-  image: `${MEDIA_BASE}/29ad265a-de27-425f-9fbe-d790f498b430.png`,
+  image: driveImage("1M_A5C4OqmwVEpWdnhNQ7HHTB3rzOdkdz", 1800),
   imageAlt:
-    "Trio de vasos de mármore verde-escuro em formatos geométricos sobre prateleira neutra, com hastes de flores brancas em composição minimalista.",
+    "Conjunto de peças em pedra verde natural com difusor, porta-sabonete, vaso e bandeja de borda bruta.",
 };
 
 const process_ = {
@@ -41,27 +47,27 @@ const process_ = {
       title: "Origem",
       text:
         "Selecionamos pedras e minerais de origem natural, com rastreabilidade e respeito à terra que as formou.",
-      image: `${MEDIA_BASE}/Sem%20T%C3%ADtulo-3.2-1.jpg`,
+      image: driveImage("1UHTpescfe8utBZpdxec_p1MoZ6SMQlyK", 1200),
       imageAlt:
-        "Peça esculpida em Bege Bahia, rocha natural brasileira de tonalidades suaves e veios únicos.",
+        "Placa de pedra verde natural em estado bruto sobre superfície clara.",
     },
     {
       number: "02",
       title: "Transformação",
       text:
         "Lapidamos, esculpimos e polimos cada detalhe com técnicas que valorizam a beleza única de cada material.",
-      image: `${MEDIA_BASE}/3f2a2b25-b10a-4933-9273-42a4afb938b1.png`,
+      image: driveImage("1bSXUAWWA97UJZwUJf7eVPnGJnm5jSQxL", 1200),
       imageAlt:
-        "Bandeja retangular em mármore verde-escuro sobre bancada clara em composição minimalista.",
+        "Difusor geométrico lapidado em pedra verde, com acabamento polido e varetas.",
     },
     {
       number: "03",
       title: "Registro",
       text:
         "Cada peça é registrada e catalogada, garantindo sua autenticidade e história para quem a escolhe.",
-      image: `${MEDIA_BASE}/37994651-8854-45b7-bd31-e400b15e2f31.jpg`,
+      image: driveImage("1CndBJc3AEsMjll1CW_aQegZy2HVphIcN", 1200),
       imageAlt:
-        "Conjunto de acessórios de banheiro em travertino bege sobre bandeja, catalogado em composição editorial.",
+        "Conjunto de difusor e porta-sabonete em pedra clara sobre bandeja, fotografado em fundo neutro.",
     },
   ],
 };
@@ -69,16 +75,17 @@ const process_ = {
 const manifesto = {
   eyebrow: "NOSSA ESSÊNCIA",
   text: "Mais do que objetos, criamos presenças que atravessam o tempo.",
-  image: `${MEDIA_BASE}/1gXKaekGEitGS5V79qMXjkw3vvyYe0_hl-w2000`,
-  imageAlt: "Bandeja esculpida em mármore verde Esmeralda, veios naturais em close editorial.",
+  image: driveImage("1bQmWPIxaDirvMZusiUmkvaGFcI85PnFa", 1600),
+  imageAlt:
+    "Porta-vela em pedra verde entre blocos de mármore, evidenciando veios e texturas naturais.",
 };
 
 const materials = {
   eyebrow: "MATERIAIS E CUIDADOS",
   title: "Beleza que permanece",
-  image: `${MEDIA_BASE}/Sem%20T%C3%ADtulo-1.jpg`,
+  image: driveImage("1waOD7WktjjFyV9AwNrBV2kFrf9pOk_10", 1600),
   imageAlt:
-    "Conjunto de acessórios de banheiro em travertino bege sobre bandeja, com difusor, porta-sabonete líquido, porta-escovas, pote, vela acesa e tigela com cristais.",
+    "Vasos de pedra clara com ramos verdes sendo organizados à mão em composição editorial.",
   principles: [
     {
       icon: "stone" as const,

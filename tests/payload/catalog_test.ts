@@ -43,6 +43,16 @@ Deno.test("keeps sorting functional independently from optional filters", () => 
   assertEquals(query.payloadSort, "basePriceCents,title");
 });
 
+Deno.test("uses backend editorial order when the user does not choose a sort", () => {
+  const query = buildCatalogQuery(
+    new URL("https://store.example/colecao?material=pedra"),
+    ["material", "sort"],
+    [],
+  );
+  assertEquals(query.sort, "editorial");
+  assertEquals(query.payloadSort, "editorial");
+});
+
 Deno.test("accepts repeated material refinements", () => {
   const query = buildCatalogQuery(
     new URL(
@@ -70,6 +80,6 @@ Deno.test("ignores unsupported query values", () => {
   );
   assertEquals(query.page, 1);
   assertEquals(query.sort, "editorial");
-  assertEquals(query.payloadSort, "title");
+  assertEquals(query.payloadSort, "editorial");
   assertEquals(query.where, undefined);
 });

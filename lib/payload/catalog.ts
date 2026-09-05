@@ -36,7 +36,7 @@ const sortAliases: Record<string, CollectionSort> = {
 };
 
 const payloadSortByCollectionSort: Record<CollectionSort, string> = {
-  editorial: "title",
+  editorial: "editorial",
   newest: "-createdAt",
   "price-asc": "basePriceCents,title",
   "price-desc": "-basePriceCents,title",

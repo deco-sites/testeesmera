@@ -240,12 +240,18 @@ export function buildNavigationTree(
   };
 
   const referenced = categoryReferenceIds(navigation);
+  const naturalRoots = byParent.get(null) ?? [];
+  const referencedRoots = referenced.flatMap((id) => {
+    const category = visible.find((item) => item.id === id);
+    return category ? [category] : [];
+  });
+  const referencedRootIds = new Set(referencedRoots.map((category) => category.id));
   const roots = referenced.length > 0
-    ? referenced.flatMap((id) => {
-      const category = visible.find((item) => item.id === id);
-      return category ? [category] : [];
-    })
-    : (byParent.get(null) ?? []);
+    ? [
+      ...referencedRoots,
+      ...naturalRoots.filter((category) => !referencedRootIds.has(category.id)),
+    ]
+    : naturalRoots;
 
   const categoryNodes = roots.map((category) => buildNode(category, new Set()));
   if (categoryNodes.length > 0) return categoryNodes;

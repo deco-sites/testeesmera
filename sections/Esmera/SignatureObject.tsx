@@ -6,6 +6,7 @@ import {
 } from "../../lib/esmera/homeData.ts";
 import type { EsmeraObject } from "../../lib/payload/types.ts";
 import ProductActions from "../../islands/ProductActions.tsx";
+import ShareProductLink from "../../islands/ShareProductLink.tsx";
 
 export interface Props {
   product?: EsmeraObject;
@@ -129,6 +130,9 @@ function SignatureObjectView({
             product={product}
             compact
           />
+          {showFullDetails && (
+            <ShareProductLink productTitle={product.title} />
+          )}
         </div>
       </div>
       {showFullDetails && additionalGallery.length > 0 && (

@@ -1,4 +1,4 @@
-import ProductActions from "../../islands/ProductActions.tsx";
+import Arrow from "./Arrow.tsx";
 import WishlistButton from "../../islands/WishlistButton.tsx";
 import BuyButton from "../../islands/BuyButton.tsx";
 import type { EsmeraObject } from "../../lib/payload/types.ts";
@@ -26,10 +26,11 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
   const vm = legacyItem
     ? esmeraObjectToCardViewModel(item)
     : toProductCardViewModel(item);
+  const productHref = `/produto/${encodeURIComponent(vm.slug)}`;
 
-  // Compatibilidade temporária apenas com o modal legado; a apresentação do
-  // card usa o contrato Storefront quando disponível e preserva o objeto já
-  // resolvido pela Home como fallback se o enriquecimento público falhar.
+  // Compatibilidade temporária apenas com fluxos de aquisição legados; a
+  // apresentação do card usa o contrato Storefront quando disponível e
+  // preserva o objeto já resolvido pela Home como fallback.
   const modalProduct: EsmeraObject = legacyItem ? item : {
     id: item.id,
     slug: item.slug,
@@ -64,11 +65,10 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
       data-motion="reveal"
       data-motion-order={String(motionOrder)}
     >
-      <ProductActions
-        productId={vm.id}
-        productTitle={vm.title}
-        product={modalProduct}
-        presentation="media"
+      <a
+        class="esv-product-modal-trigger esv-product-modal-trigger-media"
+        href={productHref}
+        aria-label={`Abrir a página da peça ${vm.title}`}
       />
 
       <div class="esv-product-media-wrap">
@@ -131,13 +131,13 @@ export default function ObjectCard({ item, motionOrder = 0 }: Props) {
               />
             )
             : (
-              <ProductActions
-                productId={vm.id}
-                productTitle={vm.title}
-                product={modalProduct}
-                compact
-                emphasized
-              />
+              <a
+                class="esv-card-cta"
+                href={productHref}
+                aria-label={`Conhecer a peça ${vm.title}`}
+              >
+                Conhecer a peça <Arrow size={14} />
+              </a>
             )}
         </div>
       </div>

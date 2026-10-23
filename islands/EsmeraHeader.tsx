@@ -9,6 +9,7 @@ import {
   type FramePersonalization,
   framePersonalizationKey,
   frameSizeLabel,
+  isFramePersonalizationCompatible,
   isFramePersonalizationProduct,
 } from "../lib/esmera/framePersonalization.ts";
 import { useMenuNavigationCoordinator } from "../lib/esmera/useMenuNavigationCoordinator.ts";
@@ -409,19 +410,39 @@ export default function EsmeraHeader({
       const parsed = raw ? JSON.parse(raw) as StoredCartItem[] : [];
       if (Array.isArray(parsed)) {
         setCart(
-          parsed.filter((item) => item.id && item.quantity > 0).map((item) => ({
-            product: emptyProduct(item),
-            quantity: item.quantity,
-            personalization: coerceFramePersonalization(item.personalization),
-            variant: item.variant
-              ? {
-                ...item.variant,
-                isInquiry: item.variant.priceMode === "inquiry",
-                disabled: false,
-                mediaKeys: [],
+          parsed.filter((item) => item.id && item.quantity > 0).flatMap(
+            (item) => {
+              const product = emptyProduct(item);
+              const variant = item.variant
+                ? {
+                  ...item.variant,
+                  isInquiry: item.variant.priceMode === "inquiry",
+                  disabled: false,
+                  mediaKeys: [],
+                }
+                : undefined;
+              const personalization = coerceFramePersonalization(
+                item.personalization,
+              );
+              if (
+                isFramePersonalizationProduct(product) &&
+                !isFramePersonalizationCompatible(
+                  product,
+                  variant,
+                  personalization,
+                )
+              ) {
+                // Incomplete legacy frame lines must not reach checkout.
+                return [];
               }
-              : undefined,
-          })),
+              return [{
+                product,
+                quantity: item.quantity,
+                personalization,
+                variant,
+              }];
+            },
+          ),
         );
       }
     } catch {
@@ -516,7 +537,11 @@ export default function EsmeraHeader({
       const personalization = coerceFramePersonalization(
         detail?.personalization,
       );
-      if (isFramePersonalizationProduct(product) && !personalization) {
+      const variant = product.variants.find((item) => !item.disabled);
+      if (
+        isFramePersonalizationProduct(product) &&
+        !isFramePersonalizationCompatible(product, variant, personalization)
+      ) {
         globalThis.dispatchEvent(
           new CustomEvent("esmera:open-product", {
             detail: {
@@ -529,11 +554,7 @@ export default function EsmeraHeader({
         return;
       }
 
-      addToCart(
-        product,
-        product.variants.find((variant) => !variant.disabled),
-        personalization,
-      );
+      addToCart(product, variant, personalization);
       overlayHandoffRef.current = Boolean(detail?.handoff);
       openOverlay("enquiry");
     };

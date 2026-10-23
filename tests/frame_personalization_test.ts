@@ -1,6 +1,7 @@
 import {
   assert,
   assertEquals,
+  assertFalse,
   assertStringIncludes,
 } from "@std/assert";
 import type { EsmeraObject, EsmeraVariant } from "../lib/payload/types.ts";
@@ -13,6 +14,7 @@ import {
   framePhraseOptions,
   frameSizeVariants,
   inferFrameSize,
+  isFramePersonalizationCompatible,
   isFramePersonalizationProduct,
   maxFrameTextLength,
   reconcileFramePersonalization,
@@ -231,4 +233,20 @@ Deno.test("prata e dourada aceitas com preset 10x10 ou frases 15x15/20x20", () =
       assertEquals(validateFramePersonalization(value), null);
     }
   }
+});
+
+Deno.test("recusa personalização antiga incompatível no carrinho", () => {
+  const frame10 = product({ slug: "colecao-fe-quadro-10-x-10-cm" });
+  const selected = createFramePersonalization(frame10);
+  selected.finish = "gold";
+  selected.text = "Alma leve";
+  assert(isFramePersonalizationCompatible(frame10, undefined, selected));
+  assertFalse(isFramePersonalizationCompatible(frame10, undefined, undefined));
+  const wrongSize = {
+    ...selected,
+    size: "15x15" as const,
+    text: FRAME_PHRASES_LARGE[0],
+  };
+  assertFalse(isFramePersonalizationCompatible(frame10, undefined, wrongSize));
+  assert(isFramePersonalizationCompatible(frame10, variant("15x15"), wrongSize));
 });

@@ -115,7 +115,9 @@ export default defineApp(async (_req, ctx) => {
 
         <link
           rel="stylesheet"
-          href={asset(`/esmera-frame-personalization.css?v=${framePersonalizationStyleRevision}`)}
+          href={asset(
+            `/esmera-frame-personalization.css?v=${framePersonalizationStyleRevision}`,
+          )}
         />
         <link
           rel="stylesheet"

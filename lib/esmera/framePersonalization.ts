@@ -196,6 +196,21 @@ export function frameSizeLabel(value: FrameSize | null): string {
   return value ? value.replace("x", " × ") + " cm" : "Tamanho";
 }
 
+/**
+ * Reject stale or mismatched saved frame items before checkout.
+ */
+export function isFramePersonalizationCompatible(
+  product: EsmeraObject,
+  variant: EsmeraVariant | undefined,
+  value: FramePersonalization | null | undefined,
+): boolean {
+  return Boolean(
+    value &&
+      validateFramePersonalization(value) === null &&
+      inferFrameSize(product, variant) === value.size,
+  );
+}
+
 export function framePersonalizationKey(
   value: FramePersonalization | null | undefined,
 ): string {

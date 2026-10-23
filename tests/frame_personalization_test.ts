@@ -14,8 +14,8 @@ import {
   framePhraseOptions,
   frameSizeVariants,
   inferFrameSize,
-  isFramePersonalizationProduct,
   isFramePersonalizationCompatible,
+  isFramePersonalizationProduct,
   maxFrameTextLength,
   reconcileFramePersonalization,
   validateFramePersonalization,
@@ -235,7 +235,7 @@ Deno.test("prata e dourada aceitas com preset 10x10 ou frases 15x15/20x20", () =
   }
 });
 
-Deno.test("carrinho restaura apenas personalização compatível com o tamanho do produto", () => {
+Deno.test("recusa personalização antiga incompatível no carrinho", () => {
   const frame10 = product({ slug: "colecao-fe-quadro-10-x-10-cm" });
   const selected = createFramePersonalization(frame10);
   selected.finish = "gold";

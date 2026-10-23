@@ -9,8 +9,8 @@ import {
   type FramePersonalization,
   framePersonalizationKey,
   frameSizeLabel,
-  isFramePersonalizationProduct,
   isFramePersonalizationCompatible,
+  isFramePersonalizationProduct,
 } from "../lib/esmera/framePersonalization.ts";
 import { useMenuNavigationCoordinator } from "../lib/esmera/useMenuNavigationCoordinator.ts";
 
